@@ -1,5 +1,5 @@
-Welcome to Pyha's documentation!
-================================
+Thesis!
+=======
 
 .. toctree::
     :caption: Contents:
@@ -12,3 +12,6 @@ Welcome to Pyha's documentation!
     basic_usage
     examples
     tutorial_register
+
+.. bibliography:: bibliography.bib
+    :style: unsrt

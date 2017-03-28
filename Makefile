@@ -72,7 +72,8 @@ docs: ## generate Sphinx HTML documentation, including API docs
 	$(BROWSER) docs/_build/html/index.html
 
 docs-pdf:
-	SPHINXOPTS="-b latex" $(MAKE) -C docs html
+	rm -fr docs/_build/pdf
+	SPHINXOPTS="-b latex" $(MAKE) -C docs pdf
 	$(MAKE) -C docs/_build/pdf
 	cp /home/gaspar/git/thesis/docs/_build/pdf/Pyha.pdf /home/gaspar/git/thesis
 

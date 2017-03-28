@@ -30,6 +30,7 @@
 # ones.
 extensions = [
     # 'sphinx.ext.autodoc',
+    'sphinxcontrib.bibtex',
     'sphinx.ext.todo',
     # 'sphinxcontrib.fulltoc',
     'IPython.sphinxext.ipython_console_highlighting',
@@ -128,12 +129,13 @@ latex_elements = {
     #
     # 'figure_align': 'htbp',
 }
+latex_elements = { 'classoptions': ',openany,oneside'}
 
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-    (master_doc, 'Pyha.tex', 'Pyha Documentation',
+    (master_doc, 'Pyha.tex', 'Pyha',
      'Gaspar Karm', 'manual'),
 ]
 
@@ -142,7 +144,7 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    (master_doc, 'pyha', 'Pyha Documentation',
+    (master_doc, 'pyha', 'Pyha',
      [author], 1)
 ]
 
@@ -157,5 +159,7 @@ texinfo_documents = [
      'Miscellaneous'),
 ]
 
+# www.sphinx-doc.org/en/stable/config.html#confval-numfig
+numfig = True
 
 

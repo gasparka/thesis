@@ -2,6 +2,8 @@
 Introduction
 ============
 
+
+See :cite:`Strunk1979` for an introduction to stylish blah, blah...
 Essentially this is a Python to VHDL converter, with a specific focus on implementing DSP systems.
 
 Main features:
@@ -21,6 +23,7 @@ In future it may be possible to turn GNURadio flow-graphs into FPGA designs, ass
 
 Working principle
 -----------------
+.. _label:
 .. figure:: img/working_principle.png
     :align: center
     :alt: alternate text
@@ -30,7 +33,7 @@ Working principle
 
 
 
-As shown on above image, Python sources are turned into synthesizable VHDL code.
+As shown on :numref:`label`, Python sources are turned into synthesizable VHDL code.
 In :code:`__init__`, any valid Python code can be used, all the variables are collected as registers.
 Objects of other classes (derived from HW) can be used as registers, even lists of objects is possible.
 
