@@ -1,19 +1,17 @@
-Background
-==========
-Give a short overview of whats up.
+Pyha
+====
+Description of pyha
 
-Python
+Basics
 ------
 
+Conversion to VHDL
+------------------
 
-Other HDL in Python
--------------------
 
-MyHDL
-~~~~~
+Simulation and verification
+---------------------------
 
-Migen
-~~~~~
 
-CocoTb
-~~~~~~
+Testing
+-------
