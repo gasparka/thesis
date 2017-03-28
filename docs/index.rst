@@ -4,14 +4,10 @@ Thesis!
 .. toctree::
     :caption: Contents:
 
-
     intro
-
-    installation
-    fixed_point
-    basic_usage
-    examples
-    tutorial_register
+    background
+    pyha
+    design_examples
 
 .. bibliography:: bibliography.bib
     :style: unsrt
