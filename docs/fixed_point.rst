@@ -1,29 +1,32 @@
-Fixed-point
-===========
-
-Pyha maps fixed-point operations almost directly to `VHDL fixed point library`_
-
-.. _VHDL fixed point library: https://github.com/FPHDL/fphdl
+Fixed-point type
+----------------
+Fixed point numbers can be to effectively turn floating point models into FPGA.
 
 
-.. py:class:: pyha.common.sfix.Sfix(val=0.0, left=0, right=0, init_only=False, overflow_style='fixed_saturate', round_style='fixed_round')
+.. todo::
+    ref http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.129.5579&rep=rep1&type=pdf
+    https://www.dsprelated.com/showarticle/139.php
 
-    Signed fixed point type, like to_sfixed() in VHDL. Basic arithmetic operations
-    are defined for this class.
+Fixed point numbers are defined to have bits for integer size and fractional size.
+Integer bits determine the maximum size of the number.
+Fractional bits determine the minimum resolution.
 
-    More info: https://www.dsprelated.com/showarticle/139.php
+Main type of Pyha is Sfix, that is an signed fixed point number.
 
-    :param val: initial value
-    :param left: bits for integer part.
-    :param right: bits for fractional part. This is negative number.
-    :param init_only: internal use only
-    :param overflow_style: fixed_saturate(default) or fixed_wrap
-    :param round_style: fixed_round(default) or fixed_truncate
+>>> Sfix(0.123, left=0, right=-17)
+0.1230010986328125 [0:-17]
+>>> Sfix(0.123, left=0, right=-7)
+0.125 [0:-7]
 
-    >>> Sfix(0.123, left=0, right=-17)
-    0.1230010986328125 [0:-17]
-    >>> Sfix(0.123, left=0, right=-7)
-    0.125 [0:-7]
+Overflows and Saturation
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+Practical fixed-point variables can store only a part of what floating point value could. Converting a design from floatin
+to fixed point opens up a possiblity of overflows. That is, when the value grows bigger or smaller than the format
+can reprsent. This condition is known as overflow.
+
+By default Pyha uses fixed-point numbers that have saturaton enabled, meaning that if value goes over maximum
+possible value, it is instead kept at the maximum value. Some examples:
 
     >>> Sfix(2.5, left=0, right=-17)
     WARNING:pyha.common.sfix:Saturation 2.5 -> 0.9999923706054688
@@ -34,33 +37,95 @@ Pyha maps fixed-point operations almost directly to `VHDL fixed point library`_
     >>> Sfix(2.5, left=2, right=-17)
     2.5 [2:-17]
 
-.. py:staticmethod:: set_float_mode(x)
+On the other hand, sometimes overflow can be a feature. For example, when designing free running counters.
+For this usages, saturation can be disabled.
 
-    Can be used to turn off all quantization effects, useful for debugging.
+    >>> Sfix(0.9, left=0, right=-17, overflow_style=fixed_wrap)
+    0.9000015258789062 [0:-17]
 
-    :param x: True/False
-
-..
-    RTD wont support Python 3.6 yet!
-    automodule:: pyha.common.sfix
-    :members: Sfix
+    >>> Sfix(0.9 + 0.1, left=0, right=-17, overflow_style=fixed_wrap)
+    -1.0 [0:-17]
 
 
-Complex numbers
----------------
+Rounding
+~~~~~~~~
 
-Puha supports complex numbers for interfacing means, arithmetic operations are not defined.
-Use :code:`.real` and :code:`.imag` to do maths.
+Pyha support rounding on arithmetic, basically it should be turned off as it costs alot.
+
+.. :todo::
+    ref https://www.embeddedrelated.com/showarticle/1015.php
 
 
-.. py:class:: pyha.common.sfix.ComplexSfix(val=0j, left=0, right=0, overflow_style='fixed_saturate')
+Fixed-point arithmetic and sizing rules
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Arithmetic operations can be run on fixed point variables as usual. Division is not defined as it is almost always
+unneccesary in hardware.
 
-    Use real and imag members to access underlying Sfix elements.
+Library comes with sizing rules in order to guarantee that fixed point operations never overflow.
 
-    :param val:
-    :param left: left bound for both components
-    :param right: right bound for both components
-    :param overflow_style: fixed_saturate(default) or fixed_wrap
+For example consider an fixed point number with format that can represent numbers between [-1, 1):
+    >>> Sfix(0.9, 0, -17)
+    0.9000015258789062 [0:-17]
+
+Now adding two such numbers:
+    >>> Sfix(0.9, 0, -17) + Sfix(0.9, 0, -17)
+    1.8000030517578125 [1:-17]
+
+While this operation should overflow, it did not. Because fixed point library always resizes the output for
+the worst case. In case of addition it always adds one integer bit to accumulate possible overflows.
+
+But note that this system is not very smart, if we would add up such numbers 100 times, it would add 100 bits to the
+integer portion of the number.
+
+The philosophy of fixed point library is to guarantee no precision loss happens during arithmetic operations, in order
+to do this it has to extend the output format. It is designers job to resize numbers back into optimal format after
+operations.
+
+
+Resizing
+~~~~~~~~
+
+Fixed point number can be forced to whatever size by using the resize functionality.
+
+    >>> a = Sfix(0.89, left=0, right=-17)
+    >>> a
+    0.8899993896484375 [0:-17]
+    >>> b = resize(a, 0, -6)
+    >>> b
+    0.890625 [0:-6]
+
+    >>> c = resize(a, size_res=b)
+    >>> c
+    0.890625 [0:-6]
+
+Pyha support automatic resizing for registers. All assignments to registers will be automatically resized to the
+original type of the definition.
+
+.. :todo:: Autoresize should be mentioned somwhere else maybe?
+
+
+Conversion to VHDL
+~~~~~~~~~~~~~~~~~~
+VHDL comes with a strong support for fixed-point types by providing and fixed point package in the standard library.
+More information is about this package is given in :cite:`vhdlfixed`.
+
+In general Sfix type is built in such a way that all the functions map to the VHDL library, so no conversion
+is neccesary.
+
+Another option would have been to implement fixed point compiler on my own, it would provide more flexibility but
+it would take many time + it has t be kept in mind that the VHDL library is already production-tested. Ths mapping to
+VHDL library seemed like the best option.
+
+It limits the conversion to VHDL only, for example Verilog has no fixed point package in standard library.
+
+Complex fixed-point
+-------------------
+Objective of this tool was to simplify model based design and verification of DSP to FPGA models.
+One frequent problem with DSP models was that they commonly want to use complex numbers.
+In order to unify the interface of the model and hardware model, Pyha supports complex numbers for interfacing means,
+arithmetic operations are not defined. That means complex values can be passed arond and registered but arithmetics must
+be done on :code:`.real` and :code:`.imag` elements, that are just Sfix objects.
+
 
     >>> a = ComplexSfix(0.45 + 0.88j, left=0, right=-17)
     >>> a
@@ -77,70 +142,4 @@ Use :code:`.real` and :code:`.imag` to do maths.
     >>> ComplexSfix(a, b)
     -0.50+0.50j [0:-17]
 
-
-
-..
-    RTD wont support Python 3.6 yet!
-    automodule:: pyha.common.sfix
-    :members: ComplexSfix
-
-
-Utility functions
------------------
-Most of the arithmetic functions are defined for Sfix class.
-Sizing rules known from `VHDL fixed point library`_ apply.
-
-.. py:function:: pyha.common.sfix.resize(fix, left_index=0, right_index=0, size_res=None, overflow_style='fixed_saturate', round_style='fixed_round')
-
-    Resize fixed point number.
-
-    :param fix: Sfix object to resize
-    :param left_index: new left bound
-    :param right_index: new right bound
-    :param size_res: provide another Sfix object as size reference
-    :param overflow_style: fixed_saturate(default) or fixed_wrap
-    :param round_style: fixed_round(default) or fixed_truncate
-    :return: New resized Sfix object
-
-    >>> a = Sfix(0.89, left=0, right=-17)
-    >>> a
-    0.8899993896484375 [0:-17]
-    >>> b = resize(a, 0, -6)
-    >>> b
-    0.890625 [0:-6]
-
-    >>> c = resize(a, size_res=b)
-    >>> c
-    0.890625 [0:-6]
-
-
-
-
-
-.. py:function:: pyha.common.sfix.left_index(x: pyha.common.sfix.Sfix)
-
-    Use this in convertible code
-
-    :return: left bound
-
-    >>> a = Sfix(-0.5, 1, -7)
-    >>> left_index(a)
-    1
-
-
-
-.. py:function:: pyha.common.sfix.right_index(x: pyha.common.sfix.Sfix)
-
-    Use this in convertible code
-
-    :return: right bound
-
-    >>> a = Sfix(-0.5, 1, -7)
-    >>> right_index(a)
-    -7
-
-..
-    RTD wont support Python 3.6 yet!
-    automodule:: pyha.common.sfix
-    :members: resize, left_index, right_index
 
