@@ -10,6 +10,7 @@ It has vast support of scientific packages like Numpy for matrix math or  Scipy 
 computing in addition it has many superb plotting libraries.
 Many people see Python scientific stack as a better and free MATLAB.
 
+Free Dev tools.
 .. http://www.scipy-lectures.org/intro/intro.html#why-python
     %https://github.com/jrjohansson/scientific-python-lectures/blob/master/Lecture-0-Scientific-Computing-with-Python.ipynb
 

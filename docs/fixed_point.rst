@@ -143,3 +143,5 @@ be done on :code:`.real` and :code:`.imag` elements, that are just Sfix objects.
     -0.50+0.50j [0:-17]
 
 
+.. :todo::
+    Complex conversion actually not easy due to GHDL limitations.

@@ -126,9 +126,57 @@ Floats can be used as constants only, in coperation with Fixed point class.
 
 
 
+User defined types / Submodules
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+For design reuse it is needed to reuse previously generated designs. Traditional HDLs use entity declarations for
+this purpose. One of the key assumption of these entities is that they all run in parallel. This has some advantages
+and disadvantages. Good thing is that this is the most flexible solution, that is it supports as many clocks and clock
+domains as neccessary. Disadvantage is that in the end much of the VHDL programing comes down to wiring togather different
+entities, and this can be worksome and bugful process.
+
+Another downside is that all of these entities must be simulated as a separate process, this has a cost on simulation speed
+and more severily it makes debugging hard..think about debugging multi-threaded programs.
+
+In contrast to traditional HDLs, Pyha has taken an approach where design reuse is archived trough regular objects.
+This has numerous advantages:
+
+    - Defining a module is as easy as making an class object
+    - Using submodule is as easy as in traditional programming..just call the functions
+    - Execution in same domain, one process design
+
+Result of this design decision is that using submodules is basically the same as in normal programming.
+This decision comes with a severe penalty aswell, namely all the submodules then must work with the same clock signal.
+This essentially limits Pyha designs down to using only one clock. This is a serious constrain for real life systems, but
+for now it can be lived with.
+
+It is possible to get around this by using clock domain crossing interfacec between two Pyha modules.
+
+
+Support for VHDl conversion is straightforward, as Pyha modules are converted into VHDL struct. So having a
+submodule means just having a struct member of that module.
+
+
 
 Lists
 ~~~~~
+All the previously mentioned convertible types can be also used in a list form. Matching term in VHDL vocabulary is
+array. The difference is that Python lists dont have a size limit, while VHDL arrays must be always constrained.
+This is actually not a big problem as the final list size is already known.
+
+VHDL being an very strictly typed language requires an definition of each array type.
+
+For example writing  :code:`l = [1, 2]` in Python would trigger the code shown in :numref:`vhdl-int-arr`, where line 1
+is a new array type definitiaon and a second line defines a variable :code:`a` of this type. Note that the elements
+type is deduced from the type of first element in Python array the size of defined array is as :code:`len(l)-1`.
+
+
+.. code-block:: vhdl
+    :caption: VHDL conversion for integer array
+    :name: vhdl-int-arr
+    :linenos:
+
+    type integer_list_t is array (natural range <>) of integer;
+    l: integer_list_t(0 to 1);
 
 
 Metaclass
@@ -137,9 +185,12 @@ Metaclass
 Conversion to VHDL
 ------------------
 
+Language differences...
 
 Simulation and verification
 ---------------------------
+Essentially this comes downt to being and VHDL simulator inside VHDL simulator. it may sound stupid, but it works for
+simulations and synthesys, so i guess it is not stupid.
 
 Python simulation
 ~~~~~~~~~~~~~~~~~

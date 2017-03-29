@@ -74,6 +74,9 @@ Model based verification!
 Why do it?
 opensource
 
+How far can we go with the oneprocess design? Everyone else uses
+VHDL as a very low level interface.
+
 Scope
 -----
 Focus on LimeSDR board and GnuRadio Pothos, frameworks.
