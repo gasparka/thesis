@@ -19,6 +19,12 @@ HDL related tools in Python
 
 MyHDL
 ~~~~~
+..
+    http://www.jandecaluwe.com/blog/its-a-simulation-language.html
+    myhdl sim language
+
+    https://news.ycombinator.com/item?id=8298610
+    system verilog rant
 
 Migen
 ~~~~~

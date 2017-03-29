@@ -119,6 +119,10 @@ In VHDL type 'boolean' is used. In case of top-module, it is converted to 'std_l
 Floats
 ~~~~~~
 
+Floating point values can be synthesized as constants only if they find a way to become fixed_point type.
+Generally Pyha does not support converting floating point values, however this could be useful because floating point
+values can very much be used in RTL simulation, it could be used to verify design before fixed point conversion.
+
 Floats can be used as constants only, in coperation with Fixed point class.
 
 
@@ -177,28 +181,3 @@ type is deduced from the type of first element in Python array the size of defin
 
     type integer_list_t is array (natural range <>) of integer;
     l: integer_list_t(0 to 1);
-
-
-Metaclass
----------
-
-Conversion to VHDL
-------------------
-
-Language differences...
-
-Simulation and verification
----------------------------
-Essentially this comes downt to being and VHDL simulator inside VHDL simulator. it may sound stupid, but it works for
-simulations and synthesys, so i guess it is not stupid.
-
-Python simulation
-~~~~~~~~~~~~~~~~~
-
-
-RTL simulation
-~~~~~~~~~~~~~~
-
-
-Testing
--------

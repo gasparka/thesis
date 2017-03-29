@@ -8,6 +8,7 @@ Thesis!
     intro
     background
     pyha
+    conversion
     design_examples
 
 .. bibliography:: bibliography.bib
