@@ -9,6 +9,7 @@ Thesis!
     background
     pyha
     conversion
+    design_flow
     design_examples
 
 .. bibliography:: bibliography.bib
