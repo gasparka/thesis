@@ -129,7 +129,7 @@ latex_elements = {
     #
     # 'figure_align': 'htbp',
 }
-latex_elements = { 'classoptions': ',openany,oneside'}
+# latex_elements = { 'classoptions': ',openany,oneside'}
 
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title,
