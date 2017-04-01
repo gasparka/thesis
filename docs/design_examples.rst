@@ -15,7 +15,6 @@ In this case it is FSK receiver. This examples does not go into details.
 
 .. include:: moving_average.rst
 
-
 .. include:: dc_removal.rst
 
 

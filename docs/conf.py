@@ -112,24 +112,76 @@ htmlhelp_basename = 'Pyhadoc'
 
 # -- Options for LaTeX output ---------------------------------------------
 
+# latex_elements = {
+#     # The paper size ('letterpaper' or 'a4paper').
+#     #
+#     # 'papersize': 'letterpaper',
+#
+#     # The font size ('10pt', '11pt' or '12pt').
+#     #
+#     # 'pointsize': '10pt',
+#
+#     # Additional stuff for the LaTeX preamble.
+#     #
+#     # 'preamble': '',
+#
+#     # Latex figure (float) alignment
+#     #
+#     # 'figure_align': 'htbp',
+# }
+# # latex_elements = { 'classoptions': ',openany,oneside'}
+
+
 latex_elements = {
     # The paper size ('letterpaper' or 'a4paper').
-    #
-    # 'papersize': 'letterpaper',
+    'papersize': 'letterpaper',
+
+    # * gets passed to \documentclass
+    # * default options are single sided, double spaced
+    #   you can change them with these options:
+    #   * twoside
+    #   * singlespace
+    # * you might want to omit the list of tables (lot)
+    #   if you use figtable without the :nofig: option
+    'classoptions': ',english,lof,lot',
 
     # The font size ('10pt', '11pt' or '12pt').
-    #
-    # 'pointsize': '10pt',
+    'pointsize': '12pt',
 
-    # Additional stuff for the LaTeX preamble.
+    # # Additional stuff for the LaTeX preamble.
+    # 'preamble': ADDITIONAL_PREAMBLE,
     #
-    # 'preamble': '',
+    # # Additional footer
+    # 'footer': ADDITIONAL_FOOTER,
 
-    # Latex figure (float) alignment
-    #
-    # 'figure_align': 'htbp',
+    # disable font inclusion
+    'fontpkg': '',
+    'fontenc': '',
+
+    # disable fancychp
+    'fncychap': '',
+
+
+    # override maketitle
+    # 'maketitle': '\makefrontmatter',
+    # 'tableofcontents': '',
+
+    # disable index printing
+    'printindex': '',
 }
-# latex_elements = { 'classoptions': ',openany,oneside'}
+
+
+latex_additional_files = [
+    '/home/gaspar/git/thesis/tex/puthesis.cls',
+    '/home/gaspar/git/thesis/tex/thesis.cls',
+    # 'tex/preamble._tex',
+    # 'tex/footer._tex',
+    # '/home/gaspar/git/thesis/tex/sphinx.sty',
+    # 'tex/Makefile',
+    # 'tex/refstyle.bst',
+    # 'tex/ccicons.sty',
+]
+
 
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title,

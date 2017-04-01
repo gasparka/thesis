@@ -23,7 +23,7 @@ component on the hermonic signal.
     Basic DC removal using moving averager :cite:`dcremoval_lyons`
 
 In :cite:`dcremoval_lyons` Rick Lyons investigates the feasability of using moving average algorithm as a DC removal
-circuit, as shown on  :numref:`_dc_removal_b`. This structure has a few problems, first of that it forces to use
+circuit, as shown on  :numref:`dc_removal_b`. This structure has a few problems, first of that it forces to use
 moving averager with length not power of 2, that would significally complicate the hardware implmenentation.
 
 
@@ -35,7 +35,7 @@ moving averager with length not power of 2, that would significally complicate t
 
     Frequency response of DC removal circuit with Moving average length 31
 
-Second problem is seen on :numref:`_dc_single_freqz`. Total ripple of the filter is up to 3 dB, that is 2 times of a difference.
+Second problem is seen on :numref:`dc_single_freqz`. Total ripple of the filter is up to 3 dB, that is 2 times of a difference.
 
 
 .. _dc_removal_multi:
@@ -45,7 +45,7 @@ Second problem is seen on :numref:`_dc_single_freqz`. Total ripple of the filter
 
     Removing DC with chained moving averagers :cite:`dcremoval_lyons`
 
-Much better performance can be arcieved by chaining multiple stages of moving averaging, as shown in :numref:`_dc_removal_multi`.
+Much better performance can be arcieved by chaining multiple stages of moving averaging, as shown in :numref:`dc_removal_multi`.
 Chaining them up also helps the power of 2 problem.
 
 
@@ -56,7 +56,7 @@ Chaining them up also helps the power of 2 problem.
 
     Frequency response of DC removal, 4 cascaded moving averagers
 
-New frequency response can be observer on :numref:`_dc_quad_freqz`. It is clear that the passband ripple has significantly reduced.
+New frequency response can be observer on :numref:`dc_quad_freqz`. It is clear that the passband ripple has significantly reduced.
 In addition the cutoff is sharper.
 
 
@@ -64,7 +64,7 @@ In addition the cutoff is sharper.
 
 Implementation with Pyha
 ~~~~~~~~~~~~~~~~~~~~~~~~
-Implementation is rather straight forward, as shown on :numref:`_dc_removal_multi`, algorithm must run
+Implementation is rather straight forward, as shown on :numref:`dc_removal_multi`, algorithm must run
 input signal over multiple moving average filters (that we have already implemented in previous chapter) and then substract
 the filter chain output of the delayed input signal.
 
