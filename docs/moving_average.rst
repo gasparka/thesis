@@ -217,7 +217,7 @@ Conversion is done as a part of running the unit-test with :code:`SIM_RTL` mode.
 
 
 :numref:`mavg_vhdl_main` shows the significant part of the conversion process. As seen it looks very similiar
-to the Python function. Full output of the conversion is can be seen at repo [#f1]_.
+to the Python function. Full output of the conversion is can be seen at repo [#mavgrepo]_.
 
 
 
@@ -243,7 +243,7 @@ RTL of this tutorial:
 as to be shift register, red part contains all the logic, as expected two adders are requires. Finally green part is the
 output register.
 
-Quartus project can be seen at repo [#f1]_.
+Quartus project can be seen at repo [#mavgrepo]_.
 
 
 Resource usage
@@ -268,6 +268,4 @@ Synhesizing with Quartus gave following resorce usage:
 
 In additon, maximum reported clock speed is 222 MHz, that is over the 200 MHz limit of Cyclone IV device :cite:`cycloneiv`.
 
-.. rubric:: Footnotes
-
-.. [#f1] https://github.com/petspats/thesis/tree/master/examples/moving_average/conversion
+.. [#mavgrepo] https://github.com/petspats/thesis/tree/master/examples/moving_average/conversion

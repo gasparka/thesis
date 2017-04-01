@@ -137,7 +137,7 @@ by integrating with Intel Quartus software.
 it uses averages with length 4 to make RTL plottable.
 There are 4 averages in total, leftover logic is the delay line and the final substractor.
 
-Quartus project can be seen at repo [#f1]_.
+Quartus project can be seen at repo [#dcrepo]_.
 
 
 Resource usage
@@ -153,9 +153,9 @@ Synhesizing with Quartus gave following resorce usage:
 
 Maximum reported clock speed is 188 MHz ( standard compilation).
 
-.. rubric:: Footnotes
 
-.. [#f1] https://github.com/petspats/thesis/tree/master/examples/dc_removal/conversion
+.. [#dcrepo] https://github.com/petspats/thesis/tree/master/examples/dc_removal/conversion
+
 
 
 
