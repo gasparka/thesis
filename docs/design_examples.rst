@@ -209,6 +209,34 @@ Conversion and RTL simulations
 
 Conversion is done as a part of running the unit-test with :code:`SIM_RTL` mode.
 
+
+.. code-block:: vhdl
+    :caption: Main function of converted VHDL sources
+    :name: mavg_vhdl_main
+
+
+    procedure main(self:inout self_t; x: sfixed(0 downto -17); ret_0:out sfixed(0 downto -17)) is
+
+    begin
+
+        -- add new element to shift register
+        self.\next\.shift_register := x & self.shift_register(0 to self.shift_register'high-1);
+
+        -- calculate new sum
+        self.\next\.sum := resize(self.sum + x - self.shift_register(self.shift_register'length-1), 2, -17, fixed_wrap, fixed_truncate);
+
+        -- divide sum by amount of window_len
+        self.\next\.\out\ := resize(self.sum sra self.window_pow, 0, -17, fixed_wrap, fixed_truncate);
+        ret_0 := self.\out\;
+        return;
+    end procedure;
+
+
+:numref:`mavg_vhdl_main` shows the significant part of the conversion process. As seen it looks very similiar
+to the Python function. Full output of the conversion is can be seen at repo [#f1]_.
+
+
+
 GATE level simulation
 ^^^^^^^^^^^^^^^^^^^^^
 
@@ -219,7 +247,46 @@ Running the GATE simulation, will produce ‘quartus’ directory in dir_path. O
 
 RTL of this tutorial:
 
+.. _label:
+.. figure:: img/rtl_annotations.png
+    :align: center
+    :figclass: align-center
 
+    RTL view of moving average (Intel Quartus RTL viewer)
+
+
+:numref:`label` shows the synthesized result of this work. The blue box shows the part of the logic that was inferred
+as to be shift register, red part contains all the logic, as expected two adders are requires. Finally green part is the
+output register.
+
+Quartus project can be seen at repo [#f1]_.
+
+
+Resource usage
+^^^^^^^^^^^^^^
+
+All the synthesis tests are to be run on the EP4CE40F23C8N chip by Altera. It is from Cyclone IV family.
+In todays standard this is quite an mediocer chip, behind two generations.
+It was chosen because BladeRF and LimeSDR use this chip. It costs about 60 euros (Mouser)
+
+Some features of this FPGA :cite:`cycloneiv`:
+
+    - 39,600 logic elements
+    - 1,134Kbits embedded memory
+    - 116 embedded 18x18 multipliers
+    - 4 PLLs
+
+Synhesizing with Quartus gave following resorce usage:
+
+    - Total logic elements: 94 / 39,600 ( < 1 % )
+    - Total memory bits:    54 / 1,161,216 ( < 1 % )
+    - Embedded multipliers: 0 / 232 ( 0 % )
+
+In additon, maximum reported clock speed is 222 MHz, that is over the 200 MHz limit of Cyclone IV device :cite:`cycloneiv`.
+
+.. rubric:: Footnotes
+
+.. [#f1] https://github.com/petspats/thesis/tree/master/examples/moving_average/conversion
 
 
 
