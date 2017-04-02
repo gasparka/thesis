@@ -168,6 +168,8 @@ latex_elements = {
 
     # disable index printing
     'printindex': '',
+
+    'figure_align': 'htbp',
 }
 
 

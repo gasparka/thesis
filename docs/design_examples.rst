@@ -17,15 +17,7 @@ In this case it is FSK receiver. This examples does not go into details.
 
 .. include:: dc_removal.rst
 
+.. include:: fsk_demodulator.rst
 
 
-FSK receiver
-------------
-Glue blocks togather...needs explanation...
-
-
-
-
-`Pyhacores <https://github.com/petspats/pyhacores>`__ is a repository collecting cores implemented in Pyha,
-for example it includes CORDIC, FSK modulator and FSK demodulator cores.
 
