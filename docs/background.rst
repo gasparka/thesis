@@ -194,6 +194,7 @@ MyHDL works with data-flow paradigm, not good, not good.
 
 Example
 ^^^^^^^
+
 Here is a simple example of describing and register with MyHDL.
 :numref:`myhdl-register` shows an register code in MyHDL. One thing to note is that it uses Python
 function as a base unit and :code:`always` blocks, that all is very similiar to Verilog language, clearly
@@ -281,6 +282,96 @@ blog post about how MyHDL is 'simulation-oriented language' :cite:`jan_sim`.
 
 Migen
 ~~~~~
+Migen is a Python-based tool that aims at automating further the VLSI design process.
+Migen makes it possible to apply modern software concepts such as object-oriented programming
+and metaprogramming to design hardware. This results in more elegant and easily maintained
+designs and reduces the incidence of human errors. :cite:`migenweb`
+
+Despite being faster than schematics entry, hardware design with Verilog and VHDL remains tedious
+and inefficient for several reasons. The event-driven model introduces issues and manual coding
+that are unnecessary for synchronous circuits, which represent the lion's share of today's
+logic designs. Counter- intuitive arithmetic rules result in steeper learning curves and
+provide a fertile ground for subtle bugs in designs. Finally, support for procedural
+generation of logic (metaprogramming) through "generate" statements is very limited and
+restricts the ways code can be made generic, reused and organized. :cite:`migenweb`
+
+To address those issues, we have developed the Migen FHDL library that replaces the e
+vent-driven paradigm with the notions of combinatorial and synchronous statements,
+has arithmetic rules that make integers always behave like mathematical integers,
+and most importantly allows the design's logic to be constructed by a Python program.
+This last point enables hardware designers to take
+advantage of the richness of the Python language -
+object oriented programming, function parameters, generators, operator overloading, libraries,
+etc. - to build well organized, reusable and elegant designs. :cite:`migenweb`
+
+Other Migen libraries are built on FHDL and provide various tools such as a system-on-chip
+ interconnect infrastructure, a dataflow programming system, a more traditional high-level
+  synthesizer that compiles Python routines into state machines with datapaths,
+  and a simulator that allows test benches to be written in Python. :cite:`migenweb`
+
+    - Python as a meta-language for HDL
+    - Restricted to locally synchronous circuits (multiple clock domains are supported)
+    - Designs are split into:
+        - synchronous statements
+        - combinatorial statements
+    - Statements expressed using nested Python objects
+    :cite:`migenpresentation`
+
+Has some advanced features like BUS support:
+
+    - Wishbone1
+    - SRAM-like CSR
+    - DFI 2
+    - LASMI
+
+:cite:`migenpresentation`
+
+Able to generate hardware abstraction layer in C, for bus usage
+
+The base idea is very similiar to of Pyha, to get rid of dataflow/event driven modeling.
+It has a very strange way of programming. Pyha has clear edge here.
+Simulation in Python support..looks weak, it relies more on Verilog simulator
+
+Many systems build with this system. Now has more github stars then MyHDL.
+
+Example
+^^^^^^^
+
+:numref:`migen-sim` showns a LED blinker module implemented in Migen, it consists of a counter
+that when finished toggles the LED state.
+
+As written before, Migen separates hardware design into combinatory and synch parts. What can be
+seen is kind of a metaprogramming. That is in migen one cannot write :code:`counter = period` but
+have to write :code:`counter.eq(period)`, same goes for if statements etc. That is the price you
+have to pay in order to use Migen.
+
+Much bigger problem of this approach is that the hardware part of the code is basically
+not debuggable. Migen supports some kind of Python simulator but it is not much better than MyHDL one.
+
+.. code-block:: python
+    :caption: Register in MyHDL :cite:`migenweb`
+    :name: migen-sim
+
+    class Blinker(Module):
+        def __init__(self, led, maxperiod):
+            counter = Signal(max=maxperiod+1)
+            period = Signal(max=maxperiod+1)
+            self.comb += period.eq(maxperiod)
+            self.sync += If(counter == 0,
+                    led.eq(˜led),
+                    counter.eq(period)
+                ).Else(
+                    counter.eq(counter - 1)
+                )
+
+
+Problems with MiGen
+^^^^^^^^^^^^^^^^^^^
+Migen is awesome but it also has some problems.
+
+    - Simulation is not easy,
+    - Not debuggable in Python domain
+
 
 CocoTb
 ~~~~~~
