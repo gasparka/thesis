@@ -175,6 +175,103 @@ gives an overview of previous works and states how current work differs from the
 
 MyHDL
 ~~~~~
+MyHDL is Python to VHDL/Verilog converter, first release dating back to 2003. It turns
+Python into a hardware description and verification language,
+providing hardware engineers with the power of the Python ecosystem.:cite:`myhdlweb`
+
+MyHDL has been used in the design of multiple ASICs and numerious FPGA projects.:cite:`myhdlfelton`
+
+
+MyHDL, like VHDL and Verilog,is a hardware description language. MyHDL does not include “IP” or cores directly :cite:`myhdlfelton`.
+
+MyHDL	is	not	a	tool	to	take	arbitrary
+Python code and	create	working	hardware [7].		MyHDL	is similar	to	existing	HDLs;
+the	convertible	subset of	the	language	describes	hardware	behavior at	the	Register
+Transfer	Level	(RTL)	of	abstraction.	 Clearly, this	indicates	MyHDL	is	not	a	HighLevel
+Synthesis	(HLS)	language. :cite:`myhdlfelton`
+
+MyHDL works with data-flow paradigm, not good, not good.
+
+Example
+^^^^^^^
+Here is a simple example of describing and register with MyHDL.
+:numref:`myhdl-register` shows an register code in MyHDL. One thing to note is that it uses Python
+function as a base unit and :code:`always` blocks, that all is very similiar to Verilog language, clearly
+this infers a process with separate clock and reset signals.
+
+Another thing to note is the assignment of 'q' value. It uses the 'next' value. Pyha steals this.
+
+
+.. code-block:: python
+    :caption: Register in MyHDL :cite:`myhdlweb`
+    :name: myhdl-register
+
+    from myhdl import *
+
+    def dffa(q, d, clk, rst):
+
+        @always(clk.posedge, rst.negedge)
+        def logic():
+            if rst == 0:
+                q.next = 0
+            else:
+                q.next = d
+
+        return logic
+
+:numref:`myhdl-sim` shows the code required to simulate the design. It is not important to understand
+what goes on, but to see that simulating in MyHDL is not simple. It requires the user to handle clock
+and reset etc. Dataflow principles even in testbench.
+
+.. code-block:: python
+    :caption: Register in MyHDL :cite:`myhdlweb`
+    :name: myhdl-sim
+
+    from random import randrange
+
+    def test_dffa():
+
+        q, d, clk, rst = [Signal(bool(0)) for i in range(4)]
+
+        dffa_inst = dffa(q, d, clk, rst)
+
+        @always(delay(10))
+        def clkgen():
+            clk.next = not clk
+
+        @always(clk.negedge)
+        def stimulus():
+            d.next = randrange(2)
+
+        @instance
+        def rstgen():
+            yield delay(5)
+            rst.next = 1
+            while True:
+                yield delay(randrange(500, 1000))
+                rst.next = 0
+                yield delay(randrange(80, 140))
+                rst.next = 1
+
+        return dffa_inst, clkgen, stimulus, rstgen
+
+    def simulate(timesteps):
+        tb = traceSignals(test_dffa)
+        sim = Simulation(tb)
+        sim.run(timesteps)
+
+    simulate(20000)
+
+Problems with MyHDL
+^^^^^^^^^^^^^^^^^^^
+
+    - Writing testbenches is hard, dataflow is bad, have to handle clock and reset
+    - Conversion very limited (jan rant)
+Convertable subset is extreamly limited compared to the simulatable subset. Many users (including me)
+have been dissapointed about this, this has even led the author of MyHDL, Jan Decaluwe to write an
+blog post about how MyHDL is 'simulation-oriented language' :cite:`jan_sim`.
+
+
 ..
     http://www.jandecaluwe.com/blog/its-a-simulation-language.html
     myhdl sim language

@@ -4,6 +4,14 @@ This chapter examines the feasability and means of converting Python code to VHD
 
 What about verilog?
 
+While other high-level tools decide to use VHDL/Verilog as low level conversion target.
+Pyha goes other way around, as shown by the Gardner study, VHDL language can be used
+with quite high level progrmaming constructs. Pyha tries to take advantage of this.
+Disadvantage is that it can be only converted to VHDL. Advantages are numerous:
+
+    - Similiar code in VHDL and Python
+    - Clean conversion output
+    - ?
 
 Python vs VHDL
 --------------
