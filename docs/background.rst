@@ -305,9 +305,9 @@ object oriented programming, function parameters, generators, operator overloadi
 etc. - to build well organized, reusable and elegant designs. :cite:`migenweb`
 
 Other Migen libraries are built on FHDL and provide various tools such as a system-on-chip
- interconnect infrastructure, a dataflow programming system, a more traditional high-level
-  synthesizer that compiles Python routines into state machines with datapaths,
-  and a simulator that allows test benches to be written in Python. :cite:`migenweb`
+interconnect infrastructure, a dataflow programming system, a more traditional high-level
+synthesizer that compiles Python routines into state machines with datapaths,
+and a simulator that allows test benches to be written in Python. :cite:`migenweb`
 
     - Python as a meta-language for HDL
     - Restricted to locally synchronous circuits (multiple clock domains are supported)
@@ -373,5 +373,36 @@ Migen is awesome but it also has some problems.
     - Not debuggable in Python domain
 
 
-CocoTb
+Cocotb
 ~~~~~~
+
+EDAPLAYGROUND
+Cocotb is a COroutine based COsimulation TestBench environment for verifying VHDL/Verilog RTL
+using Python. :cite:`cocotbdoc`
+
+Unlike MyHDL and Migen, Cocotb is not a Python to HDL converter, instead it is meant to simulate
+VHDL/Verilog designs.
+
+A typical cocotb testbench requires no additional RTL code.
+The Design Under Test (DUT) is instantiated as the toplevel in the simulator without
+any wrapper code. Cocotb drives stimulus onto the inputs to the DUT
+(or further down the hierarchy) and monitors the outputs directly from Python. :cite:`cocotbdoc`
+
+A test is simply a Python function. At any given time either the simulator is
+advancing time or the Python code is executing. The yield keyword is used to indicate
+when to pass control of execution back to the simulator. A test can spawn multiple coroutines,
+allowing for independent flows of execution.
+
+
+
+Problems with Cocotb
+^^^^^^^^^^^^^^^^^^^^
+
+Major problem with Cocotb is that the tests are to be written to test the HDL part only. Often
+it happens that there is also some higher level model that could use unit-testing. With Cocotb
+one would need to develope two sets of tests, one for the model and another for HDL, this situation
+is bound to end badly.. unsynchronzed model and HDL.
+
+Minor headace is that Cocotb runs Python test file started from C program, meaning that for debugging
+one has to use remote debugger, that is not very convenient.
+
