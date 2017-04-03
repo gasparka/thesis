@@ -16,6 +16,7 @@ Thesis!
     conversion
     design_flow
     design_examples
+    conclusion
 
 .. bibliography:: bibliography.bib
     :style: unsrt

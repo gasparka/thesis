@@ -4,6 +4,9 @@ Design flow
 This chapter aims to investigate how modern software development techniques coulde be used
 in design of hardware.
 
+While MyHDL brings development to the Python world, it still requires the make of testbenches
+and stuff. Pyha aimst to simplify this by providing higl level simulation functions.
+
 Convetional design flow
 -----------------------
 
