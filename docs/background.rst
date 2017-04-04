@@ -406,3 +406,70 @@ is bound to end badly.. unsynchronzed model and HDL.
 Minor headace is that Cocotb runs Python test file started from C program, meaning that for debugging
 one has to use remote debugger, that is not very convenient.
 
+
+Other HDLS
+----------
+
+This thesis focuses on the Python to VHDL conversion. There exsist however many more tools that
+instead of Python convert something else to VHDL/Verilog.
+
+Chisel
+^^^^^^
+
+In this paper we introduce Chisel , a new hardware construction language
+that supports advanced hardware design using highly parameterized generators
+and layered domain-specific hardware languages.  By embedding Chisel in the Scala
+programming language, we raise the level of hardware design ab straction by providing
+concepts including object orientation, functional programming, parameterized types,
+and type inference.  Chisel can generate a high-speed C++-based cycle-accurate
+software simulator, or low-level Verilog designed to map to either FPGAs or to a standard
+ASIC flow for synthesis.  This paper presents Chisel, its embedding in Scala, hardware examples,
+ and results for C++ simulation, Verilog emulation and ASIC synthesis. :cite:`chisel`
+
+Now there is a new version called Chisel3, that seemingly has not gained much ground yet.
+
+Also there is a spinoff project called SpinalHDL that tries to fix many shortcomings of Chisel.
+No sim support?
+
+These are converters written in Scala. They seem to be very feature rich. Chisel developed by University of California.
+Big acceptance on writing RISC instruction set processors.
+
+Clash
+^^^^^
+
+CλaSH (pronounced ‘clash’) is a functional hardware description language that borrows
+both its syntax and semantics from the functional programming language Haskell.
+It provides a familiar structural design approach to both combinational and synchronous
+sequential circuits. The CλaSH compiler transforms these high-level descriptions to low-level
+synthesizable VHDL, Verilog, or SystemVerilog.
+
+Features of CλaSH:
+
+    - Strongly typed, but with a very high degree of type inference, enabling both safe and fast prototyping using concise descriptions.
+    - Interactive REPL: load your designs in an interpreter and easily test all your component without needing to setup a test bench.
+    - Compile your designs for fast simulation.
+    - Higher-order functions, in combination with type inference, result in designs that are fully parametric by default.
+    - Synchronous sequential circuit design based on streams of values, called Signals, lead to natural descriptions of feedback loops.
+    - Multiple clock domains, with type safe clock domain crossing.
+    - Template language for introducing new VHDL/(System)Verilog primitives.
+:cite:`clash`
+
+
+OpenCL
+^^^^^^
+.. https://www.altera.com/content/dam/altera-www/global/en_US/pdfs/literature/po/ps-opencl.pdf
+
+
+C-based tools
+^^^^^^^^^^^^^
+
+VivadoHLS
+^^^^^^^^^
+.. https://www.xilinx.com/products/design-tools/vivado/integration/esl-design.html
+https://www.xilinx.com/support/documentation/sw_manuals/xilinx2016_1/ug902-vivado-high-level-synthesis.pdf
+
+
+Matlab, simulink, LabView
+^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Todo. maybe skip?
