@@ -196,8 +196,8 @@ latex_additional_files = [
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-    (master_doc, 'Pyha.tex', 'Pyha',
-     'Gaspar Karm', 'manual'),
+    (master_doc, 'Pyha.tex', 'Thesis',
+     'Gaspar Karm', 'puthesis'),
 ]
 
 # -- Options for manual page output ---------------------------------------

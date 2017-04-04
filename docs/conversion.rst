@@ -1,5 +1,5 @@
-Conversion
-==========
+Conversion to Python
+====================
 This chapter examines the feasability and means of converting Python code to VHDL.
 
 What about verilog?
@@ -295,27 +295,9 @@ Extensions..wehn you can do more in python domain.
 
 Feasability of converting Python to VHDL
 
-Simulation and verification
----------------------------
-Make separate chapter for testing and verification? Basics can be described here.
-Requrements...want RTL sim, GATE sim, in loop etc
 
-Implementation of the simulation code relies heavily on the signal assignment semantics.
-Basically code writes to the 'next' element and thats it. After the top-level function call,
-all the 'next' values must be propagated into the original registers. This process is basically an
-clock tick
+Conclusions
+-----------
 
-Essentially this comes downt to being and VHDL simulator inside VHDL simulator. it may sound stupid, but it works for
-simulations and synthesys, so i guess it is not stupid.
-
-Python simulation
-~~~~~~~~~~~~~~~~~
-
-
-RTL simulation
-~~~~~~~~~~~~~~
-
-
-Testing
--------
+This chapter showed how Python OOP code can be converted into VHDL OOP code.
 

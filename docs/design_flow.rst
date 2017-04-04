@@ -56,6 +56,13 @@ Show how this can be used.
 
 
 
+Conclusion
+----------
+
+It is clear that Pyha provides many conveneince functions to greatly simplyfy the testing of
+model based designs.
+
+
 
 
 
