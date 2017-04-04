@@ -13,7 +13,6 @@ Thesis!
     intro
     background
     vhdl_extensions
-    pyha
     conversion
     design_flow
     design_examples
