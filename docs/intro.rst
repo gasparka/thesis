@@ -1,6 +1,9 @@
 Introduction
 ============
 
+While other high level tools convert to very low-level VHDL, then Pyha takes and different approach by
+first developing an feasible model in VHDL and then using Python to get around VHDL ugly parts.
+
 
 Essentially this is a Python to VHDL converter, with a specific focus on implementing DSP systems.
 

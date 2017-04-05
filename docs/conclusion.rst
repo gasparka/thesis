@@ -16,7 +16,10 @@ Lastly we showed that Pyha is already usable to convert some mdeium complexity d
 FSK demodulator, that was used on Phantom 2 stuff..
 
 
+.. todo:: Moving VHDL programmers to this tool? problems?
 
+Summary
+-------
 
 Limitations/future work
 -----------------------

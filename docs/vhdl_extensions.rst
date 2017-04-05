@@ -103,6 +103,7 @@ First reaction is probably that this thing is not synthesizeable.
 Here we show that this simple example is already good enough to synthesize combinatory logic.
 
 .. todo:: Example of synthesisying some combinatory stuff
+    Comb class is quite useless actually..maybe rather show syth function with logic?
 
 One thing to note is that the object side of this example is quite useless, we can use it only
 to store constants.
@@ -163,6 +164,7 @@ Author of MyHDL package has written a good writeup on how it handles signal assi
 they use the same 'next' idiom. Even Pong P. Chu, author of one of the best VHDL books, teaches the
 reader to write registers with two variables, one for the current value and another one for 'next'.
 
+.. todo:: Signal assignment cannot be even used on variables!
 
 Using an signal assigment inside a clocked process always infers a register.
 
@@ -171,16 +173,114 @@ Getting rid of signal assignments
 ---------------------------------
 
 As the final goal of this project is to convert Python into VHDL, signal assigment is a major problem
-because
+because it cannot easily be mapped to Python.
+
 We would like to save registers as our class object values, and to get rid of signal assignment.
 
 Much better way to work with registers is to embrace the style popularized by MyHDL, that is signal
 is an object that has a current value and 'next' value.
 
+One way to mimic the signal assignment with variables is to create to sets of variables for each signal.
+One for the current value and nother one for 'next'.
+
+.. code-block:: vhdl
+    :caption: VHDl signal with next
+    :name: better_vhdl_signal
+
+    type next_t is record
+        reg: integer;
+    end record;
+
+    type self_t is record
+        reg: integer;
+        nexts: next_t;
+    end record;
+
+That would allow us to write code like:
+
+.. code-block:: vhdl
+    :caption: VHDl signal with next
+    :name: better_vhdl_signal
+
+    variable var : self_t;
+
+    -- set next value of register to be current value
+    var.nexts.reg := var.reg;
+
+
+Problem is that assuming we have clocked process, somone has to update the register value from 'next'
+to correct value. With signal assignement this is done by VHDL.
+
+
+Simulating VHDL simulator inside VHDL simulator
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+In order to update the register values after each clock tick, we have to write a function to do it and
+need to manually call it.
+
+.. code-block:: vhdl
+    :caption: VHDl signal with next
+    :name: better_vhdl_signal
+
+    procedure update_self(self: inout self_t) is
+    begin
+        self.coef := self.\next\.coef;
+        self.mul := self.\next\.mul;
+        self.sum := self.\next\.sum;
+    end procedure;
+
+In general adding a function that handles all the registers in the class is not hard, but somone has to call it
+and stuff.
+
+
+Initial register values
+~~~~~~~~~~~~~~~~~~~~~~~
+
+Another problem with the class model is that we lack a way to define register initial values.
+In VHDL structures can be initialized while defining the variable, like
+:code:`variable name: type := (elem1 => 1, elem2 => 2);`.
+
+Problem with this method is that it gets complex very quickly, think about structure that has a member
+of another structure, that has some array..etc.
+
+Alternative is to require that each 'class' provides an 'reset' function that writes correct values
+into the registers.
+
+.. code-block:: vhdl
+    :caption: VHDl signal with next
+    :name: better_vhdl_signal
+
+    procedure \_pyha_reset_self\(self: inout self_t) is
+    begin
+        self.\next\.coef := 0;
+        self.\next\.mul := 0;
+        self.\next\.sum := 0;
+        \_pyha_update_self\(self);
+    end procedure;
+
+Here we write initial values to 'next' values and then use the predefined update function to transfer
+them to current values aswell.
+
+Advantages
+----------
+
+It may look like a major overkill? Same thing with signal assignments so easy?
+
+.. todo:: compare the oop way vs signal assignments way. Is it worth it?
+
+Every register of the model is kept in record, it is easy to create shadow registers for the whole module.
+Everything is concurrent, can debug and understand.
+
 
 Synthesisability
 ----------------
 
+
+
+Multiple clock-domains
+----------------------
+
+This model has no restrictions on multiple clock domains??
 
 
 Simulation and verification
