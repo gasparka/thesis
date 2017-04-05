@@ -7,23 +7,27 @@ from pyha.simulation.simulation_interface import debug_assert_sim_match, SIM_GAT
 
 class Simple(HW):
     def __init__(self):
-        self.coef = 0
+        self.coef = 123
         self.mul = 0
-        self.sum = 0
+        self.acc = 0
 
-    def main(self, a, b):
-        self.next.mul = a * self.coef
-        self.next.sum = self.mul + b
-        return self.sum
+    def main(self, a):
+        print(self.mul)
+        print(self.acc)
+        # self.next.mul = 1
+        aa = self.acc + self.mul
+        # self.next.acc = self.acc + self.mul
+        print(aa)
+        return self.acc
 
 
 def test_basic():
     from pyha.simulation.simulation_interface import assert_sim_match, SIM_HW_MODEL, SIM_RTL
     dut = Simple()
-    inputs = [[1, 2], [3,4]]
+    inputs = [1, 2]
 
-    assert_sim_match(dut, None, *inputs,
-                     simulations=[SIM_HW_MODEL, SIM_RTL, SIM_GATE],
+    assert_sim_match(dut, None, inputs,
+                     simulations=[SIM_HW_MODEL, SIM_RTL],
                      rtol=1e-4,
                      dir_path='/home/gaspar/git/thesis/playground')
 

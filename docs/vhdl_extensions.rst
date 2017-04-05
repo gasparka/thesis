@@ -1,8 +1,34 @@
-VHDL extensions (better name required)
-======================================
+VHDL as intermediate language
+=============================
 
-Major goal of this project is to support object-oriented hardware design.Goal is to provide simple object support, advanced features like inherintance and overloadings are not considerted
-at this moment.
+
+.. code-block:: python
+    :caption: Multiply-accumulate implemented in Pyha
+    :name: mac-pyha
+
+    class MultiplyAccumulate(HW):
+        def __init__(self):
+            self.coef = 123
+            self.mul = 0
+            self.acc = 0
+
+        def main(self, a):
+            self.next.mul = a * self.coef
+            self.next.acc = self.acc + self.mul
+            return self.acc
+
+.. note:: In order to keep examples simple, only :code:`integer` types are used in this section.
+
+In this section we try to do things the other way around, that is adapt VHDL to Python.
+
+Now
+
+    - There may be more user defined functions
+    - Object may be have subobjects
+    - Subobjects may have their own subobjects, maybe even a list of objects.
+
+Major goal of this project is to support object-oriented hardware design.Goal is to provide simple object
+support, advanced features like inherintance and overloadings are not considerted at this moment.
 
 Lay down a common ground on which VHDL and Python coold be connected.
 
@@ -39,7 +65,6 @@ way to do it, that is inherited from ADA.
 
 VHDL supports 'packages' to group common types and functions into one namespace. Package in VHDL
 must contain an declaration and body (this is the same concept as header and source files in C).
-
 
 
 .. code-block:: vhdl
