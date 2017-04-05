@@ -1,5 +1,5 @@
-VHDL extensions
-===============
+VHDL extensions (better name required)
+======================================
 
 Major goal of this project is to support object-oriented hardware design.Goal is to provide simple object support, advanced features like inherintance and overloadings are not considerted
 at this moment.

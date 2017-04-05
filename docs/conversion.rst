@@ -1,5 +1,6 @@
-Conversion to Python
-====================
+Switching from VHDL to Python
+=============================
+
 This chapter examines the feasability and means of converting Python code to VHDL.
 
 What about verilog?
