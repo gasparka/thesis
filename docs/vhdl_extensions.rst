@@ -1,9 +1,55 @@
 VHDL as intermediate language
 =============================
 
+This chapter aims
+
+Todo
+
+    - What features do i want to support?
+    - Why do it?
+
+In this section we try to do things the other way around, that is adapt VHDL to Python.
+
+Major goal of this project is to support object-oriented hardware design. Goal is to provide simple object
+support, advanced features like inherintance and overloadings are not considerted at this moment.
+
+Lay down a common ground on which VHDL and Python coold be connected.
+
+While other HDL converters use VHDL/Verilog as low level conversion target.
+Pyha goes other way around, as shown by the Gardner study :cite:`structvhdl_gaisler`, VHDL language can be used
+with quite high level progrmaming constructs. Pyha tries to take advantage of this.
+
+This chapter tries to enchance the VHDL language with some basic Python elements in order
+to provide some common ground for the conversion task.
+
+Background
+----------
+
+What is IR, how VHDl has been used before?
+What is going to be different here?
+Chisel and FIRRTL.
+Basesd on gaisler stydy try to do differently.
+
+As stated by the goal of this work, converting Object-oriented designs into HDL.
+While it may seem that VHDL has no support for OOP, it is actually not true.
+
+There have been previous study regarding OOP in VHDL before. In :cite:`Benzakki1997` proposal was
+made to extend VHDL language with OOP semantics, this effort ended with development of
+OO-VHDL :cite:`oovhdl`, that is VHDL preprocessor that could turn proposend extensions to standard
+VHDL. This work was done in ~2000, current status is unknown, it certanly did not make it to the
+VHDL standard.
+
+While the :cite:`oovhdl` tried to extend VHDLs data-flow side of OOP, there actually exsists another
+way to do it, that is inherited from ADA.
+
+
+Problem statement
+-----------------
+
+What do we want from this IR? What does it have to support?
 
 .. code-block:: python
-    :caption: Multiply-accumulate implemented in Pyha
+    :caption: Pipelined multiply-accumulate(MAC) implemented in Pyha
     :name: mac-pyha
 
     class MultiplyAccumulate(HW):
@@ -30,12 +76,6 @@ VHDL as intermediate language
 
 
 
-Todo
-
-    - What features do i want to support?
-    - Why do it?
-
-In this section we try to do things the other way around, that is adapt VHDL to Python.
 
 Now
 
@@ -44,27 +84,14 @@ Now
     - Subobjects may have their own subobjects, maybe even a list of objects.
     - Easy to map to Python, data model goes to stcuture and all methods just convert. profit
 
-Major goal of this project is to support object-oriented hardware design.Goal is to provide simple object
-support, advanced features like inherintance and overloadings are not considerted at this moment.
-
-Lay down a common ground on which VHDL and Python coold be connected.
-
-While other HDL converters use VHDL/Verilog as low level conversion target.
-Pyha goes other way around, as shown by the Gardner study:cite:`structvhdl_gaisler`, VHDL language can be used
-with quite high level progrmaming constructs. Pyha tries to take advantage of this.
-
-This chapter tries to enchance the VHDL language with some basic Python elements in order
-to provide some common ground for the conversion task.
-
-Disadvantage is that it can be only converted to VHDL. Advantages are numerous:
-
-    - Similiar code in VHDL and Python
-    - Clean conversion output
-    - Easy to use VHDL Fixed point package
 
 
-Comb function
--------------
+
+
+High-level functions in VHDL
+----------------------------
+
+**Show how combinatory logic can be made with simple function**
 
 .. code-block:: vhdl
     :caption: Multiply-accumulate implemented in Pyha
@@ -94,9 +121,31 @@ Problem with this circuit is that it is missing registers and that makes it comp
 Benefit here is that the function in VHDL is very similiar to the Python one, conversion process would
 surely be simple.
 
+A combinational circuit, by definition, is a circuit whose output, after the initial transient
+period, is a function of current input. It has no internal state and therefore is “memoryless”
+about the past events (or past inputs) :cite:`chu_vhdl`. In other words, combinatory circuits have
+no registers, i like to call it 'stuff between registers'.
 
-Adding state
-------------
+OOP-VHDL shown on :numref:`oop_vhdl` will probably look useless to anyone who has VHDL experience.
+First reaction is probably that this thing is not synthesizeable.
+
+Here we show that this simple example is already good enough to synthesize combinatory logic.
+
+.. todo:: Example of synthesisying some combinatory stuff
+    Comb class is quite useless actually..maybe rather show syth function with logic?
+
+One thing to note is that the object side of this example is quite useless, we can use it only
+to store constants.
+
+Actually sequential logic could be inferred by guaranteeing that the class object values are
+always read before written into. But this is an extreamly error prone way of inferring registers.
+:cite:`chu_vhdl`
+
+
+Adding state to VHDL functions
+------------------------------
+
+**How function gets object state, like in Python**
 
 What is state?
 Local variable in functions equal in VHDL and Python.
@@ -110,8 +159,6 @@ In VHDL stuff is harder. Signal assignment?
 VHDL extra uses for register, like delay?
 
 
-Ghetto class
-------------
 
 .. code-block:: vhdl
     :caption: Multiply-accumulate implemented in Pyha
@@ -141,8 +188,10 @@ This thing could actually work..functionally. However as far as hardware goes, t
 are no registers on the signal path.
 Can OOP model be used in VHDL
 
-Singals class (better way to do signals)
-----------------------------------------
+Better way of defining registers
+--------------------------------
+**getting rid of signal assigment**
+
 
 .. code-block:: vhdl
     :caption: Multiply-accumulate implemented in Pyha
@@ -182,109 +231,10 @@ Singals class (better way to do signals)
 
     RTL of MAC (Intel Quartus RTL viewer)
 
-More reliable signals
-
-
-Multiple instances example
---------------------------
-
-
-
-
-Object-oriented model in VHDL
------------------------------
-
-.. todo:: How to define OOP? No subclassing atm..
-
-As stated by the goal of this work, converting Object-oriented designs into HDL.
-While it may seem that VHDL has no support for OOP, it is actually not true.
-
-There have been previous study regarding OOP in VHDL before. In :cite:`Benzakki1997` proposal was
-made to extend VHDL language with OOP semantics, this effort ended with development of
-OO-VHDL :cite:`oovhdl`, that is VHDL preprocessor that could turn proposend extensions to standard
-VHDL. This work was done in ~2000, current status is unknown, it certanly did not make it to the
-VHDL standard.
-
-While the :cite:`oovhdl` tried to extend VHDLs data-flow side of OOP, there actually exsists another
-way to do it, that is inherited from ADA.
-
-VHDL supports 'packages' to group common types and functions into one namespace. Package in VHDL
-must contain an declaration and body (this is the same concept as header and source files in C).
-
-
-.. code-block:: vhdl
-   :caption: OOP in VHDL
-   :name: oop_vhdl
-
-   package ExamplePackage is
-
-        type self_t is record
-            var: integer;
-        end record;
-
-        procedure set_var(self:inout self_t; new_var: integer);
-        procedure get_var(self:inout self_t; ret_0:out integer);
-    end package;
-
-    package body ExamplePackage is
-
-        procedure set_var(self:inout self_t; new_var: integer) is
-        begin
-            self.var := new_var;
-        end procedure;
-
-        procedure get_var(self:inout self_t; ret_0:out integer) is
-        begin
-            ret_0 := self.var
-        end procedure;
-
-    end package body;
-
-.. note::
-
-    VHDL also supports 'functions' that can return a value, but these are not suitable for
-    using with class model as they have no 'inout' parameter to handle the object datamodel.
-
-:numref:`oop_vhdl` gives basic example on how to write OOP in VHDL. Base point of OOP is to define
-some data and then functions that can perform operations with this data structure. In the example
-we have used 'record' (like struct in C) to construct an datamodel for the object, to keep it simple
-it only consists of one integer variable.
-
-In addition, simple setter function is provided, that takes as a first parameter the datamodel
-object and sets the integer variable to the second argument. It also provides a getter function,
-VHDL procedures cannot :code:`return` values, but can use :code:`out` arguments as outputs, this
-is convenient as it allows returning multiple values.
-
-This method of writing OOP code is quite common in C also, principle is the same. Make a structure
-to hold the datamodel and then always pass this structure as the first parameter to functions.
-
-
-Synthesising combinatory logic
-------------------------------
-
-A combinational circuit, by definition, is a circuit whose output, after the initial transient
-period, is a function of current input. It has no internal state and therefore is “memoryless”
-about the past events (or past inputs) :cite:`chu_vhdl`. In other words, combinatory circuits have
-no registers, i like to call it 'stuff between registers'.
-
-OOP-VHDL shown on :numref:`oop_vhdl` will probably look useless to anyone who has VHDL experience.
-First reaction is probably that this thing is not synthesizeable.
-
-Here we show that this simple example is already good enough to synthesize combinatory logic.
-
-.. todo:: Example of synthesisying some combinatory stuff
-    Comb class is quite useless actually..maybe rather show syth function with logic?
-
-One thing to note is that the object side of this example is quite useless, we can use it only
-to store constants.
-
-Actually sequential logic could be inferred by guaranteeing that the class object values are
-always read before written into. But this is an extreamly error prone way of inferring registers.
-:cite:`chu_vhdl`
 
 
 Working with registers
-----------------------
+~~~~~~~~~~~~~~~~~~~~~~
 
 A sequential circuit, on the other hand, has an internal
 state, or memory. Its output is a function of current input as well as the internal state. The
@@ -340,7 +290,7 @@ Using an signal assigment inside a clocked process always infers a register.
 
 
 Getting rid of signal assignments
----------------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 As the final goal of this project is to convert Python into VHDL, signal assigment is a major problem
 because it cannot easily be mapped to Python.
@@ -402,6 +352,69 @@ need to manually call it.
 In general adding a function that handles all the registers in the class is not hard, but somone has to call it
 and stuff.
 
+Implementation of the simulation code relies heavily on the signal assignment semantics.
+Basically code writes to the 'next' element and thats it. After the top-level function call,
+all the 'next' values must be propagated into the original registers. This process is basically an
+clock tick
+
+
+Object-oriented model in VHDL
+-----------------------------
+**This should just package everything up, and show how to make instnces**
+
+.. todo:: How to define OOP? No subclassing atm..
+
+
+VHDL supports 'packages' to group common types and functions into one namespace. Package in VHDL
+must contain an declaration and body (this is the same concept as header and source files in C).
+
+
+.. code-block:: vhdl
+   :caption: OOP in VHDL
+   :name: oop_vhdl
+
+   package ExamplePackage is
+
+        type self_t is record
+            var: integer;
+        end record;
+
+        procedure set_var(self:inout self_t; new_var: integer);
+        procedure get_var(self:inout self_t; ret_0:out integer);
+    end package;
+
+    package body ExamplePackage is
+
+        procedure set_var(self:inout self_t; new_var: integer) is
+        begin
+            self.var := new_var;
+        end procedure;
+
+        procedure get_var(self:inout self_t; ret_0:out integer) is
+        begin
+            ret_0 := self.var
+        end procedure;
+
+    end package body;
+
+.. note::
+
+    VHDL also supports 'functions' that can return a value, but these are not suitable for
+    using with class model as they have no 'inout' parameter to handle the object datamodel.
+
+:numref:`oop_vhdl` gives basic example on how to write OOP in VHDL. Base point of OOP is to define
+some data and then functions that can perform operations with this data structure. In the example
+we have used 'record' (like struct in C) to construct an datamodel for the object, to keep it simple
+it only consists of one integer variable.
+
+In addition, simple setter function is provided, that takes as a first parameter the datamodel
+object and sets the integer variable to the second argument. It also provides a getter function,
+VHDL procedures cannot :code:`return` values, but can use :code:`out` arguments as outputs, this
+is convenient as it allows returning multiple values.
+
+This method of writing OOP code is quite common in C also, principle is the same. Make a structure
+to hold the datamodel and then always pass this structure as the first parameter to functions.
+
 
 Initial register values
 ~~~~~~~~~~~~~~~~~~~~~~~
@@ -433,8 +446,19 @@ into the registers.
 Here we write initial values to 'next' values and then use the predefined update function to transfer
 them to current values aswell.
 
-Advantages
+
+Multiple instances example
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+
+Conclusion
 ----------
+
+This chapter shows how to OOP in VHDL, we demonstrate that the approach is fully synthesisable.
+
+Advantages
+~~~~~~~~~~
 
 It may look like a major overkill? Same thing with signal assignments so easy?
 
@@ -444,34 +468,23 @@ Every register of the model is kept in record, it is easy to create shadow regis
 Everything is concurrent, can debug and understand.
 
 
-Synthesisability
-----------------
+Disadvantage is that it can be only converted to VHDL. Advantages are numerous:
 
+    - Similiar code in VHDL and Python
+    - Clean conversion output
+    - Easy to use VHDL Fixed point package
+
+
+Synthesisability
+~~~~~~~~~~~~~~~~
 
 
 Multiple clock-domains
-----------------------
+~~~~~~~~~~~~~~~~~~~~~~
 
 This model has no restrictions on multiple clock domains??
 
 .. todo:: Here talk about top level stuff also?
 
 
-Simulation and verification
----------------------------
-Make separate chapter for testing and verification? Basics can be described here.
-Requrements...want RTL sim, GATE sim, in loop etc
 
-Implementation of the simulation code relies heavily on the signal assignment semantics.
-Basically code writes to the 'next' element and thats it. After the top-level function call,
-all the 'next' values must be propagated into the original registers. This process is basically an
-clock tick
-
-Essentially this comes downt to being and VHDL simulator inside VHDL simulator. it may sound stupid, but it works for
-simulations and synthesys, so i guess it is not stupid.
-
-
-Conclusions
------------
-
-This chapter shows how to OOP in VHDL, we demonstrate that the approach is fully synthesisable.

@@ -195,6 +195,8 @@ latex_additional_files = [
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
+
+# VHDL as Intermediate Language for High-Level Synthesis and Python bindings
 latex_documents = [
     (master_doc, 'Pyha.tex', 'Thesis',
      'Gaspar Karm', 'puthesis'),
