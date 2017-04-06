@@ -17,7 +17,23 @@ VHDL as intermediate language
             self.next.acc = self.acc + self.mul
             return self.acc
 
+
+.. _mac_rtl:
+.. figure:: img/mac_rtl.png
+    :align: center
+    :figclass: align-center
+
+    RTL of MAC (Intel Quartus RTL viewer)
+
 .. note:: In order to keep examples simple, only :code:`integer` types are used in this section.
+
+
+
+
+Todo
+
+    - What features do i want to support?
+    - Why do it?
 
 In this section we try to do things the other way around, that is adapt VHDL to Python.
 
@@ -26,6 +42,7 @@ Now
     - There may be more user defined functions
     - Object may be have subobjects
     - Subobjects may have their own subobjects, maybe even a list of objects.
+    - Easy to map to Python, data model goes to stcuture and all methods just convert. profit
 
 Major goal of this project is to support object-oriented hardware design.Goal is to provide simple object
 support, advanced features like inherintance and overloadings are not considerted at this moment.
@@ -44,6 +61,134 @@ Disadvantage is that it can be only converted to VHDL. Advantages are numerous:
     - Similiar code in VHDL and Python
     - Clean conversion output
     - Easy to use VHDL Fixed point package
+
+
+Comb function
+-------------
+
+.. code-block:: vhdl
+    :caption: Multiply-accumulate implemented in Pyha
+    :name: mac-pyha
+
+    function main(a: integer) return integer is
+        variable mul, acc: integer;
+    begin
+        mul := 123 * a;
+        acc := acc + mul;
+        return acc;
+    end function;
+
+We could make similiar function in VHDL and as promised by Geisler, it can perfectly represent the combinatory
+part of our program.
+
+.. _comb_mac_rtl:
+.. figure:: img/comb_mac_rtl.png
+    :align: center
+    :figclass: align-center
+
+    RTL of comb MAC (Intel Quartus RTL viewer)
+
+Synthesisying this results in a structure shown in :numref:`comb_mac_rtl`. It has the required arithmetic elements.
+Problem with this circuit is that it is missing registers and that makes it completely useless.
+
+Benefit here is that the function in VHDL is very similiar to the Python one, conversion process would
+surely be simple.
+
+
+Adding state
+------------
+
+What is state?
+Local variable in functions equal in VHDL and Python.
+
+Long term state
+~~~~~~~~~~~~~~~
+
+In python can use global variables or classes to remember stuff between function calls.
+
+In VHDL stuff is harder. Signal assignment?
+VHDL extra uses for register, like delay?
+
+
+Ghetto class
+------------
+
+.. code-block:: vhdl
+    :caption: Multiply-accumulate implemented in Pyha
+    :name: mac-pyha
+
+    type self_t is record
+        mul: integer;
+        acc: integer;
+    end record;
+
+    procedure main(self: inout self_t; a: integer; ret_0: out integer) is
+    begin
+        self.mul := 123 * a;
+        self.acc := self.acc + self.mul;
+        ret_0 := self.acc;
+    end procedure;
+
+.. _ghetto_comb_mac_rtl:
+.. figure:: img/ghetto_comb_mac_rtl.png
+    :align: center
+    :figclass: align-center
+
+    RTL of comb MAC (Intel Quartus RTL viewer)
+
+
+This thing could actually work..functionally. However as far as hardware goes, this is total junk, because there
+are no registers on the signal path.
+Can OOP model be used in VHDL
+
+Singals class (better way to do signals)
+----------------------------------------
+
+.. code-block:: vhdl
+    :caption: Multiply-accumulate implemented in Pyha
+    :name: mac-pyha
+
+    type next_t is record
+        mul: integer;
+        acc: integer;
+    end record;
+
+    type self_t is record
+        mul: integer;
+        acc: integer;
+        nxt: next_t;
+    end record;
+
+    procedure main(self: inout self_t; a: integer; ret_0: out integer) is
+    begin
+        self.nxt.mul := 123 * a;
+        self.nxt.acc := self.acc + self.mul;
+        ret_0 := self.acc;
+    end procedure;
+
+    -- this is called
+    procedure update_register(self: inout self_t) is
+    begin
+        self.mul := self.nxt.mul;
+        self.acc := self.nxt.acc;
+    end procedure;
+
+
+
+.. _mac_rtl:
+.. figure:: img/mac_rtl.png
+    :align: center
+    :figclass: align-center
+
+    RTL of MAC (Intel Quartus RTL viewer)
+
+More reliable signals
+
+
+Multiple instances example
+--------------------------
+
+
 
 
 Object-oriented model in VHDL
@@ -261,6 +406,8 @@ and stuff.
 Initial register values
 ~~~~~~~~~~~~~~~~~~~~~~~
 
+.. todo:: On vaja seda? Liiga detailne?
+
 Another problem with the class model is that we lack a way to define register initial values.
 In VHDL structures can be initialized while defining the variable, like
 :code:`variable name: type := (elem1 => 1, elem2 => 2);`.
@@ -306,6 +453,8 @@ Multiple clock-domains
 ----------------------
 
 This model has no restrictions on multiple clock domains??
+
+.. todo:: Here talk about top level stuff also?
 
 
 Simulation and verification
