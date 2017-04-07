@@ -4,7 +4,7 @@ library ieee;
 		 
 entity  top is
     port (
-		clk, rst_n: in std_logic;
+		clk: in std_logic;
         in0: in integer;
         out0: out integer
     );
@@ -15,31 +15,31 @@ architecture arch of top is
 		type self_t is record
 			mul: integer;
 			acc: integer;
+			coef: integer;
 		end record;
-		
-		signal self: self_t := (mul=>0, acc=>0);
-		
+
+		signal self: self_t := (mul=>0, acc=>0, coef=>123);
+
 		procedure main(self: inout self_t; a: integer; ret_0: out integer) is
 		begin
-			self.mul := 123 * a;
+			self.mul := a * self.coef;
 			self.acc := self.acc + self.mul;
 			ret_0 := self.acc;
 		end procedure;
-	 
+
 begin
-	process(clk, rst_n)
+
+	process(clk)
 		variable selfv: self_t;
-		variable outp: integer; 
+		variable outp: integer;
 	begin
 		selfv := self;
-		
+
 		main(selfv, in0, outp);
-		
+
 		out0 <= outp;
-		if (not rst_n) then
-			self <= (mul=>0, acc=>0);
-		elsif rising_edge(clk) then
-			
+
+		if rising_edge(clk) then
 			self <= selfv;
 		end if;
 

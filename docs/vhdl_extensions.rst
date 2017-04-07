@@ -42,6 +42,15 @@ VHDL standard.
 While the :cite:`oovhdl` tried to extend VHDLs data-flow side of OOP, there actually exsists another
 way to do it, that is inherited from ADA.
 
+What is combinatory logic and what is sequantial logic?
+
+A sequential circuit, on the other hand, has an internal
+state, or memory. Its output is a function of current input as well as the internal state. The
+internal state essentially “memorizes” the effect of the past input values. The output thus is
+affected by current input value as well as past input values (or the entire sequence of input
+values). That is why we call a circuit with internal state a sequential circuit.
+:cite:`chu_vhdl`
+
 
 Problem statement
 -----------------
@@ -93,20 +102,31 @@ High-level functions in VHDL
 
 **Show how combinatory logic can be made with simple function**
 
+As shown in :cite:`structvhdl_gaisler`, VHDL functions can be used to infer combinatory logic. We can test
+this out by defining similiar :code:`main` function, as in :numref:`mac-pyha`.
+
+A combinational circuit, by definition, is a circuit whose output, after the initial transient
+period, is a function of current input. It has no internal state and therefore is “memoryless”
+about the past events (or past inputs) :cite:`chu_vhdl`. In other words, combinatory circuits have
+no registers, i like to call it 'stuff between registers'.
+Arguably better name for combinatory logic is 'stuff between two registers'.
+
 .. code-block:: vhdl
-    :caption: Multiply-accumulate implemented in Pyha
-    :name: mac-pyha
+    :caption: Combinatory
+    :name: comb-vhdl
 
     function main(a: integer) return integer is
         variable mul, acc: integer;
     begin
-        mul := 123 * a;
+        mul := a * 123;
         acc := acc + mul;
         return acc;
     end function;
 
-We could make similiar function in VHDL and as promised by Geisler, it can perfectly represent the combinatory
-part of our program.
+.. todo:: Would like to show Python vs VHDL code here?
+
+:numref:`comb-vhdl` show the MAC function in VHDL. It is functionally broken as the acc should save state
+outside of the function.
 
 .. _comb_mac_rtl:
 .. figure:: img/comb_mac_rtl.png
@@ -115,337 +135,321 @@ part of our program.
 
     RTL of comb MAC (Intel Quartus RTL viewer)
 
-Synthesisying this results in a structure shown in :numref:`comb_mac_rtl`. It has the required arithmetic elements.
-Problem with this circuit is that it is missing registers and that makes it completely useless.
+
+Synthesisying this results in a RTL shown in :numref:`comb_mac_rtl`. Good news is that
+it has all the required arithmetic elements. However, as expected it lacks the registers, making it
+basically useless.
 
 Benefit here is that the function in VHDL is very similiar to the Python one, conversion process would
-surely be simple.
+surely be simple. Another result is that VHDL and Python have same result for local variables.
 
-A combinational circuit, by definition, is a circuit whose output, after the initial transient
-period, is a function of current input. It has no internal state and therefore is “memoryless”
-about the past events (or past inputs) :cite:`chu_vhdl`. In other words, combinatory circuits have
-no registers, i like to call it 'stuff between registers'.
-
-OOP-VHDL shown on :numref:`oop_vhdl` will probably look useless to anyone who has VHDL experience.
-First reaction is probably that this thing is not synthesizeable.
-
-Here we show that this simple example is already good enough to synthesize combinatory logic.
-
-.. todo:: Example of synthesisying some combinatory stuff
-    Comb class is quite useless actually..maybe rather show syth function with logic?
-
-One thing to note is that the object side of this example is quite useless, we can use it only
-to store constants.
-
-Actually sequential logic could be inferred by guaranteeing that the class object values are
-always read before written into. But this is an extreamly error prone way of inferring registers.
-:cite:`chu_vhdl`
-
-
-Adding state to VHDL functions
-------------------------------
-
-**How function gets object state, like in Python**
-
-What is state?
-Local variable in functions equal in VHDL and Python.
 
 Long term state
 ~~~~~~~~~~~~~~~
 
-In python can use global variables or classes to remember stuff between function calls.
+In conventional programming languages, longer term state then local variables can be represented by global
+variables or Object-oriented programming.
 
-In VHDL stuff is harder. Signal assignment?
-VHDL extra uses for register, like delay?
+It is a known knowledge that using global variables is not going to get you far. It may work out in small
+programs, but as programs grow, it gets out of hand quickly. :cite:`globals_harmful` (fake cite)
 
+For these reasons we focus our efforts on OOP. Basic idea of OOP is to define some data and also define
+functions that can do operations on this data. Note that this idea could fit well with defining hardware
+'data' would be registers and operations on 'data' would be combinatory functions.
 
+However VHDL does not come with OOP support, even so, it can be done by using records.
 
 .. code-block:: vhdl
-    :caption: Multiply-accumulate implemented in Pyha
-    :name: mac-pyha
+    :caption: Data portion in VHDL
+    :name: vhdl-oop-data
 
     type self_t is record
         mul: integer;
         acc: integer;
+        coef: integer;
     end record;
+
+:numref:`vhdl-oop-data` constructs an 'data model' for the OOP model. Next we can modify the 'main' function
+to make use of the datamodel.
+
+.. code-block:: vhdl
+    :caption: VHDL OOP function
+    :name: vhdl-oop-function
 
     procedure main(self: inout self_t; a: integer; ret_0: out integer) is
     begin
-        self.mul := 123 * a;
+        self.mul := a * self.coef;
         self.acc := self.acc + self.mul;
         ret_0 := self.acc;
     end procedure;
+
+:numref:`vhdl-oop-function` shows new main function. Incorporating the OOP like datamodel required some changes:
+
+    - First argument to the function is the datamodel, it must be 'inout'.
+    - VHDL 'function' supports only 'in' arguments, for that reasons we had to go for procedures
+    - VHDL procedues cannot return values, but can have 'out' arguments.
+
 
 .. _ghetto_comb_mac_rtl:
 .. figure:: img/ghetto_comb_mac_rtl.png
     :align: center
     :figclass: align-center
 
-    RTL of comb MAC (Intel Quartus RTL viewer)
+    RTL of OOP style MAC (Intel Quartus RTL viewer)
 
 
-This thing could actually work..functionally. However as far as hardware goes, this is total junk, because there
-are no registers on the signal path.
-Can OOP model be used in VHDL
+:numref:`ghetto_comb_mac_rtl` shows the synthesis result of such structure. We have managed to infer one register, but
+even that is on wrong place. Functionally this result would work implement and MAC operation, thanks to that one register.
+
+However as far as hardware goes, this is total junk, because there are no registers on the signal path. That is,
+signal path from **in0** to **out0** is purely combinatory, not what we want for digital designs.
+
 
 Better way of defining registers
 --------------------------------
 **getting rid of signal assigment**
 
+It is clear from the previous section that the way of defining registers is not working correctly.
+
+Problem is that we tried to use 'long term state' of conventional programming languages, but in hardware
+registers work a bit differently.
+
+Understanding registers
+~~~~~~~~~~~~~~~~~~~~~~~
+
+
+In conventional programming, using the 'long-term state' is very similiar of just using a local variable.
+We can assign an value and the only difference with local variable is that it will remember the value to
+the next call of the function.
+
+Hardware registers are very similiar to this and really have just one striking difference, namely value assigned
+to register does not take effect immediately, rather on the next clock edge. Thats just how registers are, they
+take next value on the clock edge.
+
+In software world we could say that assigments to registers are delayed by one
+
+Here we can abstract away the **clock signal** by thinking that clock edge = function call.
+
+VHDL defines a special assignment operator for this kind of delayed stuff, it is called 'signal assignment'.
+It is defined like :code:`a <= b`.
+
+Using an signal assigment inside a clocked process always infers a register.
+
+
+Signal assignment for variables
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Problem with the 'signal assignment operator' is that it can only be used on **signals**, that are some
+special objects of VHDL. In this work we would rather like to use **variables**, because they are the same
+in every other programming language.
+
+As the final goal of this project is to convert Python into VHDL, signal assigment is a major problem
+because it cannot easily be mapped to Python. We would like to save registers as our class object values,
+and to get rid of signal assignment.
+
+Luckly simulating signal assignment, using variables, is not very complex or hard.
+
+
+Conventional method to this is to define two variables, for **current** and **next** values of the register.
+Pong P. Chu suggest the usage of similiar system even with VHDL signals,
+
+Author of MyHDL package has written a good writeup on how it handles signal assigment :cite:`jan_myhdl_signals`, in short
+they use the same 'next' idiom. Even Pong P. Chu, author of one of the best VHDL books, teaches the
+reader to write registers with two variables, one for the current value and another one for 'next'.
+
+In case of our MAC example, we could make dublicate registers for each variable,
+this is shown in :numref:`mac-next-data`.
 
 .. code-block:: vhdl
-    :caption: Multiply-accumulate implemented in Pyha
-    :name: mac-pyha
+    :caption: Datamodel with **next** section
+    :name: mac-next-data
 
     type next_t is record
         mul: integer;
         acc: integer;
+        coef: integer;
     end record;
 
     type self_t is record
         mul: integer;
         acc: integer;
-        nxt: next_t;
+        coef: integer;
+
+        nexts: next_t;
     end record;
+
+For example now reading the 'acc' register can be done with :code:`self.acc` and writing next value
+:code:`self.nexts.acc := 0`.
+
+New style should also incoporated to the 'main' function. Instead of writing to **current** values it should
+now write to **next**, this is shown on :numref:`mac-next-main`.
+
+.. code-block:: vhdl
+    :caption: Updated 'main' function
+    :name: mac-next-main
 
     procedure main(self: inout self_t; a: integer; ret_0: out integer) is
     begin
-        self.nxt.mul := 123 * a;
-        self.nxt.acc := self.acc + self.mul;
+        self.nexts.mul := a * self.coef;
+        self.nexts.acc := self.acc + self.mul;
         ret_0 := self.acc;
     end procedure;
 
-    -- this is called
+
+One thing that signal assignment automates is the loading of **next** value into **current**. By using
+variables we have to take care of this ourselves. For this we can define new function that handles the
+update for all the registers, this is shown on :numref:`mac-next-update`.
+
+
+.. code-block:: vhdl
+    :caption: Function to update registers
+    :name: mac-next-update
+
     procedure update_register(self: inout self_t) is
     begin
-        self.mul := self.nxt.mul;
-        self.acc := self.nxt.acc;
+        self.mul := self.nexts.mul;
+        self.acc := self.nexts.acc;
+        self.coef:= self.nexts.coef;
     end procedure;
 
+.. note:: Function 'update_registers' is called on clock raising edge.
 
 
-.. _mac_rtl:
+.. _mac_rtl_end:
 .. figure:: img/mac_rtl.png
     :align: center
     :figclass: align-center
 
     RTL of MAC (Intel Quartus RTL viewer)
 
+:numref:`mac_rtl_end` shows the synthsis result of the last code. It is clear that this is now equal to the goal
+system, exactly what we want.
 
 
-Working with registers
-~~~~~~~~~~~~~~~~~~~~~~
+Class model for VHDL
+--------------------
 
-A sequential circuit, on the other hand, has an internal
-state, or memory. Its output is a function of current input as well as the internal state. The
-internal state essentially “memorizes” the effect of the past input values. The output thus is
-affected by current input value as well as past input values (or the entire sequence of input
-values). That is why we call a circuit with internal state a sequential circuit.
-:cite:`chu_vhdl`
+Previous chapters showed that OOP style syhntesisable VHDL is possible. This chapter investigates how to
+put togather previous results. How to make instances etc..
 
-.. todo:: dff image?
+Currently we have following elements required for one 'class' definition:
 
-Point here is that the design contains registers, these are memory elements that are controlled
-by the clock signal.
-
-Register has one input and one output. It outputs the current value stored in the memory. Input is
-used to take the next value. Note that the input is only sampled on the clock edge.
-
-VHDL has a special assigment to work with such kind of constructs, it is signal assignment.
-Basically signal assigmnet is
+    - Record definition for 'next'
+    - Record definition for 'self'
+    - Any user defined functions (like 'main')
+    - 'Update registers' function
 
 
-.. code-block:: vhdl
-    :caption: VHDL signal assignment
-    :name: vhdl_signal
+Initial register values
+~~~~~~~~~~~~~~~~~~~~~~~
 
-    a <= b;
-    c <= a;
+Currently one bit of information the 'class model' is missing are the initial values for the registers.
+In VHDL structures can be initialized on defining the variable, like
+:code:`variable name: type := (elem1 => 1, elem2 => 2);`.
 
-:numref:`vhdl_signal` shows VHDL signal assignment in action. First value of 'b' is assigned to 'a' and then
-'a' assigned to 'c'. Now the problem with these assignments are that they work in a weird way, namely a is not actually
-assigned b, and c is not assigned a. bla bla bla.
+Problem with this method is that it requires the values for all fields (including 'next'). This can get
+unmanageably complex very quickly, imagine an class having sub-objects and arrays, all of these must be initialized.
 
+Conventional programming languages use class constructor for inititialization purposes, that is just a function
+that is ran when object is made.
 
-.. code-block:: vhdl
-    :caption: Better VHDL signal assignment
-    :name: better_vhdl_signal
+In hardware we can make a similiar 'reset' function, difference once again is that we have to call it ourselves.
 
-    a.next := b;
-    c.next := a;
-
-
-:numref:`better_vhdl_signal` shows a more clear way of what is going on. Note that this uses regular assignment operator.
-Assuming 'a' and 'c' are objects that have next variable.
-
-Using 'next' attribute for signal assignment is now used in literally every other HDL than Verilog/VHDL
-
-Author of MyHDL package has written a good writeup on how it handles signal assigment :cite:`jan_myhdl_signals`, in short
-they use the same 'next' idiom. Even Pong P. Chu, author of one of the best VHDL books, teaches the
-reader to write registers with two variables, one for the current value and another one for 'next'.
-
-.. todo:: Signal assignment cannot be even used on variables!
-
-Using an signal assigment inside a clocked process always infers a register.
-
-
-Getting rid of signal assignments
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-As the final goal of this project is to convert Python into VHDL, signal assigment is a major problem
-because it cannot easily be mapped to Python.
-
-We would like to save registers as our class object values, and to get rid of signal assignment.
-
-Much better way to work with registers is to embrace the style popularized by MyHDL, that is signal
-is an object that has a current value and 'next' value.
-
-One way to mimic the signal assignment with variables is to create to sets of variables for each signal.
-One for the current value and nother one for 'next'.
+Alternative is to require that each 'class' provides an 'reset' function that writes correct values
+into the registers.
 
 .. code-block:: vhdl
-    :caption: VHDl signal with next
-    :name: better_vhdl_signal
+    :caption: Reset function for MAC
+    :name: mac-vhdl-reset
 
-    type next_t is record
-        reg: integer;
-    end record;
-
-    type self_t is record
-        reg: integer;
-        nexts: next_t;
-    end record;
-
-That would allow us to write code like:
-
-.. code-block:: vhdl
-    :caption: VHDl signal with next
-    :name: better_vhdl_signal
-
-    variable var : self_t;
-
-    -- set next value of register to be current value
-    var.nexts.reg := var.reg;
-
-
-Problem is that assuming we have clocked process, somone has to update the register value from 'next'
-to correct value. With signal assignement this is done by VHDL.
-
-
-Simulating VHDL simulator inside VHDL simulator
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-In order to update the register values after each clock tick, we have to write a function to do it and
-need to manually call it.
-
-.. code-block:: vhdl
-    :caption: VHDl signal with next
-    :name: better_vhdl_signal
-
-    procedure update_self(self: inout self_t) is
+    procedure reset(self: inout self_t) is
     begin
-        self.coef := self.\next\.coef;
-        self.mul := self.\next\.mul;
-        self.sum := self.\next\.sum;
+        self.nexts.coef := 123;
+        self.nexts.mul := 0;
+        self.nexts.sum := 0;
+        update_registers(self);
     end procedure;
 
-In general adding a function that handles all the registers in the class is not hard, but somone has to call it
-and stuff.
-
-Implementation of the simulation code relies heavily on the signal assignment semantics.
-Basically code writes to the 'next' element and thats it. After the top-level function call,
-all the 'next' values must be propagated into the original registers. This process is basically an
-clock tick
+:numref:`mac-vhdl-reset` shows a possible 'reset' implementation for MAC, it writes
+ initial values to 'next' and then use the predefined update function to transfer
+them to current values. This function can be called in case reset signal is asserted.
 
 
-Object-oriented model in VHDL
------------------------------
-**This should just package everything up, and show how to make instnces**
 
-.. todo:: How to define OOP? No subclassing atm..
-
+Using package
+~~~~~~~~~~~~~
 
 VHDL supports 'packages' to group common types and functions into one namespace. Package in VHDL
-must contain an declaration and body (this is the same concept as header and source files in C).
+must contain an declaration and body (same concept as header and source files in C).
+
 
 
 .. code-block:: vhdl
    :caption: OOP in VHDL
    :name: oop_vhdl
 
-   package ExamplePackage is
-
-        type self_t is record
-            var: integer;
+    package MAC is
+        type next_t is record
+            coef: integer;
+            mul: integer;
+            acc: integer;
         end record;
 
-        procedure set_var(self:inout self_t; new_var: integer);
-        procedure get_var(self:inout self_t; ret_0:out integer);
+        type self_t is record
+            coef: integer;
+            mul: integer;
+            acc: integer;
+
+            nexts: next_t;
+        end record;
+
+        procedure reset(self: inout self_t);
+        procedure update_registers(self: inout self_t);
+        procedure main(self:inout self_t; a: integer; ret_0:out integer);
     end package;
 
-    package body ExamplePackage is
+    package body MAC is
 
-        procedure set_var(self:inout self_t; new_var: integer) is
+        procedure reset(self: inout self_t) is
         begin
-            self.var := new_var;
+            self.nexts.coef := 123;
+            self.nexts.mul := 0;
+            self.nexts.acc := 0;
+            update_registers(self);
         end procedure;
 
-        procedure get_var(self:inout self_t; ret_0:out integer) is
+        procedure update_registers(self: inout self_t) is
         begin
-            ret_0 := self.var
+            self.coef := self.nexts.coef;
+            self.mul := self.nexts.mul;
+            self.acc := self.nexts.acc;
         end procedure;
 
+        procedure main(self:inout self_t; a: integer; ret_0:out integer) is
+        begin
+            self.nexts.mul := self.coef * a;
+            self.nexts.acc := self.acc + self.mul;
+            ret_0 := self.acc;
+            return;
+        end procedure;
     end package body;
 
-.. note::
 
-    VHDL also supports 'functions' that can return a value, but these are not suitable for
-    using with class model as they have no 'inout' parameter to handle the object datamodel.
 
 :numref:`oop_vhdl` gives basic example on how to write OOP in VHDL. Base point of OOP is to define
 some data and then functions that can perform operations with this data structure. In the example
 we have used 'record' (like struct in C) to construct an datamodel for the object, to keep it simple
 it only consists of one integer variable.
 
-In addition, simple setter function is provided, that takes as a first parameter the datamodel
-object and sets the integer variable to the second argument. It also provides a getter function,
-VHDL procedures cannot :code:`return` values, but can use :code:`out` arguments as outputs, this
-is convenient as it allows returning multiple values.
-
 This method of writing OOP code is quite common in C also, principle is the same. Make a structure
 to hold the datamodel and then always pass this structure as the first parameter to functions.
 
 
-Initial register values
-~~~~~~~~~~~~~~~~~~~~~~~
 
-.. todo:: On vaja seda? Liiga detailne?
-
-Another problem with the class model is that we lack a way to define register initial values.
-In VHDL structures can be initialized while defining the variable, like
-:code:`variable name: type := (elem1 => 1, elem2 => 2);`.
-
-Problem with this method is that it gets complex very quickly, think about structure that has a member
-of another structure, that has some array..etc.
-
-Alternative is to require that each 'class' provides an 'reset' function that writes correct values
-into the registers.
-
-.. code-block:: vhdl
-    :caption: VHDl signal with next
-    :name: better_vhdl_signal
-
-    procedure \_pyha_reset_self\(self: inout self_t) is
-    begin
-        self.\next\.coef := 0;
-        self.\next\.mul := 0;
-        self.\next\.sum := 0;
-        \_pyha_update_self\(self);
-    end procedure;
-
-Here we write initial values to 'next' values and then use the predefined update function to transfer
-them to current values aswell.
-
+Creating instances
+~~~~~~~~~~~~~~~~~~
+Basically forced to create separate file for each instance.
+Major problem if used in VHDL world, not problem at all if converted.
 
 Multiple instances example
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -487,4 +491,21 @@ This model has no restrictions on multiple clock domains??
 .. todo:: Here talk about top level stuff also?
 
 
+About SystemVerilog
+~~~~~~~~~~~~~~~~~~~
 
+My experience with SystemVerilog is limited, but to me it seems that it extends the Verilog with mostly
+features that already exsist in VHDL. It higly likely that methods developed in this chapter would also
+apply for SystemVerilog.
+
+.. http://www.amiq.com/consulting/2016/01/26/gotcha-access-an-out-of-bounds-index-for-a-systemverilog-fixed-size-array/
+
+However note that SystemVerilog is much much worse IR language, as it is not as strict as VHDL. For example
+in SystemVerilog you can happly index arrays over bounds, without any error. There are some knobs to turn
+bound cheking on..but still the default values show the mentality of the language.
+
+Only motivation for using SystemVerilog over VHDL is somekind of Verilog tool support. For example Yosys, but
+as of my knowledge this currently does not support advanced SV features.
+
+VHDL is perfect IR for Python, because you can do many stupid things in Python, that will be flagged as errors
+in VHDl, this will save alot of development time.
