@@ -1,6 +1,7 @@
 VHDL as intermediate language
 =============================
 
+.. todo:: Here talk about top level stuff also?
 This chapter aims
 
 Todo
@@ -343,7 +344,7 @@ Currently we have following elements required for one 'class' definition:
 Initial register values
 ~~~~~~~~~~~~~~~~~~~~~~~
 
-Currently one bit of information the 'class model' is missing are the initial values for the registers.
+One bit of information the 'class model' is missing are the initial values for the registers.
 In VHDL structures can be initialized on defining the variable, like
 :code:`variable name: type := (elem1 => 1, elem2 => 2);`.
 
@@ -382,11 +383,9 @@ Using package
 VHDL supports 'packages' to group common types and functions into one namespace. Package in VHDL
 must contain an declaration and body (same concept as header and source files in C).
 
-
-
 .. code-block:: vhdl
-   :caption: OOP in VHDL
-   :name: oop_vhdl
+   :caption: Full code of OOP style MAC
+   :name: package-mac
 
     package MAC is
         type next_t is record
@@ -436,60 +435,151 @@ must contain an declaration and body (same concept as header and source files in
 
 
 
-:numref:`oop_vhdl` gives basic example on how to write OOP in VHDL. Base point of OOP is to define
-some data and then functions that can perform operations with this data structure. In the example
-we have used 'record' (like struct in C) to construct an datamodel for the object, to keep it simple
-it only consists of one integer variable.
-
-This method of writing OOP code is quite common in C also, principle is the same. Make a structure
+:numref:`package-mac` lists the final code for the MAC example. It is using the OOP style and is wrappen inside
+of a VHDL package, this method of writing OOP code is quite common in C also, principle is the same. Make a structure
 to hold the datamodel and then always pass this structure as the first parameter to functions.
-
 
 
 Creating instances
 ~~~~~~~~~~~~~~~~~~
+
+One major operation that we would lik to do with classes is to create instances of them, that is considering
+the example, creating multiple MAC elements.
+
+In case we want to create instances with same reset values everything is easy. Just need to define multiple record
+values.
+
+However problem arises when two instances shall have a different inital values for registers. Imagine one MAC with coef
+12 and another with 32. In that case we have a problem as the reset values are hardcoded into the class declaration.
+
 Basically forced to create separate file for each instance.
 Major problem if used in VHDL world, not problem at all if converted.
 
+Resets are kind of like a weakpoint of this model
+
 Multiple instances example
-~~~~~~~~~~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. todo:: Images have sinngle constant coef
+
+This paragraph shows how to create a new class that itself includes two MAC elements.
+Situation is that we want to use first MAC with coeficient of '123' and the second one with '321'. According
+to the previosu text we need to create two packages, first is MAC_0, and second MAC_1.
+
+Now creating a new class using these is as simple as in convertional programming, in datamodel we must define
+these:
+
+.. code-block:: vhdl
+    :caption: Datamodel for multiple MAC
+    :name: multi-mac-data
+
+    type self_t is record
+        mac0: MAC_0.self_t;
+        mac1: MAC_1.self_t;
+
+        nexts: next_t;
+    end record;
+
+Then in main function, as expected we need to call the main functions of submodules:
+
+.. code-block:: vhdl
+    :caption: Datamodel for multiple MAC
+    :name: multi-mac-main-stack
+
+    procedure main(self:inout self_t; a: integer; ret_0:out integer) is
+        variable out_tmp: integer;
+    begin
+        MAC_0.main(self.mac0, a, ret_0=>out_tmp);
+        MAC_1.main(self.mac1, out_tmp, ret_0=>out_tmp);
+        ret_0 := out_tmp;
+    end procedure;
+
+:numref:`multi-mac-main-stack` shows implementation of main function in case we would like to chain up
+the two MAC functions, that is, signal flows is as in -> MAC0 -> MAC1 -> out.
+
+.. _mac_reuse_stack:
+.. figure:: img/mac_reuse_stack.png
+    :align: center
+    :figclass: align-center
+
+    RTL of stacked MAC (Intel Quartus RTL viewer)
+
+:numref:`mac_reuse_stack` shows the synthsis result of the last code.
 
 
+Alternatively we could code the two MACs to work in parallel by just changing the code in main:
 
-Conclusion
+.. code-block:: vhdl
+    :caption: Datamodel for multiple MAC
+    :name: multi-mac-main-stack
+
+    procedure main(self:inout self_t; a: integer; ret_0:out integer; ret_1:out integer) is
+        variable out0: integer;
+        variable out1: integer;
+    begin
+        MAC_0.main(self.mac0, a, ret_0=>out0);
+        MAC_1.main(self.mac1, a, ret_0=>out1);
+        ret_0 := out0;
+        ret_1 := out1;
+    end procedure;
+
+.. _mac_reuse_parallel:
+.. figure:: img/mac_reuse_parallel.png
+    :align: center
+    :figclass: align-center
+
+    RTL of parallel MAC (Intel Quartus RTL viewer)
+
+:numref:`mac_reuse_parallel` shows the synthsis result of the last code.
+
+
+Discussion
 ----------
 
-This chapter shows how to OOP in VHDL, we demonstrate that the approach is fully synthesisable.
+.. todo:: compare the oop way vs signal assignments way. Is it worth it?
+Presented model has some advantages and disadvantages, lets analyze these.
+
+
 
 Advantages
 ~~~~~~~~~~
 
-It may look like a major overkill? Same thing with signal assignments so easy?
-
-.. todo:: compare the oop way vs signal assignments way. Is it worth it?
-
 Every register of the model is kept in record, it is easy to create shadow registers for the whole module.
 Everything is concurrent, can debug and understand.
 
+Easier to understand for new programmers, this model contains only elements that should be already familiar for
+programmers dealing with normal languages.
 
-Disadvantage is that it can be only converted to VHDL. Advantages are numerous:
-
-    - Similiar code in VHDL and Python
-    - Clean conversion output
-    - Easy to use VHDL Fixed point package
-
+Creating
 
 Synthesisability
 ~~~~~~~~~~~~~~~~
+
+In this chapter simple example about synthesizable MAC operation and in parallel and stacked form.
+This model has also been tested in real life designs which being much more complex. There has been no problems
+with this model, even for big designs.
+
+Real life experiments have been done on Altera Cyclone IV device, syhtesizing software used is Quartus.
 
 
 Multiple clock-domains
 ~~~~~~~~~~~~~~~~~~~~~~
 
-This model has no restrictions on multiple clock domains??
+All depends on what clock domain are the registers updated ('update_registers' function called).
+One limitaion of this model is that all of these subinstances are executed by the same clock.
+So basically instances are limited to one clock domain.
 
-.. todo:: Here talk about top level stuff also?
+There is a way around this by upgrading registers in separate clock domains..
 
+
+Today this is not a major problem as generally hardware sistems are mostly composed of a few clock domains.
+So all of these can be written separately and then use connection interfaces to connect them.
+
+For example Intel provides Qsys tool, that allows connecting stuff togather and handles clock crossings itself.
+
+That is one thing that does not translate well to conventional prol=gamming languages.
+
+It is perfetct for IP core design!
 
 About SystemVerilog
 ~~~~~~~~~~~~~~~~~~~
@@ -509,3 +599,14 @@ as of my knowledge this currently does not support advanced SV features.
 
 VHDL is perfect IR for Python, because you can do many stupid things in Python, that will be flagged as errors
 in VHDl, this will save alot of development time.
+
+
+Conclusion
+----------
+
+This chapter developed an alternative method to write synthesisable VHDL. It meets all the initial requirements, like
+OOP support. Major advantage of this model is that it uses only VHDL language featurest that are common for
+normal programming also. Meaning that it is easy to translate from those other languages to synthesisablae VHDL.
+
+This chapter shows how to OOP in VHDL, we demonstrate that the approach is fully synthesisable.
+

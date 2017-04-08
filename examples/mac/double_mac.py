@@ -6,8 +6,8 @@ from pyha.simulation.simulation_interface import debug_assert_sim_match, SIM_GAT
 
 
 class MAC(HW):
-    def __init__(self):
-        self.coef = 123
+    def __init__(self, coef):
+        self.coef = coef
         self.mul = 0
         self.acc = 0
 
@@ -19,8 +19,8 @@ class MAC(HW):
 
 class ReuseStack(HW):
     def __init__(self):
-        self.mac0 = MAC()
-        self.mac1 = MAC()
+        self.mac0 = MAC(123)
+        self.mac1 = MAC(321)
 
     def main(self, a):
         out = self.mac0.main(a)
@@ -30,8 +30,8 @@ class ReuseStack(HW):
 
 class ReuseParallel(HW):
     def __init__(self):
-        self.mac0 = MAC()
-        self.mac1 = MAC()
+        self.mac0 = MAC(123)
+        self.mac1 = MAC(321)
 
     def main(self, a):
         out0 = self.mac0.main(a)
