@@ -1,27 +1,112 @@
 VHDL as intermediate language
 =============================
 
-.. todo:: Here talk about top level stuff also?
-This chapter aims
+This chapter develops an object-oriented (OOP) programming model for syntehsisable VHDL.
+Its main gaol is to act as an intermediate language for High-Level synthesis.
+Lay down a common ground on which VHDL and Python coold be connected.
 
-Todo
 
-    - What features do i want to support?
-    - Why do it?
+Objective
+---------
 
-In this section we try to do things the other way around, that is adapt VHDL to Python.
+Problem with VHDL is that it is so very different from normal programming languages, that makes
+conversion hard and error prone.
+What do we want from this IR? What does it have to support?
+
 
 Major goal of this project is to support object-oriented hardware design. Goal is to provide simple object
 support, advanced features like inherintance and overloadings are not considerted at this moment.
 
-Lay down a common ground on which VHDL and Python coold be connected.
+.. code-block:: python
+    :caption: Pipelined multiply-accumulate(MAC) implemented in Pyha
+    :name: mac-pyha
 
-While other HDL converters use VHDL/Verilog as low level conversion target.
-Pyha goes other way around, as shown by the Gardner study :cite:`structvhdl_gaisler`, VHDL language can be used
-with quite high level progrmaming constructs. Pyha tries to take advantage of this.
+    class MAC:
+        def __init__(self, coef):
+            self.coef = coef
+            self.mul = 0
+            self.acc = 0
 
-This chapter tries to enchance the VHDL language with some basic Python elements in order
-to provide some common ground for the conversion task.
+        def main(self, a):
+            self.next.mul = a * self.coef
+            self.next.acc = self.acc + self.mul
+            return self.acc
+
+
+.. _mac_rtl:
+.. figure:: img/mac_rtl.png
+    :align: center
+    :figclass: align-center
+
+    RTL of MAC (Intel Quartus RTL viewer)
+
+.. note:: In order to keep examples simple, only :code:`integer` types are used in this section.
+
+:numref:`mac-pyha` shows the Pyha implementation of MAC circuit, synthesized results are shown on :numref:`mac_rtl`.
+In general we are looking for a simple VHDL model that could handle this conversion.
+
+
+
+The main reason to pursue the OOP approach is the modularity. That is all classes can be easly reused in
+new classes. For example :numref:`mac-pyha-serial` makes a new class the uses two MACs in series, as expected,
+it synthesizes to :numref:`pyha_mac_reuse_stack`.
+
+.. code-block:: python
+    :caption: Pipelined multiply-accumulate(MAC) implemented in Pyha
+    :name: mac-pyha-serial
+
+    class SeriesMAC:
+        def __init__(self, coef):
+            self.mac0 = MAC(123)
+            self.mac1 = MAC(321)
+
+        def main(self, a):
+            out0 = self.mac0.main(a)
+            out1 = self.mac1.main(out0)
+            return out1
+
+
+.. _pyha_mac_reuse_stack:
+.. figure:: img/mac_reuse_stack.png
+    :align: center
+    :figclass: align-center
+
+    RTL of stacked MAC (Intel Quartus RTL viewer)
+
+Same kind of class could also used to program two parallel MACs, just the callouts must be changes, as show in
+:numref:`mac-pyha-parallel`.
+As expected this would synthesize to parallel MACS as swown on :numref:`pyha_mac_reuse_parallel`.
+
+.. code-block:: python
+    :caption: Pipelined multiply-accumulate(MAC) implemented in Pyha
+    :name: mac-pyha-parallel
+
+    def main(self, a):
+        out0 = self.mac0.main(a)
+        out1 = self.mac1.main(a)
+        return out0, out1
+
+
+.. _pyha_mac_reuse_parallel:
+.. figure:: img/mac_reuse_parallel.png
+    :align: center
+    :figclass: align-center
+
+    RTL of parallel MAC (Intel Quartus RTL viewer)
+
+Note that it would also be possible to create lists of objects..etc.
+It is clear that such kind of programming would be useful for hardware.
+
+Features that we are looking for:
+
+    - Easly convertable and synthesisable
+    - There may be more user defined functions
+    - Object may be have subobjects
+    - Subobjects may have their own subobjects, maybe even a list of objects.
+    - Easy to map to Python, data model goes to stcuture and all methods just convert. profit
+    - Multiple clocks
+
+
 
 Background
 ----------
@@ -52,49 +137,9 @@ affected by current input value as well as past input values (or the entire sequ
 values). That is why we call a circuit with internal state a sequential circuit.
 :cite:`chu_vhdl`
 
-
-Problem statement
------------------
-
-What do we want from this IR? What does it have to support?
-
-.. code-block:: python
-    :caption: Pipelined multiply-accumulate(MAC) implemented in Pyha
-    :name: mac-pyha
-
-    class MultiplyAccumulate(HW):
-        def __init__(self):
-            self.coef = 123
-            self.mul = 0
-            self.acc = 0
-
-        def main(self, a):
-            self.next.mul = a * self.coef
-            self.next.acc = self.acc + self.mul
-            return self.acc
-
-
-.. _mac_rtl:
-.. figure:: img/mac_rtl.png
-    :align: center
-    :figclass: align-center
-
-    RTL of MAC (Intel Quartus RTL viewer)
-
-.. note:: In order to keep examples simple, only :code:`integer` types are used in this section.
-
-
-
-
-
-Now
-
-    - There may be more user defined functions
-    - Object may be have subobjects
-    - Subobjects may have their own subobjects, maybe even a list of objects.
-    - Easy to map to Python, data model goes to stcuture and all methods just convert. profit
-
-
+While other HDL converters use VHDL/Verilog as low level conversion target.
+Pyha goes other way around, as shown by the Gardner study :cite:`structvhdl_gaisler`, VHDL language can be used
+with quite high level progrmaming constructs. Pyha tries to take advantage of this.
 
 
 
@@ -125,6 +170,7 @@ Arguably better name for combinatory logic is 'stuff between two registers'.
     end function;
 
 .. todo:: Would like to show Python vs VHDL code here?
+.. todo:: Here talk about top level stuff also?
 
 :numref:`comb-vhdl` show the MAC function in VHDL. It is functionally broken as the acc should save state
 outside of the function.
@@ -461,6 +507,8 @@ Multiple instances example
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. todo:: Images have sinngle constant coef
+
+in the beginning we also showed examples of multiple instances...
 
 This paragraph shows how to create a new class that itself includes two MAC elements.
 Situation is that we want to use first MAC with coeficient of '123' and the second one with '321'. According
