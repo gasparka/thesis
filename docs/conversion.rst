@@ -1,6 +1,7 @@
 Switching from VHDL to Python
 =============================
 
+Lay down a common ground on which VHDL and Python coold be connected.
 This chapter examines the feasability and means of converting Python code to VHDL.
 
 What about verilog?

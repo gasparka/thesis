@@ -1,6 +1,8 @@
 Introduction
 ============
 
+Major goal of this project is to support object-oriented hardware design.
+
 While other high level tools convert to very low-level VHDL, then Pyha takes and different approach by
 first developing an feasible model in VHDL and then using Python to get around VHDL ugly parts.
 
