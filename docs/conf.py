@@ -177,19 +177,13 @@ latex_elements = {
     # disable index printing
     'printindex': '',
 
-    'figure_align': 'htbp',
+    'figure_align': '!htbp',
 }
 
 
 latex_additional_files = [
-    '/home/gaspar/git/thesis/tex/puthesis.cls',
-    '/home/gaspar/git/thesis/tex/thesis.cls',
-    # 'tex/preamble._tex',
-    # 'tex/footer._tex',
     '/home/gaspar/git/thesis/tex/sphinx.sty',
-    # 'tex/Makefile',
-    # 'tex/refstyle.bst',
-    # 'tex/ccicons.sty',
+    '/home/gaspar/git/thesis/tex/sphinxmanual.cls'
 ]
 
 
