@@ -110,7 +110,7 @@ html_theme_path = [sphinx_rtd_theme.get_html_theme_path()]
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
-html_static_path = ['_static']
+html_static_path = []
 
 # -- Options for HTMLHelp output ------------------------------------------
 
@@ -140,6 +140,7 @@ htmlhelp_basename = 'Pyhadoc'
 
 
 latex_elements = {
+    'preamble': '\setcounter{tocdepth}{2}',
     # The paper size ('letterpaper' or 'a4paper').
     'papersize': 'letterpaper',
 
@@ -185,7 +186,7 @@ latex_additional_files = [
     '/home/gaspar/git/thesis/tex/thesis.cls',
     # 'tex/preamble._tex',
     # 'tex/footer._tex',
-    # '/home/gaspar/git/thesis/tex/sphinx.sty',
+    '/home/gaspar/git/thesis/tex/sphinx.sty',
     # 'tex/Makefile',
     # 'tex/refstyle.bst',
     # 'tex/ccicons.sty',
@@ -199,7 +200,7 @@ latex_additional_files = [
 # VHDL as Intermediate Language for High-Level Synthesis and Python bindings
 latex_documents = [
     (master_doc, 'Pyha.tex', 'Thesis',
-     'Gaspar Karm', 'puthesis'),
+     'Gaspar Karm', 'manual'),
 ]
 
 # -- Options for manual page output ---------------------------------------
