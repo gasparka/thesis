@@ -24,6 +24,3 @@ Thesis!
     vhdl_extensions
 
 
-
-.. bibliography:: bibliography.bib
-    :style: unsrt
