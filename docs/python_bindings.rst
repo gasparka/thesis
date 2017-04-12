@@ -1,138 +1,44 @@
-Switching from VHDL to Python
+Python bindings and simulator
 =============================
 
-Lay down a common ground on which VHDL and Python coold be connected.
-This chapter examines the feasability and means of converting Python code to VHDL.
 
-What about verilog?
+Simulation
+----------
 
-While other high-level tools decide to use VHDL/Verilog as low level conversion target.
-Pyha goes other way around, as shown by the Gardner study, VHDL language can be used
-with quite high level progrmaming constructs. Pyha tries to take advantage of this.
-Disadvantage is that it can be only converted to VHDL. Advantages are numerous:
+One clock limitation?
 
-    - Similiar code in VHDL and Python
-    - Clean conversion output
-    - ?
+This chapter does not worry about conversion process.
 
-Python vs VHDL
---------------
-VHDL is known as a strongly typed language in addition to that it is very verbose.
-Python is dynamically typed and is basically as least verbose as possible.
-
-Comparison of syntax
---------------------
-
-
-Assignments
------------
-
-In VHDL
-~~~~~~~
-
-The syntax of a variable assignment statement is :code:`variable-name := value-expression;`
-The immediate assignment notion, :=, is used for the variable assignment. There is no time
-dimension (i.e., no propagation delay) and the assignment takes effect immediately. The
-behavior of the variable assignment is just like that of a regular variable assignment used
-in a traditional programming language. :cite:`chu_vhdl`
-
-The syntax of a sequential signal assignment is identical to that of the simple concurrent
-signal assignment of Chapter 4 except that the former is inside a process. It can be written
-as signal-name <= projected-waveform;
-The projected-waveform clause consists of a value expression and a time expression,
-which is generally used to represent the propagation delay. As in the concurrent signal
-assignment statement, the delay specification cannot be synthesized and we always use the
-default &delay. The syntax becomes signal-name <= value-expression;
-Note that the concurrent conditional and selected signal assignment statements cannot be
-used inside the process.
-For a signal assignment with 6-delay, the behavior of a sequential signal assignment
-statement is somewhat different from that of its concurrent counterpart. If a process has
-a sensitivity list, the execution of sequential statements is treated as a “single abstract
-evaluation,” and the actual value of an expression will not be assigned to a signal until the
-end of the process. This is consistent with the black box interpretation of the process; that
-is, the entire process is treated as one indivisible circuit part, and the signal is assigned a
-value only after the completion of all sequential statements.
-Inside a process, a signal can be assigned multiple times. If all assignments are with
-&delays, only the last assignment takes effect. Because the signal is not updated until the
-end of the process, it never assumes any “intermediate” value. For example, consider the
-following code segment: :cite:`chu_vhdl`
-
-Python support
-~~~~~~~~~~~~~~
-
-Supporting VHDL variable assignment in Python code is trivial, only the VHDl assignment notation must be
-changed from :code:`:=` to :code:`=`.
-
-Pyhas solution simplifies the VHDL assignments by have unified style with still same functionality.
-
-Support for VHDl simulation needs to after the clock tick update the next values into actual values.
-
-.. :todo:: Siin oleks vaja next süsteemi kirjeldada, kuidas see VHDL asjaga võrdne on..sama süsteem kasutusel
-    MyHDL jne..
-
-
-Design resuse
--------------
-
-
-Object-orientation support
---------------------------
-
-Major goal of this project is to support object-oriented hardware design.
-
-Goal is to provide simple object support, advanced features like inherintance and overloadings are not considerted
-at this moment.
-
-Python itself comes with a strong object-orientation support. On the other hand VHDL has no class support whatsoever.
-
+Pyha extends the VHDL language by allowing objective-oriented designs. Unit object is Python class as shown on
 
 .. code-block:: python
-   :caption: Basic class in Python
-   :name: python-class
+   :caption: Basic Pyha unit
+   :name: basic-pyha
 
-    class Name:
-        def __init__(self):
-            self.instance_member = 0
+    class PyhaUnit(HW):
+        def __init__(self, coef):
+            pass
 
-        def function(self, a, b):
-            self.instance_member = a + b
-            return self.instance_member
+        def main(self, input):
+            pass
 
-:numref:`this-py` shows an simple example of Python class. It has two functions, :code:`__init__` in python is a
-class constructor. :code:`function` is just and user defined function.
+        def model_main(self, input_list):
+            pass
 
-It can be used as follows:
-    >>> a = Name()
-    >>> a.instance_member
-    0
-    >>> a.function(1, 2)
-    3
-    >>> a.instance_member
-    3
+:numref:`basic-pyha` shows the besic design unit of the developend tool, it is a standard Python class, that is derived
+from a baseclass HW, purpos of this baseclass is to do some metaclass stuff and register this class as Pyha module.
 
-Turning this kind of structure to VHDL can be done by levraging VHDL support for struct types.
+Metaclass actions:
 
 
-.. code-block:: vhdl
-    :caption: VHDL conversion for integer array
-    :name: vhdl-int-arr
-    :linenos:
 
-    type self_t is record
-        instance_member: integer;
-    end record;
+Conversion
+----------
 
-    procedure main(self:inout self_t; a: integer; ret_0:out integer) is
-    begin
-        self.instance_member := a;
-        ret_0 := self.instance_member;
-        return;
-    end procedure;
+Methodology is RedBaron.
 
-.. :todo:: What about multi objects, resets etc??
-
-Convertings
------------
+VHDL is known as a strongly typed language in addition to that it is very verbose.
+Python is dynamically typed and is basically as least verbose as possible.
 
 Based on the results of previous chapter it is clear that specific Python code can be converted to VHDL.
 Doing so requires some way of parsing the Python code and outputting VHDL.
@@ -172,6 +78,20 @@ For example in the above example main node is AssignmentNode, this could be modi
 
     a := b;
 
+
+Python support
+~~~~~~~~~~~~~~
+
+Supporting VHDL variable assignment in Python code is trivial, only the VHDl assignment notation must be
+changed from :code:`:=` to :code:`=`.
+
+Pyhas solution simplifies the VHDL assignments by have unified style with still same functionality.
+
+Support for VHDl simulation needs to after the clock tick update the next values into actual values.
+
+.. :todo:: Siin oleks vaja next süsteemi kirjeldada, kuidas see VHDL asjaga võrdne on..sama süsteem kasutusel
+    MyHDL jne..
+
 Converting functions
 ~~~~~~~~~~~~~~~~~~~~
 
@@ -184,8 +104,7 @@ In this work we focus on functons that dont contain these advanced features.
 VHDL supports two style of functions:
 
     - Functions - classical functions, that have input values and can return one value
-    - Procedures - these cannot return a value, but can have agument that is of type 'out', thus returing trough an
-output argument. Also it allows argument to be of type 'inout' that is perfect for class object.
+    - Procedures - these cannot return a value, but can have agument that is of type 'out', thus returing trough an output argument. Also it allows argument to be of type 'inout' that is perfect for class object.
 
 All the Python functions are to be converted to VHDL procedures as they provide more wider interface.
 
@@ -212,7 +131,7 @@ Here is an simple Python function that contains most of the features required by
 
 .. code-block:: vhdl
     :caption: VHDL example procedure
-    :name: vhdl-int-arr
+    :name: vhdl-int-arr2
     :linenos:
 
     procedure main(self:inout self_t; a: integer; ret_0:out integer; ret_1:out integer) is
@@ -241,7 +160,7 @@ VHDL side:
 
 
 Problem of types
-----------------
+~~~~~~~~~~~~~~~~
 
 Biggest difference and problem between Python and VHDL is the type system.
 While in VHDL everything must be typed, Python is fully dynamically typed language, meaning that
@@ -297,107 +216,13 @@ Extensions..wehn you can do more in python domain.
 
 Feasability of converting Python to VHDL
 
-
-Basics
-------
-Pyha extends the VHDL language by allowing objective-oriented designs. Unit object is Python class as shown on
-
-.. code-block:: python
-   :caption: Basic Pyha unit
-   :name: basic-pyha
-
-    class PyhaUnit(HW):
-        def __init__(self, coef):
-            pass
-
-        def main(self, input):
-            pass
-
-        def model_main(self, input_list):
-            pass
-
-:numref:`basic-pyha` shows the besic design unit of the developend tool, it is a standard Python class, that is derived
-from a baseclass *HW, purpos of this baseclass is to do some metaclass stuff and register this class as Pyha module.
-
-Metaclass actions:
-
-
-
-Combinatory logic
------------------
-
-.. todo:: Ref comb logic.
-
-.. code-block:: python
-   :caption: Basic combinatory circuit in Pyha
-   :name: pyha-comb
-
-    class Comb(HW):
-        def main(self, a, b):
-            xor_out = a xor b
-            return xor_out
-
-
-
-:numref:`pyha-comb` shows the design of a combinatory logic. In this case it is a simple xor operation between
-two input operands. It is a standard Python class, that is derived from a baseclass *HW,
-purpose of the baseclass is to do some metaclass stuff and register this class as Pyha module.
-
-Class contains an function 'main', that is considered as the top level function for all Pyha designs. This function
-performs the xor between two inputs 'a' and 'b' and then returns the result.
-
-In general all assigments to local variables are interpreted as combinatory logic.
-
-.. todo:: how this turns to VHDL and RTL picture?
-
-
-
-Sequential logic
-----------------
-
-.. todo:: Ref comb logic.
-
-.. code-block:: python
-   :caption: Basic sequential circuit in Pyha
-   :name: pyha-reg
-
-    class Reg(HW):
-        def __init__(self):
-            self.reg = 0
-
-        def main(self, a, b):
-            self.next.reg = a + b
-            return self.reg
-
-:numref:`pyha-reg` shows the design of a registered adder.
-
-In Pyha, registers are inferred from the ogject storage, that is everything defined in 'self' will be made registers.
-
-
-The 'main' function performs addition between two inputs 'a' and 'b' and then returns the result.
-It can be noted that the sum is assigned to 'self.next' indicating that this is the next value register takes on
-next clock.
-
-Also returned is self.reg, that is the current value of the register.
-
-In general this system is similiar to VHDL signals:
-
-    - Reading of the signal returns the old value
-    - Register takes the next value in next clock cycle (that is self.next.reg becomes self.reg)
-    - Last value written to register dominates the next value
-
-However there is one huge difference aswell, namely that VHDL signals do not have order, while all Pyha code is stctural.
-
-
-.. todo:: how this turns to VHDL and RTL picture?
-
-
 Types
------
+~~~~~
 This chapter gives overview of types supported by Pyha.
 
 Integers
-~~~~~~~~
+^^^^^^^^
+
 Integer types and operations are supported for FPGA conversion with a couple of limitations.
 First of all, Python integers have unlimited precision :cite:`pythondoc`. This requirement is impossible to meet and
 because of this converted integers are assumed to be 32 bits wide.
@@ -406,23 +231,20 @@ Conversion wize, all inger objectsa are mapped to VHDL type 'integer', that impl
 In case integer object is returned to top-module, it is converted to 'std_logic_vector(31 downto 0)'.
 
 Booleans
-~~~~~~~~
+^^^^^^^^
 
 Booleans in Python are truth values that can either be True or False.
 Booleans are fully supported for conversion.
 In VHDL type 'boolean' is used. In case of top-module, it is converted to 'std_logic' type.
 
 Floats
-~~~~~~
+^^^^^^
 
 Floating point values can be synthesized as constants only if they find a way to become fixed_point type.
 Generally Pyha does not support converting floating point values, however this could be useful because floating point
 values can very much be used in RTL simulation, it could be used to verify design before fixed point conversion.
 
 Floats can be used as constants only, in coperation with Fixed point class.
-
-
-.. include:: fixed_point.rst
 
 
 
@@ -451,11 +273,8 @@ for now it can be lived with.
 
 It is possible to get around this by using clock domain crossing interfacec between two Pyha modules.
 
-
 Support for VHDl conversion is straightforward, as Pyha modules are converted into VHDL struct. So having a
 submodule means just having a struct member of that module.
-
-
 
 Lists
 ~~~~~
@@ -472,11 +291,67 @@ type is deduced from the type of first element in Python array the size of defin
 
 .. code-block:: vhdl
     :caption: VHDL conversion for integer array
-    :name: vhdl-int-arr
+    :name: vhdl-int-arr3
     :linenos:
 
     type integer_list_t is array (natural range <>) of integer;
     l: integer_list_t(0 to 1);
+
+
+Testing and verification
+------------------------
+
+This chapter aims to investigate how modern software development techniques coulde be used
+in design of hardware.
+
+While MyHDL brings development to the Python world, it still requires the make of testbenches
+and stuff. Pyha aimst to simplify this by providing higl level simulation functions.
+
+Convetional design flow
+~~~~~~~~~~~~~~~~~~~~~~~
+
+VHDL uuendused? VUNIT VUEM?
+
+Test-driven development / unit-tests
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. http://digitalcommons.calpoly.edu/cgi/viewcontent.cgi?article=1034&context=csse_fac
+
+Model based development
+~~~~~~~~~~~~~~~~~~~~~~~
+
+How MyHDl and other stuffs contribute here?
+
+
+Pyha support
+~~~~~~~~~~~~
+
+Since Pyha brings the development into Python domain, it opens this whole ecosystem for writing
+testing code.
+
+Python ships with many unit-test libraries, for example PyTest, that is the main one used for
+Pyha.
+
+As far as what goes for model writing, Python comes with extensive schinetific stuff. For example
+Scipy and Numpy. In addition all the GNURadio blocks have Python mappings.
+
+
+Simplifying testing
+~~~~~~~~~~~~~~~~~~~
+
+One problem for model based designs is that the model is generally written in some higher
+level language and so testing the model needs to have different tests than HDL testing. That
+is one ov the problems with CocoTB.
+
+Pyha simplifies this by providing an one function that can repeat the test on model, hardware-model, RTL
+and GATE level simulations.
+
+
+Ipython notebook
+~~~~~~~~~~~~~~~~
+
+It is interactive environment for python.
+Show how this can be used.
 
 
 Conclusions
@@ -484,3 +359,5 @@ Conclusions
 
 This chapter showed how Python OOP code can be converted into VHDL OOP code.
 
+It is clear that Pyha provides many conveneince functions to greatly simplyfy the testing of
+model based designs.

@@ -9,7 +9,6 @@ Thesis!
 
 .. .. toctree::
         :caption: Contents:
-
         intro
         background
         vhdl_extensions
@@ -22,5 +21,6 @@ Thesis!
     :caption: Contents:
 
     vhdl_extensions
+    python_bindings
 
 

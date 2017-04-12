@@ -59,7 +59,7 @@
     {Gaspar Karm}\\[2,3 cm]
     \begin{huge}
 
-    \textsc{\textbf{VHDL as Object-oriented Intermediate Language and Python bindings\\[2,3 cm]}}
+    \textsc{\textbf{VHDL as Object-oriented Intermediate Language and Python bindings with simulator\\[2,3 cm]}}
     \end{huge}
     {Master's Thesis}\\[1,5 cm]
     \end{center}

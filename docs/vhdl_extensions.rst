@@ -87,7 +87,8 @@ Multiply-accumulate(MAC) circuit is used as a demonstration circuit throughout t
 
 .. note:: In order to keep examples simple, only :code:`integer` types are used in this chapter.
 
-:numref:`mac-pyha` shows a MAC component implemented in Pyha (Python to VHDL compiler implemented in the next chapter of this thesis)
+:numref:`mac-pyha` shows a MAC component implemented in Pyha
+(Python to VHDL compiler implemented in the next chapter of this thesis)
 Operation of this circuit is to multiply the input with coefficient and accumulate the result.
 It synthesizes to logic shown on :numref:`mac_rtl`.
 
