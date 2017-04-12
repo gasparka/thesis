@@ -55,7 +55,6 @@
     \end{center}
 
     \begin{center} %Tekst keskele
-    {[Thesis code]}\\
     {Gaspar Karm}\\[2,3 cm]
     \begin{huge}
 

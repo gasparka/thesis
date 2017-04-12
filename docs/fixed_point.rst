@@ -118,6 +118,8 @@ VHDL library seemed like the best option.
 
 It limits the conversion to VHDL only, for example Verilog has no fixed point package in standard library.
 
+Autoresize? Automatic conversion to fixed point?
+
 Complex fixed-point
 -------------------
 Objective of this tool was to simplify model based design and verification of DSP to FPGA models.
@@ -144,4 +146,4 @@ be done on :code:`.real` and :code:`.imag` elements, that are just Sfix objects.
 
 
 .. :todo::
-    Complex conversion actually not easy due to GHDL limitations.
+    Complex conversion actually not easy due to GHDL limitations. Conversion? Too detailed!

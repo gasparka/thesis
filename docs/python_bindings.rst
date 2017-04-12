@@ -2,161 +2,93 @@ Python bindings and simulator
 =============================
 
 
-Simulation
-----------
+.. note:: No need to go too detailed here!
 
-One clock limitation?
+Why Python? Easy to hack.
 
+Last chapter developed OOP VHDL way. This chapter build on top of this and develops Python bindings.
+Developing in Python has multiple advantages
+
+    - Rich librarys
+    - Simpler syntax
+    - Free development tools
+
+Moreover, simulator is provided that so Python designs can be simulated before conversion.
+Fixed point support is added and described.
+
+Last chapter shows how Python ecosystem can be used to greatly simply the testing/verifying of systems.
+Model based design.
+
+Python model and Simulation
+---------------------------
+
+This chapter introduces the way of writing hardware designs in Python. Simulator info is provided also.
 This chapter does not worry about conversion process.
 
-Pyha extends the VHDL language by allowing objective-oriented designs. Unit object is Python class as shown on
+Object-orientation in Python
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Unit object is Python class as shown on
 
 .. code-block:: python
    :caption: Basic Pyha unit
    :name: basic-pyha
 
-    class PyhaUnit(HW):
+    class SimpleClass:
         def __init__(self, coef):
-            pass
+            self.coef = coef
 
         def main(self, input):
             pass
 
-        def model_main(self, input_list):
-            pass
 
 :numref:`basic-pyha` shows the besic design unit of the developend tool, it is a standard Python class, that is derived
 from a baseclass HW, purpos of this baseclass is to do some metaclass stuff and register this class as Pyha module.
 
-Metaclass actions:
+As for the VHDL model, we can assume that all the variables in the 'self' scope are registers.
 
+
+Writing hardware in Python
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+Adding registers support
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+Working with registers is implemented in a same way as in VHDL model. Meaning there are buffered.
+For this there is metaclass action, that allows chaning the process of class creation.
+Metaclass copies all the object data model to a new variable called 'next'. Thus automating the creation
+of the buffer values.
+
+How signal assignments can work in Python.
+
+Moreover, automatically function is created for updating the registers, it was named 'update registers' in VHDL
+model, now it is named '_pyha_update_self'. The effect of it is exactly the same, it copies 'next' variables
+to 'current', thus mimicing the register progress.
+
+Simulation
+~~~~~~~~~~
+
+Simulation of single clock designs is trivial. Main function must be called and then '_pyha_update_self'. This
+basically is an action for one clock edge.
+
+Here is an example that pushes some data twough the MAC component. This simulation result is equal to
+the GHDL simulation and generated netlist GATE simulation.
+
+.. todo:: add fixed point type here? rather keep separte? Convertable subset?
+
+Last chapter shows how to further improve the simulation process by using helper function provided by Pyha.
+
+Conclusions
+~~~~~~~~~~~
+
+Pyha extends Python language to add support for hardware also simulation is possible.
 
 
 Conversion
 ----------
 
-Methodology is RedBaron.
-
-VHDL is known as a strongly typed language in addition to that it is very verbose.
-Python is dynamically typed and is basically as least verbose as possible.
-
-Based on the results of previous chapter it is clear that specific Python code can be converted to VHDL.
-Doing so requires some way of parsing the Python code and outputting VHDL.
-
-In general this step involves using an abstract syntax tree (AST). MyHDL is using this solution.
-
-However RedBaron offers a better solution. RedBaron is an Python library with an aim to significally simply
-operations with source code parsing. Also it is not based on the AST, but on FST, that is full syntax tree
-keeping all the comments and stuff.
-
-Here is a simple example:
-    >>> red = RedBaron('a = b')
-    >>> red
-    0   a = b
-
-RedBaron turns all the blocks in the code into special 'nodes'. Help function provides an example:
-    >>> red.help()
-    0 -----------------------------------------------------
-    AssignmentNode()
-      # identifiers: assign, assignment, assignment_, assignmentnode
-      operator=''
-      target ->
-        NameNode()
-          # identifiers: name, name_, namenode
-          value='a'
-      value ->
-        NameNode()
-          # identifiers: name, name_, namenode
-          value='b'
-
-
-Now Pyha defined a mirror node for each of RedBaron nodes, with the goal of turning the code into VHDL.
-For example in the above example main node is AssignmentNode, this could be modified to change the '=' into
-':=' and add ';' to the end of line. Resulting in a VHDL compatible statement:
-
-.. code-block:: vhdl
-
-    a := b;
-
-
-Python support
-~~~~~~~~~~~~~~
-
-Supporting VHDL variable assignment in Python code is trivial, only the VHDl assignment notation must be
-changed from :code:`:=` to :code:`=`.
-
-Pyhas solution simplifies the VHDL assignments by have unified style with still same functionality.
-
-Support for VHDl simulation needs to after the clock tick update the next values into actual values.
-
-.. :todo:: Siin oleks vaja next süsteemi kirjeldada, kuidas see VHDL asjaga võrdne on..sama süsteem kasutusel
-    MyHDL jne..
-
-Converting functions
-~~~~~~~~~~~~~~~~~~~~
-
-First of all, all the convertable functions are assumed to be class functions, that means they have the first argument
-:code:`self`.
-
-Python is very liberal in syntax rules, for example functions and even classes can be defined inside functions.
-In this work we focus on functons that dont contain these advanced features.
-
-VHDL supports two style of functions:
-
-    - Functions - classical functions, that have input values and can return one value
-    - Procedures - these cannot return a value, but can have agument that is of type 'out', thus returing trough an output argument. Also it allows argument to be of type 'inout' that is perfect for class object.
-
-All the Python functions are to be converted to VHDL procedures as they provide more wider interface.
-
-Python functions can return multiple values and define local variables. In order to support multiple return,
-multiple output arguments are appended to the argument list with prefix :code:`ret_`. So for example first return
-would be assigned to :code:`ret_0` and the second one to :code:`ret_1`.
-
-
-
-Here is an simple Python function that contains most of the features required by conversion, these are:
-
-    - First argument self
-    - Input argument
-    - Local variables
-    - Multiple return values
-
-.. code-block:: python
-
-    def main(self, a):
-        b = a
-        return a, b
-
-
-
-.. code-block:: vhdl
-    :caption: VHDL example procedure
-    :name: vhdl-int-arr2
-    :linenos:
-
-    procedure main(self:inout self_t; a: integer; ret_0:out integer; ret_1:out integer) is
-        variable b: integer;
-    begin
-        b := a;
-        ret_0 := a;
-        ret_1 := b;
-        return;
-    end procedure;
-
-In VHDL local variables must be defined in a special region before the procedure body. Converter can handle these
-caese thanks to the previously discussed types stuff.
-
-The fact that Python functions can return into multiple variables requires and conversion on
-VHDL side:
-
-.. code-block:: python
-
-    ret0, ret1 = self.main(b)
-
-.. code-block:: vhdl
-
-    main(self, b, ret_0=>ret0, ret_1=>ret1);
-
+This chapter aims to convert the Python based model into VHDL, with the goal of synthesis.
 
 
 Problem of types
@@ -207,14 +139,137 @@ Other advantages this way makes possible to use 'lazy' coding, meaning that only
 matters.
 
 
-.. :todo:: much improvements very wow
+Conversion methodology
+~~~~~~~~~~~~~~~~~~~~~~
+
+Methodology is RedBaron.
+
+VHDL is known as a strongly typed language in addition to that it is very verbose.
+Python is dynamically typed and is basically as least verbose as possible.
+
+Based on the results of previous chapter it is clear that specific Python code can be converted to VHDL.
+Doing so requires some way of parsing the Python code and outputting VHDL.
+
+In general this step involves using an abstract syntax tree (AST). MyHDL is using this solution.
+
+However RedBaron offers a better solution. RedBaron is an Python library with an aim to significally simply
+operations with source code parsing. Also it is not based on the AST, but on FST, that is full syntax tree
+keeping all the comments and stuff.
+
+Here is a simple example:
+    >>> red = RedBaron('a = b')
+    >>> red
+    0   a = b
+
+RedBaron turns all the blocks in the code into special 'nodes'. Help function provides an example:
+    >>> red.help()
+    0 -----------------------------------------------------
+    AssignmentNode()
+      # identifiers: assign, assignment, assignment_, assignmentnode
+      operator=''
+      target ->
+        NameNode()
+          # identifiers: name, name_, namenode
+          value='a'
+      value ->
+        NameNode()
+          # identifiers: name, name_, namenode
+          value='b'
 
 
-Language differences...
+Now Pyha defined a mirror node for each of RedBaron nodes, with the goal of turning the code into VHDL.
+For example in the above example main node is AssignmentNode, this could be modified to change the '=' into
+':=' and add ';' to the end of line. Resulting in a VHDL compatible statement:
 
-Extensions..wehn you can do more in python domain.
+.. code-block:: vhdl
 
-Feasability of converting Python to VHDL
+    a := b;
+
+
+Basic conversions
+~~~~~~~~~~~~~~~~~
+
+Supporting VHDL variable assignment in Python code is trivial, only the VHDl assignment notation must be
+changed from :code:`:=` to :code:`=`.
+
+
+Converting functions
+~~~~~~~~~~~~~~~~~~~~
+
+First of all, all the convertable functions are assumed to be class functions, that means they have the first argument
+:code:`self`.
+
+Python is very liberal in syntax rules, for example functions and even classes can be defined inside functions.
+In this work we focus on functons that dont contain these advanced features.
+
+VHDL supports two style of functions:
+
+    - Functions - classical functions, that have input values and can return one value
+    - Procedures - these cannot return a value, but can have agument that is of type 'out', thus returing trough an output argument. Also it allows argument to be of type 'inout' that is perfect for class object.
+
+All the Python functions are to be converted to VHDL procedures as they provide more wider interface.
+
+Python functions can return multiple values and define local variables. In order to support multiple return,
+multiple output arguments are appended to the argument list with prefix :code:`ret_`. So for example first return
+would be assigned to :code:`ret_0` and the second one to :code:`ret_1`.
+
+Here is an simple Python function that contains most of the features required by conversion, these are:
+
+    - First argument self
+    - Input argument
+    - Local variables
+    - Multiple return values
+
+.. code-block:: python
+
+    def main(self, a):
+        b = a
+        return a, b
+
+
+
+.. code-block:: vhdl
+    :caption: VHDL example procedure
+    :name: vhdl-int-arr2
+    :linenos:
+
+    procedure main(self:inout self_t; a: integer; ret_0:out integer; ret_1:out integer) is
+        variable b: integer;
+    begin
+        b := a;
+        ret_0 := a;
+        ret_1 := b;
+        return;
+    end procedure;
+
+In VHDL local variables must be defined in a special region before the procedure body. Converter can handle these
+caese thanks to the previously discussed types stuff.
+
+The fact that Python functions can return into multiple variables requires and conversion on
+VHDL side:
+
+.. code-block:: python
+
+    ret0, ret1 = self.main(b)
+
+.. code-block:: vhdl
+
+    main(self, b, ret_0=>ret0, ret_1=>ret1);
+
+Converting classes
+~~~~~~~~~~~~~~~~~~
+
+
+Extracting the data model
+^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Instances
+^^^^^^^^^
+
+
+Overall converting classes is simple as they consist of functions.
+
+
 
 Types
 ~~~~~
@@ -247,31 +302,8 @@ values can very much be used in RTL simulation, it could be used to verify desig
 Floats can be used as constants only, in coperation with Fixed point class.
 
 
-
 User defined types / Submodules
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-For design reuse it is needed to reuse previously generated designs. Traditional HDLs use entity declarations for
-this purpose. One of the key assumption of these entities is that they all run in parallel. This has some advantages
-and disadvantages. Good thing is that this is the most flexible solution, that is it supports as many clocks and clock
-domains as neccessary. Disadvantage is that in the end much of the VHDL programing comes down to wiring togather different
-entities, and this can be worksome and bugful process.
-
-Another downside is that all of these entities must be simulated as a separate process, this has a cost on simulation speed
-and more severily it makes debugging hard..think about debugging multi-threaded programs.
-
-In contrast to traditional HDLs, Pyha has taken an approach where design reuse is archived trough regular objects.
-This has numerous advantages:
-
-    - Defining a module is as easy as making an class object
-    - Using submodule is as easy as in traditional programming..just call the functions
-    - Execution in same domain, one process design
-
-Result of this design decision is that using submodules is basically the same as in normal programming.
-This decision comes with a severe penalty aswell, namely all the submodules then must work with the same clock signal.
-This essentially limits Pyha designs down to using only one clock. This is a serious constrain for real life systems, but
-for now it can be lived with.
-
-It is possible to get around this by using clock domain crossing interfacec between two Pyha modules.
 
 Support for VHDl conversion is straightforward, as Pyha modules are converted into VHDL struct. So having a
 submodule means just having a struct member of that module.
@@ -297,9 +329,11 @@ type is deduced from the type of first element in Python array the size of defin
     type integer_list_t is array (natural range <>) of integer;
     l: integer_list_t(0 to 1);
 
+Constants? Interfaces?
 
-Testing and verification
-------------------------
+
+Testing, debugging and verification
+-----------------------------------
 
 This chapter aims to investigate how modern software development techniques coulde be used
 in design of hardware.
@@ -307,24 +341,17 @@ in design of hardware.
 While MyHDL brings development to the Python world, it still requires the make of testbenches
 and stuff. Pyha aimst to simplify this by providing higl level simulation functions.
 
-Convetional design flow
-~~~~~~~~~~~~~~~~~~~~~~~
+Background
+~~~~~~~~~~
 
 VHDL uuendused? VUNIT VUEM?
 
 Test-driven development / unit-tests
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. http://digitalcommons.calpoly.edu/cgi/viewcontent.cgi?article=1034&context=csse_fac
 
 Model based development
-~~~~~~~~~~~~~~~~~~~~~~~
-
 How MyHDl and other stuffs contribute here?
-
-
-Pyha support
-~~~~~~~~~~~~
 
 Since Pyha brings the development into Python domain, it opens this whole ecosystem for writing
 testing code.
@@ -334,6 +361,10 @@ Pyha.
 
 As far as what goes for model writing, Python comes with extensive schinetific stuff. For example
 Scipy and Numpy. In addition all the GNURadio blocks have Python mappings.
+
+
+Model based design, this is also called behavioral model (
+.. https://books.google.ee/books?hl=en&lr=&id=XbZr8DurZYEC&oi=fnd&pg=PP1&dq=vhdl&ots=PberwiAymP&sig=zqc4BUSmFZaL3hxRilU-J9Pa_5I&redir_esc=y#v=onepage&q=vhdl&f=false)
 
 
 Simplifying testing
@@ -350,6 +381,7 @@ and GATE level simulations.
 Ipython notebook
 ~~~~~~~~~~~~~~~~
 
+Simple example of docu + test combo.
 It is interactive environment for python.
 Show how this can be used.
 
