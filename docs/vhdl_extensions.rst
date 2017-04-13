@@ -566,6 +566,8 @@ Note that nothing has to be changed in the data model or main function.
 Synthesis result (:numref:`mac_parallel_two_clocks`) is as expected, MAC's are still in parallel but now the registers are clocked by different clocks. Reset signal is common
 for the whole design.
 
+.. todo:: Add TDA example here? Would demonstrate statemechines and control structures...
+
 Conclusion
 ----------
 

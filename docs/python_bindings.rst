@@ -51,9 +51,23 @@ As for the VHDL model, we can assume that all the variables in the 'self' scope 
 Writing hardware in Python
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+As shown in previous chapter, traditional language features can be used to infer hardware components.
+One must still keep in mind of how the code will convert to hardware. For example all loops (For) will be unrolled,
+this dentotes that the loop control must have finitive limit.
+
+Another point to note is that every arithmetical operator used will use up resorce. There is a big difference between
+hardware and software programming, using operators in software takes up time but in hardware they will all run in parallel
+so no addtional time is used BUT resource. There are ways to share the operators to trade resource for time.
+
+One thing that is not natively supported in python is registers, for this we did special stuff in VHDL section,
+basically the same can be done in Python domain.
+
+statemachines?
 
 Adding registers support
 ~~~~~~~~~~~~~~~~~~~~~~~~
+
+The init function is used to determine the startup valu
 
 Working with registers is implemented in a same way as in VHDL model. Meaning there are buffered.
 For this there is metaclass action, that allows chaning the process of class creation.
@@ -65,6 +79,31 @@ How signal assignments can work in Python.
 Moreover, automatically function is created for updating the registers, it was named 'update registers' in VHDL
 model, now it is named '_pyha_update_self'. The effect of it is exactly the same, it copies 'next' variables
 to 'current', thus mimicing the register progress.
+
+
+Reset values
+~~~~~~~~~~~~
+
+In hardware is is important to be able to set the reset/power on values for the registers. In same sense this is
+important for class instance creation.
+
+
+.. code-block:: python
+   :caption: Reset example
+   :name: pyha-reset
+
+    class SimpleClass(HW):
+        def __init__(self):
+            self.reg0 = 123
+            self.reg1 = 321
+
+:numref:`pyha-reset` shows an example class, that defines two registers. Initial values for them will be also their
+hardware reset values.
+
+State-machines
+~~~~~~~~~~~~~~
+
+
 
 Simulation
 ~~~~~~~~~~
@@ -94,6 +133,8 @@ This chapter aims to convert the Python based model into VHDL, with the goal of 
 Problem of types
 ~~~~~~~~~~~~~~~~
 
+Python is considered to be
+
 Biggest difference and problem between Python and VHDL is the type system.
 While in VHDL everything must be typed, Python is fully dynamically typed language, meaning that
 types only come into play when the code is executing.
@@ -101,9 +142,9 @@ types only come into play when the code is executing.
 
 In general there are some different approaches to solve this problem:
 
-    - Determining types from Python source code
-    - Determining types from one pass execution/initial execution
-    - Using longer simulation
+    #. Determining types from Python source code
+    #. Determining types from one pass execution/initial execution
+    #. Using longer simulation
 
 First option is attractive as it could convert without any side actions, problem with this approach is that
 the converter would have to be extreamly complex in order to infer the variable types. For example :code:`a = 5` is a
