@@ -2,6 +2,10 @@ Python bindings and simulator
 =============================
 
 
+Kohe alguses avada MAC näitega?
+Kogu thesis põhineb MAC näitel?
+
+
 .. note:: No need to go too detailed here!
 
 Why Python? Easy to hack.
@@ -19,113 +23,22 @@ Fixed point support is added and described.
 Last chapter shows how Python ecosystem can be used to greatly simply the testing/verifying of systems.
 Model based design.
 
-Python model and Simulation
----------------------------
 
-This chapter introduces the way of writing hardware designs in Python. Simulator info is provided also.
-This chapter does not worry about conversion process.
+Conversion methodology
+----------------------
 
-Object-orientation in Python
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Conversion process is based heavily on the results of last chapter, that developed OOP style for VHDL.
+This simplifies the conversion process in a way, that mostly no complex conversions are not needed.
+Basically the converter should only care about syntax conversion, that is Python syntax to VHDL.
 
-Unit object is Python class as shown on
+Thats why this can be called Python bindings.. everything you write in Python has a direct mapping to VHDL, most
+of the time mapping is just syntax difference.
 
-.. code-block:: python
-   :caption: Basic Pyha unit
-   :name: basic-pyha
+Still converting Python syntax to VHDL syntax poses some problems. First, there is a need to traverse the Python
+source code and convert it. Next problem is the types, while VHDL is strongly types language, Python is not, somehow the
+conversion progress should find out all the types.
 
-    class SimpleClass:
-        def __init__(self, coef):
-            self.coef = coef
-
-        def main(self, input):
-            pass
-
-
-:numref:`basic-pyha` shows the besic design unit of the developend tool, it is a standard Python class, that is derived
-from a baseclass HW, purpos of this baseclass is to do some metaclass stuff and register this class as Pyha module.
-
-As for the VHDL model, we can assume that all the variables in the 'self' scope are registers.
-
-
-Writing hardware in Python
-~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-As shown in previous chapter, traditional language features can be used to infer hardware components.
-One must still keep in mind of how the code will convert to hardware. For example all loops (For) will be unrolled,
-this dentotes that the loop control must have finitive limit.
-
-Another point to note is that every arithmetical operator used will use up resorce. There is a big difference between
-hardware and software programming, using operators in software takes up time but in hardware they will all run in parallel
-so no addtional time is used BUT resource. There are ways to share the operators to trade resource for time.
-
-One thing that is not natively supported in python is registers, for this we did special stuff in VHDL section,
-basically the same can be done in Python domain.
-
-statemachines?
-
-Adding registers support
-~~~~~~~~~~~~~~~~~~~~~~~~
-
-The init function is used to determine the startup valu
-
-Working with registers is implemented in a same way as in VHDL model. Meaning there are buffered.
-For this there is metaclass action, that allows chaning the process of class creation.
-Metaclass copies all the object data model to a new variable called 'next'. Thus automating the creation
-of the buffer values.
-
-How signal assignments can work in Python.
-
-Moreover, automatically function is created for updating the registers, it was named 'update registers' in VHDL
-model, now it is named '_pyha_update_self'. The effect of it is exactly the same, it copies 'next' variables
-to 'current', thus mimicing the register progress.
-
-
-Reset values
-~~~~~~~~~~~~
-
-In hardware is is important to be able to set the reset/power on values for the registers. In same sense this is
-important for class instance creation.
-
-
-.. code-block:: python
-   :caption: Reset example
-   :name: pyha-reset
-
-    class SimpleClass(HW):
-        def __init__(self):
-            self.reg0 = 123
-            self.reg1 = 321
-
-:numref:`pyha-reset` shows an example class, that defines two registers. Initial values for them will be also their
-hardware reset values.
-
-State-machines
-~~~~~~~~~~~~~~
-
-
-
-Simulation
-~~~~~~~~~~
-
-Simulation of single clock designs is trivial. Main function must be called and then '_pyha_update_self'. This
-basically is an action for one clock edge.
-
-Here is an example that pushes some data twough the MAC component. This simulation result is equal to
-the GHDL simulation and generated netlist GATE simulation.
-
-.. todo:: add fixed point type here? rather keep separte? Convertable subset?
-
-Last chapter shows how to further improve the simulation process by using helper function provided by Pyha.
-
-Conclusions
-~~~~~~~~~~~
-
-Pyha extends Python language to add support for hardware also simulation is possible.
-
-
-Conversion
-----------
+This chapter deals with these problems.
 
 This chapter aims to convert the Python based model into VHDL, with the goal of synthesis.
 
@@ -133,12 +46,43 @@ This chapter aims to convert the Python based model into VHDL, with the goal of 
 Problem of types
 ~~~~~~~~~~~~~~~~
 
-Python is considered to be
+The biggest challenge in conversion from Python to VHDL is types, namely Python does not have them, while VHDL has.
 
-Biggest difference and problem between Python and VHDL is the type system.
-While in VHDL everything must be typed, Python is fully dynamically typed language, meaning that
+For example in VHDL, when we want to use local variable, it must be defined with type.
+
+.. code-block:: vhdl
+    :caption: VHDL variable action
+    :name: vhdl-variable
+
+    -- define variable a as integer
+    variable a: integer;
+
+    -- assign 'b' to 'a', this requires that 'b' is same type as 'a'
+    a := b;
+
+
+.. code-block:: python
+    :caption: Python variable action
+    :name: python-variable
+
+    # assign 'b' to 'a', 'a' will inherit type of 'b'
+    a = b
+
+:numref:`vhdl-variable` and :numref:`python-variable` show the variable difference in VHDl and Python.
+In general this can be interpreted in a way that VHDL icludes all the information required but Python leaves
+some things open.
+In Python it is even possible that 'a' is different type for different function callers.
+Python way is called dynamic-typing while VHDl way is static. Dynamic, meaning that
 types only come into play when the code is executing.
 
+The advantage of the Python way is that it is easier to program, no need to define variables and ponder about the types.
+Downsides are that there may be unexpected bugs when some variable changes type also the code readability suffers.
+
+In sense of conversion, dynamic typing poses a major problem, somehow the missing type info should be recovered for the
+VHDL code.
+
+Most straightforward  way to tackle this problem is to request the user to provide top level input types on conversion.
+As the main types are known, clearly all other types can be derived from them.
 
 In general there are some different approaches to solve this problem:
 
@@ -371,6 +315,112 @@ type is deduced from the type of first element in Python array the size of defin
     l: integer_list_t(0 to 1);
 
 Constants? Interfaces?
+
+
+Python model and Simulation
+---------------------------
+
+This chapter introduces the way of writing hardware designs in Python. Simulator info is provided also.
+This chapter does not worry about conversion process.
+
+Object-orientation in Python
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Unit object is Python class as shown on
+
+.. code-block:: python
+   :caption: Basic Pyha unit
+   :name: basic-pyha
+
+    class SimpleClass:
+        def __init__(self, coef):
+            self.coef = coef
+
+        def main(self, input):
+            pass
+
+
+:numref:`basic-pyha` shows the besic design unit of the developend tool, it is a standard Python class, that is derived
+from a baseclass HW, purpos of this baseclass is to do some metaclass stuff and register this class as Pyha module.
+
+As for the VHDL model, we can assume that all the variables in the 'self' scope are registers.
+
+
+Writing hardware in Python
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+As shown in previous chapter, traditional language features can be used to infer hardware components.
+One must still keep in mind of how the code will convert to hardware. For example all loops (For) will be unrolled,
+this dentotes that the loop control must have finitive limit.
+
+Another point to note is that every arithmetical operator used will use up resorce. There is a big difference between
+hardware and software programming, using operators in software takes up time but in hardware they will all run in parallel
+so no addtional time is used BUT resource. There are ways to share the operators to trade resource for time.
+
+One thing that is not natively supported in python is registers, for this we did special stuff in VHDL section,
+basically the same can be done in Python domain.
+
+statemachines?
+
+Adding registers support
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+The init function is used to determine the startup valu
+
+Working with registers is implemented in a same way as in VHDL model. Meaning there are buffered.
+For this there is metaclass action, that allows chaning the process of class creation.
+Metaclass copies all the object data model to a new variable called 'next'. Thus automating the creation
+of the buffer values.
+
+How signal assignments can work in Python.
+
+Moreover, automatically function is created for updating the registers, it was named 'update registers' in VHDL
+model, now it is named '_pyha_update_self'. The effect of it is exactly the same, it copies 'next' variables
+to 'current', thus mimicing the register progress.
+
+
+Reset values
+~~~~~~~~~~~~
+
+In hardware is is important to be able to set the reset/power on values for the registers. In same sense this is
+important for class instance creation.
+
+
+.. code-block:: python
+   :caption: Reset example
+   :name: pyha-reset
+
+    class SimpleClass(HW):
+        def __init__(self):
+            self.reg0 = 123
+            self.reg1 = 321
+
+:numref:`pyha-reset` shows an example class, that defines two registers. Initial values for them will be also their
+hardware reset values.
+
+State-machines
+~~~~~~~~~~~~~~
+
+
+
+Simulation
+~~~~~~~~~~
+
+Simulation of single clock designs is trivial. Main function must be called and then '_pyha_update_self'. This
+basically is an action for one clock edge.
+
+Here is an example that pushes some data twough the MAC component. This simulation result is equal to
+the GHDL simulation and generated netlist GATE simulation.
+
+.. todo:: add fixed point type here? rather keep separte? Convertable subset?
+
+Last chapter shows how to further improve the simulation process by using helper function provided by Pyha.
+
+Conclusions
+~~~~~~~~~~~
+
+Pyha extends Python language to add support for hardware also simulation is possible.
+
 
 
 Testing, debugging and verification
