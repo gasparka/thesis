@@ -1,3 +1,5 @@
+.. _ch_vhdl:
+
 VHDL as intermediate language
 =============================
 

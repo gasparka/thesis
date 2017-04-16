@@ -82,33 +82,113 @@ In sense of conversion, dynamic typing poses a major problem, somehow the missin
 VHDL code.
 
 Most straightforward  way to tackle this problem is to request the user to provide top level input types on conversion.
-As the main types are known, clearly all other types can be derived from them.
+As the main types are known, clearly all other types can be derived from them. Problem with this method is that is much more
+complex than it initially appears. For example :code:`a = b`. To find the type of 'a' converter would need to lookup type
+of 'b', also the the assign could be part of expression like :code:`a = b < 1`, anyhow this solution gets complex really fast
+and is not feasible option.
 
-In general there are some different approaches to solve this problem:
 
-    #. Determining types from Python source code
-    #. Determining types from one pass execution/initial execution
-    #. Using longer simulation
+Alternative would be to embrace the dynamic typing of Python and simulate the design before conversion, in that way
+all the variables resolve some type, thanks to running the code.
 
-First option is attractive as it could convert without any side actions, problem with this approach is that
-the converter would have to be extreamly complex in order to infer the variable types. For example :code:`a = 5` is a
-simple example that type is integer, but for example :code:`a = b` type is not clear. Converter would have to look up the type
-of b, but which b? in which scope? etc. It is clear that this solution is not reasonable to solve.
 
-Second option would use the result of initial execution of classes. In python defining an class object automatically
-executes its constructor(:code:`def __init__(self)`). Basically theis would allow to determine all the class variables
-types, by just making the object. It would be as good as the first option really, but simplifies the type deduction significaly.
-Still type info provided here is not enough, for example local variables are not covered. One way would e to use only
-class variables, but this has slight downsides aswell.
+Class
+^^^^^
 
-Last option would simulate the whole design in order to figure out every type in the design. After each execution to the
-function, latest call stack is preserved (this includes all the values of locals). PyPy also uses system like this.
+Class variables are easy to infer after code has been executed as all of them can be readily accessed.
+
+
+.. code-block:: python
+    :caption: Type problems
+    :name: cond-main
+
+    class SimpleClass(HW):
+        def __init__(self, coef):
+            self.coef = coef
+
+        def main(self, a):
+            local_var = a
+
+Class variables types can be extracted even without 'simulation'. On class creation '__init__' function runs that also
+assigns something to all class variables, that is enough to determine type. Still simulation can help Lazy types to converge.
+
+Example:
+
+.. code-block:: python
+    :caption: Class variable type
+    :name: class-vars
+
+    >>> dut = SimpleClass(5)
+    >>> dut.coef
+    5
+    >>> type(dut.coef)
+    <class 'int'>
+
+:numref:`class-vars` show example for getting the type of class variable. It initializes the class with argument 5, that is
+passed to the 'coef' variable. After Python 'type' can be used to determine the variable type. Clearly this variables could
+be converted to VHDL 'integer' type (not really...Python is infinite).
+
+
+Locals
+^^^^^^
+
+Locals mean here the local variables of a function including the function arguments, in VHDL these also require to be
+typed.
+
+Inferring the type of function local variables is much harder as Python provides no standard way of doing so. This task
+is hard as locals only exsist in the stack, thus they will be gone once the function exection is done.
+Luckly this problem has been encountered before in :cite:`py_locals_decorator`, whicp provides an solution.
+
+
+This approach works by defining a profile tracer function, which has access to the internal frame of a function,
+and is called at the entry and exit of functions and when an exception is called. :cite:`py_locals_decorator`
+
+Solution is to wrap the function under inspection in other function that sets a traceback function on the return and
+saves the result of the last locals call.
+
+That way all the locals can be found on each call. Pyha uses this approach to keep track of the local values.
+Below is an example:
+
+.. code-block:: python
+    :caption: Function locals variable type
+    :name: class-locals
+
+    >>> dut.main.locals # before any call, locals are empty
+    {}
+    >>> dut.main(1) # call function
+    >>> dut.main.locals # locals can be extracted
+    {'a': 1, 'local_var': 1}
+    >>> type(dut.main.locals['local_var'])
+    <class 'int'>
+
+
+
+Advantages
+^^^^^^^^^^
+
+Major advantage of this method is that the type info is extracted easily and complexity is low. Potential perk in the
+future is that this way could keep track of all values that any variable takes during the simulation, this will be
+essential if in the future some automatic float to fixed point compiler is to be implementend.
+
+Other advantages this way makes possible to use 'lazy' coding, meaning that only the type after the end of simulation
+matters.
+
+Another advantage is that programming in Python can be even more lazy..
+
+
+Disadvantages
+^^^^^^^^^^^^^
+
 Downside of this solution is obviously that the desing must be simulated in Python domain before it can be converted to
 VHDL.
+First clear is that the design must be simulated in Python domain before conversion is possible, this may be
+inconvenient.
 
 Also the simulation data must cover all the cases, for example consider the function with conditional local variable,
 as shown on :numref:`cond-main`. If the simulaton passes only True values to the function, value of variable 'b' will
-be unknown ad vice-versa. This is a problem but not a huge one because in hardware...
+be unknown ad vice-versa. Of course such kinf of problem is detected in the conversion process. Also in hardware
+we generally have much less branches than in software also all of thes branches are likely to be important as each
+of them will **always** take up resources.
 
 .. code-block:: python
     :caption: Type problems
@@ -120,33 +200,46 @@ be unknown ad vice-versa. This is a problem but not a huge one because in hardwa
         else:
             b = False
 
-Other advantages this way makes possible to use 'lazy' coding, meaning that only the type after the end of simulation
-matters.
 
 
 Conversion methodology
 ~~~~~~~~~~~~~~~~~~~~~~
 
-Methodology is RedBaron.
+After the type problem has been solved, next step is to convert the Python code into VHDL.
 
-VHDL is known as a strongly typed language in addition to that it is very verbose.
-Python is dynamically typed and is basically as least verbose as possible.
+Chapter :ref:`ch_vhdl` developed a way to write OOP VHDL, thanks to this, the conversion from Python to VHDL is
+much simplified. Mostly the converter needs to convert the syntax parts. Conversion progress requires no understanding
+of the source code nor big modifications.
 
-Based on the results of previous chapter it is clear that specific Python code can be converted to VHDL.
-Doing so requires some way of parsing the Python code and outputting VHDL.
+This task requires a way of parsing the input Python code, making modifications and then outputting VHDL compilant
+syntax.
 
-In general this step involves using an abstract syntax tree (AST). MyHDL is using this solution.
+In general this step involves using an abstract syntax tree (AST). This reads in the source file and turns it into
+traversable tree stucture of all the operations done in the program.
 
-However RedBaron offers a better solution. RedBaron is an Python library with an aim to significally simply
-operations with source code parsing. Also it is not based on the AST, but on FST, that is full syntax tree
-keeping all the comments and stuff.
+There are many tools in the Python ecosystem that allow this task, for example lib2to3 etc.
 
-Here is a simple example:
-    >>> red = RedBaron('a = b')
-    >>> red
-    0   a = b
+Converter of this project uses the RedBaron :cite:`redbaron`. RedBaron is an Python library with an aim to
+significantly simply operations with source code parsing.
+
+RedBaron is a python library with intent of making the process of writing code that modify source code as easy and
+as simple as possible. That include writing custom
+refactoring, generic refactoring, tools, IDE or directly modifying you source code into IPython with a higher and
+more powerful abstraction than the advanced texts modification tools that you find in advanced text editors and IDE.
+:cite:`redbaron`
+
+
 
 RedBaron turns all the blocks in the code into special 'nodes'. Help function provides an example:
+
+Simple example of RedBaron operation is shown on :numref:`red-simple`. It uses a simple :code:`a = 5` assigment as
+the input and shows how RedBaron turns the code into special 'nodes'.
+
+.. code-block:: python
+    :caption: Radbaron output for :code:`a = 5`
+    :name: red-simple
+
+    >>> red = RedBaron('a = 5')
     >>> red.help()
     0 -----------------------------------------------------
     AssignmentNode()
@@ -157,18 +250,31 @@ RedBaron turns all the blocks in the code into special 'nodes'. Help function pr
           # identifiers: name, name_, namenode
           value='a'
       value ->
-        NameNode()
-          # identifiers: name, name_, namenode
-          value='b'
+        IntNode()
+          # identifiers: int, int_, intnode
+          value='5'
+
+It shows that the input code is turned into 'AssigmentNode' object, that has 3 parameters:
+
+    * Operator -
+    * Target - assignment target
+    * Value - value assigned to target
 
 
-Now Pyha defined a mirror node for each of RedBaron nodes, with the goal of turning the code into VHDL.
+The power of RedBaron is that, these objects can be very easly modified. For example, one could set
+:code:`red[0].value = '5 + 1'` and this would turn the overall code to :code:`a = 5 + 1`.
+RedBaron also provides methods to, for example 'find' can be used to find all the 'assignment' nodes in the code.
+
+
+Pyha handles the conversion to VHDL by overwriting the RedBaron nodes. For example for the 'AssignmentNode'
+Pyha inherits from the base node but changes the string output so that assignment operator '=' is changed to
+':=' and at the end of the expression ';' is added. So the output would be :code:`a := 5;`, that is VHDL compatible
+statement.
+
 For example in the above example main node is AssignmentNode, this could be modified to change the '=' into
-':=' and add ';' to the end of line. Resulting in a VHDL compatible statement:
+':=' and add ';' to the end of line. Resulting in a VHDL compatible statement :code:`a := 5;`.
 
-.. code-block:: vhdl
 
-    a := b;
 
 
 Basic conversions
