@@ -3,8 +3,9 @@
 VHDL as intermediate language
 =============================
 
-This chapter develops synthesizable object-oriented (OOP) programming model for VHDL. Main motivation is to
-use it as an intermediate language for High-Level synthesis.
+This chapter develops synthesizable object-oriented (OOP) programming model for VHDL.
+The main motivation is to use it as an intermediate language for High-Level synthesis of
+hardware.
 
 Introduction
 ------------
@@ -15,10 +16,9 @@ Background
 The most commonly used design ’style’ for synthesizable VHDL models is what can
 be called the ’dataflow’ style. A larger number of concurrent VHDL statements and
 small processes connected through signals are used to implement the desired functionality.
-Reading and understanding dataflow VHDL code is difficult since the concurrent
+Reading and understanding dataflow VHDL code is often deemed difficult since the concurrent
 statements and processes do not execute in the order they are written, but when any of
-their input signals change value.
-:cite:`structvhdl_gaisler`
+their input signals change value :cite:`structvhdl_gaisler`.
 
 The biggest difference between a program in VHDL and standard programming language such as C,
 is that VHDL allows concurrent statements and processes that are scheduled
@@ -29,8 +29,8 @@ does not become a problem even if the program tends to grow, since execution is 
 from top to bottom :cite:`structvhdl_gaisler`.
 
 
-Jiri Gaisler has proposed an 'Structured VHDL design method :cite:`structvhdl_gaisler`' in the ~2000
-.He suggest to raise the hardware design abstraction level by using two-process
+Jiri Gaisler has proposed a 'Structured VHDL design method :cite:`structvhdl_gaisler`' in the ~2000
+.He suggests to raise the hardware design abstraction level by using a two-process
 method.
 
 The two-process method only uses two processes per entity: one process
@@ -39,15 +39,22 @@ sequential logic (registers). Using this structure, the complete algorithm can b
 in sequential (non-concurrent) statements in the combinational process while the
 sequential process only contains registers, i.e. the state :cite:`structvhdl_gaisler`.
 
-Object-oriented style in VHDL has been studied before. In :cite:`Benzakki1997` proposal was
-made to extend VHDL language with OOP semantics (dataflow based), this effort ended with development of
-OO-VHDL :cite:`oovhdl`, an VHDL preprocessor, turning proposed extensions to standard
-VHDL. This work did not make it do VHDL standard, the status of compiler is unknown.
+.. todo:: Are there publications or other sources that comment/evaluate his approach (i.e. what are the pros and cons?)
 
 
-Many tools on the market are capable of convert higher level language to VHDL.
-However these tools only make use of the very basic dataflow semantics of VHDL language,
+Object-oriented style in VHDL has been studied before. In :cite:`Benzakki1997` a proposal was
+made to extend the VHDL language with OOP semantics (dataflow based), this effort ended with the development of
+OO-VHDL :cite:`oovhdl`, a VHDL preprocessor, turning proposed extensions to standard
+VHDL. This work did not make it the VHDL standard, the status of compiler is unknown, latest publicly
+available document dates to year 1999.
+
+
+
+Many tools on the market are capable of converting higher level language to VHDL.
+However, these tools only make use of the very basic dataflow semantics of VHDL language,
 resulting in complex conversion process and typically unreadable VHDL output.
+
+.. todo:: Description of the tools?
 
 The author of MyHDL package has written good blog posts about signal assignments :cite:`jan_myhdl_signals` and software side of hardware
 design :cite:`jan_myhdl_soft`. These ideas are relevant for this chapter.
@@ -55,25 +62,27 @@ design :cite:`jan_myhdl_soft`. These ideas are relevant for this chapter.
 Objective
 ~~~~~~~~~
 
-Main motivation of this work is to use VHDL as an intermediate language for High-Level synthesis.
+The main motivation of this work is to use VHDL as an intermediate language for High-Level synthesis.
 
 While the work of Jiri Gaisler greatly simplifies the programming experience of VHDL, it still
 has some major drawbacks:
 
-    - It is applicable only to single-clock designs :cite:`structvhdl_gaisler`
-    - The 'structured' part can be only used to define combinatory logic, registers must be still inferred by signals assignments.
-    - It still relies on many of the VHDL dataflow features, for example, design reuse is achieved trough the use of entities and port maps.
+    - It is applicable only to single-clock designs:cite:`structvhdl_gaisler`;
+    - The 'structured' part can be only used to define combinatory logic, registers must be still inferred by signals assignments;
+    - It still relies on many of the VHDL dataflow features, for example, design reuse is achieved trough the use of entities and port maps;
 
-This work aims to improve the 'two process' model by proposing Object-oriented way for VHDL,
+This work aims at improving the 'two process' model by proposing an Object-oriented approach for VHDL,
 lifting all the previously listed drawbacks.
 
-This sub-chapter uses examples in Python language in order to demonstrate the Python to VHDL converter (developed in next chapter)
+This section uses examples in Python language in order to demonstrate the Python to VHDL converter (developed in the next chapter)
 and set some targets for the intermediate language.
 
-Multiply-accumulate(MAC) circuit is used as a demonstration circuit throughout the rest of this chapter.
+A multiply-accumulate(MAC) circuit is used as a demonstration circuit throughout the rest of this chapter.
+
+.. todo:: Need to introduce Pyha before.
 
 .. code-block:: python
-    :caption: Pipelined multiply-accumulate(MAC) implemented in Pyha
+    :caption: Pipelined multiply-accumulate(MAC) specified in Pyha
     :name: mac-pyha
 
     class MAC:
@@ -90,9 +99,9 @@ Multiply-accumulate(MAC) circuit is used as a demonstration circuit throughout t
 .. note:: In order to keep examples simple, only :code:`integer` types are used in this chapter.
 
 :numref:`mac-pyha` shows a MAC component implemented in Pyha
-(Python to VHDL compiler implemented in the next chapter of this thesis)
-Operation of this circuit is to multiply the input with coefficient and accumulate the result.
-It synthesizes to logic shown on :numref:`mac_rtl`.
+(Python to VHDL compiler implemented in the next chapter of this thesis).
+The purpose of this circuit is to multiply the input with the coefficient and accumulate the result.
+It synthesizes to logic as shown in :numref:`mac_rtl`.
 
 .. _mac_rtl:
 .. figure:: img/mac_rtl.png
@@ -101,12 +110,12 @@ It synthesizes to logic shown on :numref:`mac_rtl`.
 
     Synthesis result of :numref:`mac-pyha` (Intel Quartus RTL viewer)
 
-Main reason to pursue the OOP approach is the modularity and the ease of reuse. :numref:`mac-pyha-serial` defines
-new class, containing two MACs that are to be connected in series.
+The main reason to pursue the OOP approach is the modularity and the ease of reuse. :numref:`mac-pyha-serial` defines
+a new class, containing two MACs that are to be connected in series.
 As expected it synthesizes to a series structure (:numref:`pyha_mac_reuse_stack`).
 
 .. code-block:: python
-    :caption: Two MAC's connected in series
+    :caption: Two MAC's connected in series, specified in Pyha
     :name: mac-pyha-serial
 
     class SeriesMAC:
@@ -126,12 +135,15 @@ As expected it synthesizes to a series structure (:numref:`pyha_mac_reuse_stack`
 
     Synthesis result of :numref:`mac-pyha-serial` (Intel Quartus RTL viewer)
 
+.. todo:: Names on the figure should match the names on the code!
+    Explain that 'a' is the input on the left-hand side (fed into B of the 1st MAC),
+    out0 is output of the 1st MAC (fed into B of the 2nd MAC) and 'out1' in the source code is actually out0 in the RTL view (or am I mistaken?)
 
 With slight modification to the 'main' function (:numref:`mac-pyha-parallel`),
-two MAC's can be connected in a way that synthesizes to parallel structure (:numref:`pyha_mac_reuse_parallel`).
+two MAC's can be connected in a way that synthesizes to a parallel structure (:numref:`pyha_mac_reuse_parallel`).
 
 .. code-block:: python
-    :caption: Two MAC's in parallel
+    :caption: Two MAC's in parallel, specified in Pyha
     :name: mac-pyha-parallel
 
     def main(self, a):
@@ -147,8 +159,10 @@ two MAC's can be connected in a way that synthesizes to parallel structure (:num
     Synthesis result of :numref:`mac-pyha-parallel` (Intel Quartus RTL viewer)
 
 
-It is clear that OOP style could significantly simplify hardware design.
-Objective of this work is to develop synthesizable VHDL model that could easily map to these MAC examples.
+It is clear that the OOP style could significantly simplify hardware design.
+The objective of this work is to develop a synthesizable VHDL model that could easily map to these MAC examples.
+
+.. todo:: Elaborate on what you mean with 'clear' and 'simplify'.
 
 
 Using SystemVerilog instead of VHDL
@@ -159,32 +173,40 @@ SystemVerilog (SV) is the new standard for Verilog language, it adds significant
 of these two languages almost equal. In that sense it is highly likely that ideas developed in this chapter could
 apply for both programming languages.
 
-However in my opinion, SV is worse IR language compared to VHDL, because it is much more permissive.
+.. todo:: Be careful when using opinions in scientific work.
+    It is fine that you clearly indicate that this is your opinion, but it is maybe safer to rephrase a bit. Or do you have references that also support your opinion?
+
+However, in my opinion, SV is a worse IR language compared to VHDL, because it is much more permissive.
 For example it allows out-of-bounds array indexing. This 'feature' is actually written into the
 language reference manual :cite:`sysverilog_gotcha`. VHDL would error out the simulation, possibly saving debugging time.
 
 While some communities have considered the verbosity and strictness of VHDL to be a downside, in my opinion it has always been an
 strength, and even more now when the idea is to use it as IR language.
 
-Only motivation for using SystemVerilog over VHDL is tool support. For example Yosys :cite:`yosys`, open-source
-synthesys tool, supports only Verilog, however to my knowledge it does not yet support SystemVerilog features. There have
-been also some efforts in adding VHDL frontend :cite:`vhdl_yosys`.
+The only motivation for using SystemVerilog over VHDL is tool support. For example Yosys :cite:`yosys`, an open-source
+synthesis tool, supports only Verilog; however, to the best of my knowledge it does not yet support SystemVerilog features. There have
+been also some efforts in adding a VHDL frontend :cite:`vhdl_yosys`.
 
+.. todo:: What is the VHDL frontend status?
 
 Object-oriented style in VHDL
 -----------------------------
 
+.. todo:: Remind the reader that what follows is your proposal (one of the thesis contributions). Also briefly explain what is done differently as compared to previous approaches (especially those that you cited earlier).
+
 While VHDL is mostly known as a dataflow language, it inherits strong support for structured
 programming from ADA.
 
-Basic idea of OOP is to bundle up some common data and define functions that can perform actions on it.
+.. todo:: Need to reference that statement.
+
+The basic idea of OOP is to bundle up some common data and define functions that can perform actions on it.
 Then one could define multiple sets of the data.
 This idea fits well with hardware design, as 'data' can be thought as registers and combinatory logic as functions that
 perform operations on the data.
 
-VHDL includes an 'class' like structure called 'protected types' :cite:`vhdl-lrm`, unfortunately these are not meant for
-synthesis. Even so, OOP style can be imitated, by combining data in records and passing it as a
-parameter to 'class functions'. This is essentially the same way how C programmers do it.
+VHDL includes a 'class' like structure called 'protected types' :cite:`vhdl-lrm`, unfortunately these are not meant for
+synthesis. Even so, OOP style can be imitated, by combining data in records and passing them as a
+parameters to 'class functions'. This is essentially the same way how C programmers do it.
 
 .. code-block:: vhdl
     :caption: MAC data model in VHDL
@@ -212,12 +234,12 @@ In the sense of hardware, we expect that the contents of this record will be syn
         ret_0 := self.acc;
     end procedure;
 
-OOP style function can be constructed by adding first argument, that points to the data model object (:numref:`vhdl-oop-function`).
-In VHDL procedure arguments must have a direction, for example the first argument 'self' is of direction 'inout',
+An OOP style function can be constructed by adding a first argument that points to the data model object (:numref:`vhdl-oop-function`).
+In VHDL, procedure arguments must have a direction, for example the first argument 'self' is of direction 'inout',
 this means it can be read and also written to.
 
 One drawback of VHDL procedures is that they cannot return a value, instead 'out' direction arguments must be used.
-Advantage of this is that the procedure may 'output/return' multiple values, as can Python functions.
+The advantage of this is that the procedure may 'output/return' multiple values, as can Python functions.
 
 .. _ghetto_comb_mac_rtl:
 .. figure:: img/ghetto_comb_mac_rtl.png
@@ -227,26 +249,27 @@ Advantage of this is that the procedure may 'output/return' multiple values, as 
     Synthesis result of :numref:`vhdl-oop-function` (Intel Quartus RTL viewer)
 
 
-Synthesis results (:numref:`ghetto_comb_mac_rtl`) show that functionally correct MAC has been implemented.
-However,in terms of hardware, it is not quite what was wanted.
-Data model specified 3 registers, but only the one for 'acc' is present and even this is at the wrong location.
+The synthesis results (:numref:`ghetto_comb_mac_rtl`) show that a functionally correct MAC has been implemented.
+However, in terms of hardware, it is not quite what was wanted.
+The data model specified 3 registers, but only the one for 'acc' is present and even this is at the wrong location.
 
-In fact, the signal path from **in0** to **out0** contains no registers at all, making this design useless.
+In fact, the signal path from **in0** to **out0** contains no registers at all, making this design hard
+to use in real designs.
 
 Understanding registers
 ~~~~~~~~~~~~~~~~~~~~~~~
 
 Clearly the way of defining registers is not working properly.
-Mistake was to expect that the registers work in the same way as 'class variables' in traditional programming
+The mistake was to expect that the registers work in the same way as 'class variables' in traditional programming
 languages.
 
-In traditional programming, class variables are very similar to local variables. Difference is that
+In traditional programming, class variables are very similar to local variables. The difference is that
 class variables can 'remember' the value, while local variables exist only during the function
 execution.
 
-Hardware registers have just one difference to class variables, value assigned to them does not take
-effect immediately, rather on the next clock edge. That is the basic idea of registers, they take new value
-on clock edge. When value is set at **this** clock edge, it will be taken on **next** clock edge.
+Hardware registers have just one difference to class variables, the value assigned to them does not take
+effect immediately, but rather on the next clock edge. That is the basic idea of registers, they take a new value
+on clock edge. When the value is set at **this** clock edge, it will be taken on **next** clock edge.
 
 Trying to stay in the software world, we can abstract away the clock edge by thinking that it denotes the
 call to the 'main' function. Meaning that registers take the assigned value on the next function call,
@@ -255,7 +278,7 @@ meaning assignment is delayed by one function call.
 VHDL defines a special assignment operator for this kind of delayed assignment, it is called 'signal assignment'.
 It must be used on VHDL signal objects like :code:`a <= b`.
 
-Jan Decaluwe, the author of MyHDL package, has written good article about the necessity of signal assignment semantics
+Jan Decaluwe, the author of MyHDL package, has written a relevant article about the necessity of signal assignment semantics
 :cite:`jan_myhdl_signals`.
 
 Using an signal assignment inside a clocked process always infers a register, because it exactly represents the
@@ -264,7 +287,7 @@ register model.
 Inferring registers with variables
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-While 'signals' and 'signal assignment' are the VHDL way of defining registers, it poses a major problem because they
+While 'signals' and 'signal assignment' are the VHDL way of defining registers, they pose a major problem because they
 are hard to map to any other language than VHDL. This work aims to
 use variables instead, because they are the same in every other programming language.
 
@@ -272,14 +295,14 @@ VHDL signals really come down to just having two variables, to represent the **n
 Signal assignment operator sets the value of **next** variable. On the next simulation delta, **current** is automatically
 set to equal **next**.
 
-This two variable method has been used before, for example Pong P. Chu, author of one of the best VHDL books,
-suggests to use this style in defining sequential logic in VHDL :cite:`chu_vhdl`. Same semantics are also used in
+This two variable method has been used before, for example Pong P. Chu, author of one of the most reputed VHDL books,
+suggests to use this style in defining sequential logic in VHDL :cite:`chu_vhdl`. The same semantics are also used in
 MyHDL :cite:`jan_myhdl_signals`.
 
 Adapting this style for the OOP data model is shown on :numref:`mac-next-data`.
 
 .. code-block:: vhdl
-    :caption: Data model with **next**
+    :caption: Data model with **next**, in OOP-style VHDL
     :name: mac-next-data
 
     type next_t is record
@@ -296,14 +319,14 @@ Adapting this style for the OOP data model is shown on :numref:`mac-next-data`.
         nexts: next_t;
     end record;
 
-New data model allows reading the register value as before and extends the structure to include the 'nexts' object,
+The new data model allows reading the register value as before and extends the structure to include the 'nexts' object,
 so that it can used to assign new value for registers, for example :code:`self.nexts.acc := 0`.
 
-Integration of the new data model to the 'main' function is shown on :numref:`mac-next-main`. Only changes are
+Integration of the new data model to the 'main' function is shown on :numref:`mac-next-main`. The only changes are
 that all the 'register writes' go to the 'nexts' object.
 
 .. code-block:: vhdl
-    :caption: Main function using 'nexts'
+    :caption: Main function using 'nexts', in OOP-style VHDL
     :name: mac-next-main
 
     procedure main(self: inout self_t; a: integer; ret_0: out integer) is
@@ -313,13 +336,13 @@ that all the 'register writes' go to the 'nexts' object.
         ret_0 := self.acc;
     end procedure;
 
-Last thing that must be handled is loading the **next** to **current**.
-As stated before, this is done automatically by VHDL for signal assignment, by using
+The last thing that must be handled is loading the **next** to **current**.
+As stated before, this is done automatically by VHDL for signal assignment; by using
 variables we have to take care of this ourselves. :numref:`mac-next-update` defines new function
 'update_registers', taking care of this task.
 
 .. code-block:: vhdl
-    :caption: Function to update registers
+    :caption: Function to update registers, in OOP-style VHDL
     :name: mac-next-update
 
     procedure update_register(self: inout self_t) is
@@ -330,37 +353,37 @@ variables we have to take care of this ourselves. :numref:`mac-next-update` defi
     end procedure;
 
 .. note:: Function 'update_registers' is called on clock raising edge.
-    It is possible to infer multi-clock systems by updating subset of registers at different clock edge.
+    It is possible to infer multi-clock systems by updating a subset of registers at a different clock edge.
 
 .. _mac_rtl_end:
 .. figure:: img/mac_rtl.png
     :align: center
     :figclass: align-center
 
-    Synthesis result of the upgraded code (Intel Quartus RTL viewer)
+    Synthesis result of the revised code (Intel Quartus RTL viewer)
 
-:numref:`mac_rtl_end` shows the synthesis result of the latest code. It is clear that this is now equal to the system
-presented at the start of this chapter.
+:numref:`mac_rtl_end` shows the synthesis result of the source code shown in :numref:`mac-next-update`.
+It is clear that this is now equal to the system presented at the start of this chapter.
 
 
 
 Creating instances
 ~~~~~~~~~~~~~~~~~~
 
-General approach of creating instances is to define new variables of the 'self_t' type, :numref:`vhdl-instance`
+The general approach of creating instances is to define new variables of the 'self_t' type, :numref:`vhdl-instance`
 gives an example of this.
 
 .. code-block:: vhdl
-    :caption: Class instances by defining records
+    :caption: Class instances by defining records, in OOP-style VHDL
     :name: vhdl-instance
 
     variable mac0: MAC.self_t;
     variable mac1: MAC.self_t;
 
-Next step is to initialize the variables, this can be done at the variable definition, for example:
+The next step is to initialize the variables, this can be done at the variable definition, for example:
 :code:`variable mac0: self_t := (mul=>0, acc=>0, coef=>123, nexts=>(mul=>0, acc=>0, coef=>123));`
 
-Problem with this method is that all data-model must be initialized (including 'nexts'),
+The problem with this method is that all data-model must be initialized (including 'nexts'),
 this will get unmaintainable very quickly, imagine having an instance that contains another instance or
 even array of instances. In some cases it may also be required to run some calculations in order to determine
 the initial values.
@@ -372,7 +395,7 @@ In the sense of hardware, this operation can be called 'reset' function. :numref
 the MAC circuit. It sets the initial values for the data model and can also be used when reset signal is asserted.
 
 .. code-block:: vhdl
-    :caption: Reset function for MAC
+    :caption: Reset function for MAC, in OOP-style VHDL
     :name: mac-vhdl-reset
 
     procedure reset(self: inout self_t) is
@@ -383,12 +406,12 @@ the MAC circuit. It sets the initial values for the data model and can also be u
         update_registers(self);
     end procedure;
 
-But now the problem is that we need to create new reset function for each instance.
+But now the problem is that we need to create a new reset function for each instance.
 
 This can be solved by using VHDL 'generic packages' and 'package instantiation declaration' semantics :cite:`vhdl-lrm`.
 Package in VHDL just groups common declarations to one namespace.
 
-In case of the MAC class, 'coef' reset value could be set as package generic. Then each new package
+In case of the MAC class, the 'coef' reset value could be set as package generic. Then each new package
 initialization could define new reset value for it (:numref:`vhdl-package-init`).
 
 .. code-block:: vhdl
@@ -399,12 +422,12 @@ initialization could define new reset value for it (:numref:`vhdl-package-init`)
        generic map (COEF => 123);
 
 Unfortunately, these advanced language features are not supported by most of the synthesis tools.
-Workaround is to either use explicit record initialization (as at the start of this chapter)
+A workaround is to either use explicit record initialization (as at the start of this chapter)
 or manually make new package for each instance.
 
-Both of these solutions require unnecessary work load.
+Both of these solutions require unnecessary workload.
 
-The Python to VHDL converter (developed in next chapter), uses the later option, it is not a problem as everything
+The Python to VHDL converter (developed in the next chapter), uses the later option, it is not a problem as everything
 is automated.
 
 Final OOP model
@@ -418,11 +441,11 @@ Currently the OOP model consists of following elements:
     - 'Update registers' function
     - 'Reset' function
 
-VHDL supports 'packages' to group common types and functions into one namespace. Package in VHDL
+VHDL supports 'packages' to group common types and functions into one namespace. A package in VHDL
 must contain an declaration and body (same concept as header and source files in C).
 
 :numref:`package-mac` shows the template package for VHDL 'class'.
-All the class functionality is now in common namespace.
+All the class functionality is now in one common namespace.
 
 .. code-block:: vhdl
    :caption: Package template for OOP style VHDL
@@ -466,16 +489,16 @@ All the class functionality is now in common namespace.
 Examples
 --------
 
-This chapter provides some simple examples based on the MAC component and OOP model, that were developed in previous chapter.
+This section provides some simple examples based on the MAC component and OOP model, that were developed in previous chapter.
 
 Instances in series
 ~~~~~~~~~~~~~~~~~~~
 
-Creating new class that connects two MAC instances in series is simple, first we need to create two
+Creating a new class that connects two MAC instances in series is simple, first we need to create two
 MAC instances called MAC_0 and MAC_1 and add them to the data model (:numref:`mac-series-data`).
 
 .. code-block:: vhdl
-    :caption: Datamodel of 'series' class
+    :caption: Datamodel of 'series' class, in OOP-style VHDL
     :name: mac-series-data
 
     type self_t is record
@@ -485,11 +508,11 @@ MAC instances called MAC_0 and MAC_1 and add them to the data model (:numref:`ma
         nexts: next_t;
     end record;
 
-Next step is to call MAC_0 operation on the input and then pass the output
-trough MAC_1, whom output is the final output (:numref:`mac-series-main`).
+The next step is to call MAC_0 operation on the input and then pass the output
+trough MAC_1, whose output is the final output (:numref:`mac-series-main`).
 
 .. code-block:: vhdl
-    :caption: Function that connects two MAC's in series
+    :caption: Function that connects two MAC's in series, in OOP-style VHDL
     :name: mac-series-main
 
     procedure main(self:inout self_t; a: integer; ret_0:out integer) is
@@ -516,7 +539,7 @@ Instances in parallel
 Connecting two MAC's in parallel can be done by just returning output of MAC_0 and MAC_1 (:numref:`mac-parallel`).
 
 .. code-block:: vhdl
-    :caption: Main function for parallel instances
+    :caption: Main function for parallel instances, in OOP-style VHDL
     :name: mac-parallel
 
     procedure main(self:inout self_t; a: integer; ret_0:out integer; ret_1:out integer) is
@@ -532,18 +555,18 @@ Connecting two MAC's in parallel can be done by just returning output of MAC_0 a
 
     Synthesis result of :numref:`mac-parallel` (Intel Quartus RTL viewer)
 
-Two MAC's are synthesized in parallel, as shown on :numref:`mac_reuse_parallel`.
+Two MAC's are synthesized in parallel, as shown in :numref:`mac_reuse_parallel`.
 
 Parallel instances in different clock domains
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Multiple clock domains can be easily supported by updating registers at specified clock domain.
-:numref:`mac-parallel-clocks` shows the contents of top-level process, where 'mac0' is updated by 'clk0' and
+Multiple clock domains can be easily supported by updating registers at specified clock domains.
+:numref:`mac-parallel-clocks` shows the contents of a top-level process, where 'mac0' is updated by 'clk0' and
 'mac1' by 'clk1'.
 Note that nothing has to be changed in the data model or main function.
 
 .. code-block:: vhdl
-    :caption: Top-level for multiple clocks
+    :caption: Top-level for multiple clocks, in OOP-style VHDL
     :name: mac-parallel-clocks
 
     if (not rst_n) then
@@ -565,29 +588,32 @@ Note that nothing has to be changed in the data model or main function.
 
     Synthesis result with modified top-level process (Intel Quartus RTL viewer)
 
-Synthesis result (:numref:`mac_parallel_two_clocks`) is as expected, MAC's are still in parallel but now the registers are clocked by different clocks. Reset signal is common
-for the whole design.
+Synthesis result (:numref:`mac_parallel_two_clocks`) is as expected, MAC's are still in parallel but now the
+registers are clocked by different clocks. The reset signal is common for the whole design.
 
 .. todo:: Add TDA example here? Would demonstrate statemechines and control structures...
 
 Conclusion
 ----------
 
-This chapter developed, synthesizable, object-oriented model for VHDL.
+This chapter presented the proposed, fully synthesizable, object-oriented model for VHDL.
 
-Major advantage is that none of the VHDL data-flow semantics are used (except for top level entity). This makes
-development similar to regular software. New programmers can learn this way much faster as the previous knowledge
-transfers.
+Its major advantage is that none of the VHDL data-flow semantics are used (except for top level entity). This makes
+development similar to regular software. Programmers new to the VHDL language can learn this way much faster
+as their previous knowledge of other languages transfers.
 
 Moreover, this model is not restricted to one clock domain and allows simple way of describing registers.
 
-Major motivation for this model was to ease converting higher level languages into VHDL. This goal has been definitely
+The major motivation for this model was to ease converting higher level languages into VHDL. This goal has been definitely
 reached, next section of this thesis develops Python bindings with relative ease. Conversion is drastically simplified as
 Python class maps to VHDL class, Python function maps to VHDL function and so on.
 
+.. todo:: Careful. You have only used relatively simple examples.
+    To say 'definitely reached' you should have substantial evidence based on a large number of cases and/or some sort of formal proof.
+
 Synthesizability has been demonstrated using Intel Quartus toolset. Bigger designs, like frequency-shift-keying receiver,
 have been implemented on Intel Cyclone IV device. There has been
-no problems with hierarchy depth, objects may contain objects which itself may contain arrays of objects.
+no problems with hierarchy depth, objects may contain objects which themselves may contain arrays of objects.
 
 
 

@@ -21,6 +21,7 @@ Thesis!
     :caption: Contents:
 
     vhdl_extensions
+    python_bindings2
     python_bindings
 
 

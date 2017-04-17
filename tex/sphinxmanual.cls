@@ -58,7 +58,7 @@
     {Gaspar Karm}\\[2,3 cm]
     \begin{huge}
 
-    \textsc{\textbf{VHDL as Object-oriented Intermediate Language and Python bindings with simulator\\[2,3 cm]}}
+    \textsc{\textbf{Pyha\\[2,3 cm]}}
     \end{huge}
     {Master's Thesis}\\[1,5 cm]
     \end{center}
@@ -69,12 +69,9 @@
     %\begin{flushright} %Joondab teksti paremale
     \blank{11.3 cm}{Muhammad Mahtab Alam}\\[0cm]
     \blank{11.3 cm}{PhD}\\[0cm]
-    \blank{11.3 cm}{COEL ERA-Chair,}\\[0 cm]
-    \blank{11.3 cm}{Associate Professor}\\[0 cm]
 
     \blank{11.3 cm}{Yannick Le Moullec}\\[0cm]
     \blank{11.3 cm}{PhD}\\[0cm]
-    \blank{11.3 cm}{Professor}\\[0 cm]
     %\end{flushright}
 
     \cfoot{Tallinn 2017} %Lisab asukoha ja kuupäeva jalusesse
