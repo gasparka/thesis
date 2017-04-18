@@ -19,11 +19,12 @@ class Simple(HW):
         self.next.acc = sum_in + self.mul
         return self.acc
 
-    def model_main(self, a):
+    def model_main(self, sample_in, sum_in):
         import numpy as np
 
-        muls = np.array(a) * self.coef
-        return np.cumsum(muls)
+        muls = np.array(sample_in) * self.coef
+        sums = muls + sum_in
+        return sums
 
 
 def test_basic():
@@ -33,7 +34,7 @@ def test_basic():
     si = [0] * len(inputs)
 
     r = debug_assert_sim_match(dut, None, inputs, si,
-                     simulations=[SIM_HW_MODEL, SIM_GATE],
+                     simulations=[SIM_MODEL, SIM_HW_MODEL],
                      rtol=1e-4,
                      dir_path='/home/gaspar/git/thesis/playground')
 
