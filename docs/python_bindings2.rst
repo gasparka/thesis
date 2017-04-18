@@ -108,6 +108,10 @@ testing code.
 
 
 
+
+Testing/debugging and verification
+----------------------------------
+
 Simplifying testing
 ~~~~~~~~~~~~~~~~~~~
 
@@ -124,9 +128,6 @@ Python ships with many unit-test libraries, for example PyTest, that is the main
 Pyha.
 
 Siin peaks olema test funksioonid?
-
-Testing/debugging and verification
-----------------------------------
 
 
 Describing hardware

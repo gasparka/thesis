@@ -5,7 +5,37 @@ import numpy as np
 from pyha.simulation.simulation_interface import debug_assert_sim_match, SIM_GATE, plot_assert_sim_match, SIM_MODEL
 
 
-class Simple(HW):
+class MAC_comb(HW):
+    def __init__(self):
+        self.coef = 123
+
+    def main(self, x, sum_in):
+        mul = self.coef * x
+        y = sum_in + mul
+        return y
+
+    def model_main(self, sample_in, sum_in):
+        muls = np.array(sample_in) * self.coef
+        sums = muls + sum_in
+        return sums
+
+
+def test_comb():
+    from pyha.simulation.simulation_interface import assert_sim_match, SIM_HW_MODEL, SIM_RTL
+    dut = MAC_comb()
+    inputs = [1, 2, 3, 4, 5, 6, 7, 8]
+    si = [0] * len(inputs)
+
+    r = debug_assert_sim_match(dut, None, inputs, si,
+                     simulations=[SIM_MODEL, SIM_HW_MODEL, SIM_GATE],
+                     rtol=1e-4,
+                     dir_path='/home/gaspar/git/thesis/playground')
+
+    print(r)
+
+
+
+class MAC(HW):
     def __init__(self):
         self.coef = 123
         self.mul = 0
@@ -22,14 +52,13 @@ class Simple(HW):
     def model_main(self, sample_in, sum_in):
         import numpy as np
 
-        muls = np.array(sample_in) * self.coef
+        muls = sample_in * self.coef
         sums = muls + sum_in
         return sums
 
-
 def test_basic():
     from pyha.simulation.simulation_interface import assert_sim_match, SIM_HW_MODEL, SIM_RTL
-    dut = Simple()
+    dut = MAC()
     inputs = [1, 2, 3, 4, 5, 6, 7, 8]
     si = [0] * len(inputs)
 
