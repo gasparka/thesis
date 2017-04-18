@@ -40,7 +40,7 @@
   \hypersetup{pageanchor=false}% avoid duplicate destination warnings
   \begin{titlepage}%
 
-    % \thispagestyle{fancy} %Võimaldab lihsalt timmida päist ja jalust
+    %\thispagestyle{fancy} %Võimaldab lihsalt timmida päist ja jalust
     %\layout
     \footskip = 60pt %Paneb paika jaluse kõrguse kogu dokumendi ulatuses, on sõltuvuses käsust /voffset
     \renewcommand{\headrulewidth}{0pt} %Eemaldab päisest horisontaalse joone
@@ -74,7 +74,16 @@
     \blank{11.3 cm}{PhD}\\[0cm]
     %\end{flushright}
 
-    \cfoot{Tallinn 2017} %Lisab asukoha ja kuupäeva jalusesse
+
+    \blank{7.3 cm}{}\\[0cm]
+    \blank{7.3 cm}{}\\[0cm]
+    \blank{7.3 cm}{}\\[0cm]
+    \blank{7.3 cm}{}\\[0cm]
+    \blank{7.3 cm}{}\\[0cm]
+    \blank{7.3 cm}{}\\[0cm]
+    \blank{7.3 cm}{}\\[0cm]
+    \blank{7.3 cm}{}\\[0cm]
+    \blank{7.3 cm}{Tallinn 2017}\\[0cm]
 
     % \let\footnotesize\small
     % \let\footnoterule\relax
