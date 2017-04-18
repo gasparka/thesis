@@ -136,6 +136,9 @@ Siin peaks olema test funksioonid?
 Describing hardware
 -------------------
 
+Assuming we have now enough knowledge and unit-tests we can start implementing
+the Hardware model.
+
 Main idea of Pyha is to enable hardware design in Python ecosystem.
 
 Pyha extends the VHDL language by allowing objective-oriented designs. Unit object is Python class as shown on
@@ -274,6 +277,49 @@ Explain somwhere that each call to function is a clock tick.
             return self.reg
 
 :numref:`pyha-reg` shows the design of a registered adder.
+
+.. _mac_seq_rtl:
+.. figure:: ../examples/fir_mac/integer_based/img/seq_rtl.png
+    :align: center
+    :figclass: align-center
+
+    Synthesis result of the revised code (Intel Quartus RTL viewer)
+
+:numref:`mac_seq_rtl` shows the synthesis result of the source code shown in :numref:`mac-next-update`.
+It is clear that this is now equal to the system presented at the start of this chapter.
+
+
+
+.. _mac_seq_sim_delay:
+.. figure:: ../examples/fir_mac/integer_based/img/seq_sim_delay.png
+    :align: center
+    :figclass: align-center
+
+    Synthesis result of the revised code (Intel Quartus RTL viewer)
+
+Running the same testing code results in a :numref:`mac_seq_sim_delay`. It shows that while the
+Python, RTL and GATE simulations are equal, model simulation differs. This is the effect of added register,
+it adds one delay to the harwdware simulations.
+
+This is an standard hardware behaviour. Pyha provides special variable
+:code:`self._delay` that specifies the delay of the model, it is useful:
+
+- Document the delay of your blocks
+- Upper level blocks can use it to define their own delay
+- Pyha simulations will adjust for the delay, so you can easily compare to your model.
+
+.. note:: Use :code:`self._delay` to match hardware delay against models
+
+After setting the :code:`self._delay = 1` in the __init__, we get:
+
+
+.. _mac_seq_sim:
+.. figure:: ../examples/fir_mac/integer_based/img/seq_sim.png
+    :align: center
+    :figclass: align-center
+
+    Synthesis result of the revised code (Intel Quartus RTL viewer)
+
 
 In Pyha, registers are inferred from the ogject storage, that is everything defined in 'self' will be made registers.
 

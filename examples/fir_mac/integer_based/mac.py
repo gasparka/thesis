@@ -52,7 +52,7 @@ class MAC_seq(HW):
         self.coef = 9
         self.y = 0
 
-        self._delay = 1
+        # self._delay = 1
 
     def main(self, x, sum_in):
         mul = self.coef * x
@@ -84,7 +84,7 @@ def test_seq():
     plt.xlabel("Sample number")
     plt.ylabel("Value")
     plt.legend()
-    plt.savefig('img/seq_sim_last.png', bbox_inches='tight')
+    plt.savefig('img/seq_sim_delay.png', bbox_inches='tight')
     plt.show()
 
     print(r)

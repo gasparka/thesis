@@ -21,7 +21,7 @@ Thesis!
     :caption: Contents:
 
 
-    python_bindings2
+    pyha
 ..    python_bindings
 
 

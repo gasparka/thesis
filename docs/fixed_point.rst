@@ -58,6 +58,7 @@ Pyha support rounding on arithmetic, basically it should be turned off as it cos
 
 Fixed-point arithmetic and sizing rules
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 Arithmetic operations can be run on fixed point variables as usual. Division is not defined as it is almost always
 unneccesary in hardware.
 
