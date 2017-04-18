@@ -24,6 +24,9 @@ A multiply-accumulate(MAC) circuit is used as a demonstration circuit throughout
 It is a good choice as it is powerful element yet not very complex.
 Last chapter of this thesis peresents more serious use cases.
 
+.. note:: The first half of this chapter uses 'integers' as base type in order to keep the examples
+    simple. Second half starts using fixed-point numbers, that ade default for Pyha.
+
 
 Model based design
 ------------------
@@ -167,21 +170,41 @@ local variables of function but cannot use the class variables, as these are sta
 
 
 .. code-block:: python
-   :caption: Basic combinatory circuit in Pyha
-   :name: pyha-comb
+   :caption: Stateless MAC implemented in Pyha
+   :name: pyha-comb-mac
 
     class MAC(HW):
-        def main(self, a, sum_in):
+        def main(self, x, sum_in):
+            mul = 123 * x
+            y = sum_in + mul
+            return y
 
-            mul = self.coef * a
-            acc = sum_in + mul
-            return acc
+        def model_main ...
 
 
 
-:numref:`pyha-comb` shows the design of a combinatory logic. In this case it is a simple xor operation between
+:numref:`pyha-comb-mac` shows the design of a combinatory logic. In this case it is a simple xor operation between
 two input operands. It is a standard Python class, that is derived from a baseclass *HW,
 purpose of the baseclass is to do some metaclass stuff and register this class as Pyha module.
+
+.. _mac_rtl_end:
+.. figure:: ../examples/fir_mac/integer_based/img/comb_rtl.png
+    :align: center
+    :figclass: align-center
+
+    Synthesis result of the revised code (Intel Quartus RTL viewer)
+
+:numref:`mac_rtl_end` shows the synthesis result of the source code shown in :numref:`mac-next-update`.
+It is clear that this is now equal to the system presented at the start of this chapter.
+
+
+.. _mac_comb_sim:
+.. figure:: ../examples/fir_mac/integer_based/img/comb_sim.png
+    :align: center
+    :figclass: align-center
+
+    Synthesis result of the revised code (Intel Quartus RTL viewer)
+
 
 Class contains an function 'main', that is considered as the top level function for all Pyha designs. This function
 performs the xor between two inputs 'a' and 'b' and then returns the result.
@@ -192,17 +215,51 @@ In general all assigments to local variables are interpreted as combinatory logi
 
 In software operations consume time, but in hardware they consume resources, general rule.
 
+Not clocked...basically useless analog stuff.
 
 
 Sequential logic
-----------------
+~~~~~~~~~~~~~~~~
+
+
+Understanding registers
+~~~~~~~~~~~~~~~~~~~~~~~
+
+Clearly the way of defining registers is not working properly.
+The mistake was to expect that the registers work in the same way as 'class variables' in traditional programming
+languages.
+
+In traditional programming, class variables are very similar to local variables. The difference is that
+class variables can 'remember' the value, while local variables exist only during the function
+execution.
+
+Hardware registers have just one difference to class variables, the value assigned to them does not take
+effect immediately, but rather on the next clock edge. That is the basic idea of registers, they take a new value
+on clock edge. When the value is set at **this** clock edge, it will be taken on **next** clock edge.
+
+Trying to stay in the software world, we can abstract away the clock edge by thinking that it denotes the
+call to the 'main' function. Meaning that registers take the assigned value on the next function call,
+meaning assignment is delayed by one function call.
+
+VHDL defines a special assignment operator for this kind of delayed assignment, it is called 'signal assignment'.
+It must be used on VHDL signal objects like :code:`a <= b`.
+
+Jan Decaluwe, the author of MyHDL package, has written a relevant article about the necessity of signal assignment semantics
+:cite:`jan_myhdl_signals`.
+
+Using an signal assignment inside a clocked process always infers a register, because it exactly represents the
+register model.
+
+
+
 
 Registers in hardware have more purposes:
 
     - delay
     - max clock speed - how this corresponds to sample rate?
 
-.. todo:: Ref comb logic.
+
+Explain somwhere that each call to function is a clock tick.
 
 .. code-block:: python
    :caption: Basic sequential circuit in Pyha
@@ -238,7 +295,7 @@ However there is one huge difference aswell, namely that VHDL signals do not hav
 
 .. todo:: how this turns to VHDL and RTL picture?
 
-
+Pyha way is to register all the outputs, that way i can be assumed that all the inputs are already registered.
 
 Simulation a
 
