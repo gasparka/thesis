@@ -14,6 +14,18 @@ Main features:
     - Tools to simplify verification
 
 
+Pyha specifically focuses on making testing of the DSP algorithms simpler.
+While many alternatives are based on C language, but most of the hardware design time is used up in
+the process of testing and verification, who would like to do this in C, Python is much better language
+for this!
+
+Pyha proposes to use classes as a way of describing hardware. More specifically all the class variables
+are to be interpreted as hardware registers, this fits well as they are long term state elements.
+
+Migen cannot be debugged, this may not seem like a big upside for Pyha. But it is, steping trough the code
+can greatly simplify finding bugs, after all this is the main way of debugging in conventional programming.
+Also debugger is useful tool for understanding the codebase.
+
 Introduction
 ------------
 
@@ -131,6 +143,8 @@ Python ships with many unit-test libraries, for example PyTest, that is the main
 Pyha.
 
 Siin peaks olema test funksioonid?
+
+Ipython testing...show example with two unit tests and plots.
 
 
 Describing hardware
@@ -355,7 +369,30 @@ Fixed-point designs
 Extended example
 ----------------
 
-MAC ist saab FIR?
+.. _fir_freqz:
+.. figure:: ../examples/fir_mac/fir/img/fir_freqz.png
+    :align: center
+    :figclass: align-center
+
+    Synthesis result of the revised code (Intel Quartus RTL viewer)
+
+Note that design uses only 2 18 bit multipliers.
+
+.. _fir_rtl:
+.. figure:: ../examples/fir_mac/fir/img/fir_rtl.png
+    :align: center
+    :figclass: align-center
+
+    Synthesis result of the revised code (Intel Quartus RTL viewer)
+
+
+.. _fir_sim:
+.. figure:: ../examples/fir_mac/fir/img/fir_sim.png
+    :align: center
+    :figclass: align-center
+
+    Synthesis result of the revised code (Intel Quartus RTL viewer)
+
 
 
 Conclusions
@@ -365,3 +402,6 @@ This chapter showed how Python OOP code can be converted into VHDL OOP code.
 
 It is clear that Pyha provides many conveneince functions to greatly simplyfy the testing of
 model based designs.
+
+Future stuff:
+Make it easier to use, windows build?

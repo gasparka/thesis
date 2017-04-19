@@ -10,14 +10,13 @@ import matplotlib.pyplot as plt
 class MAC(HW):
     def __init__(self, coef):
         self.coef = Sfix(coef, 0, -17)
-        self.coef = Sfix(coef, 0, -17)
         self.y = Sfix(left=1, round_style=fixed_truncate, overflow_style=fixed_wrap)
 
         self._delay = 1
 
-    def main(self, x, sum_in):
+    def main(self, x):
         mul = self.coef * x
-        self.next.y = sum_in + mul
+        self.next.y = self.y + mul
         return self.y
 
     def model_main(self, sample_in, sum_in):
@@ -27,18 +26,18 @@ class MAC(HW):
 
 
 def test_seq():
-    dut = MAC(0.123)
-    x = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6]
-    sum_in = [0.9, -0.43, 0.2, 0.67, -0.12, -0.5]
+    dut = MAC(0.658)
+    x = [0.1, -0.6, 0.3, 0.4, -0.5, 0.1]
+    # sum_in = [0.9, -0.43, 0.2, 0.67, -0.12, -0.5]
 
-    r = debug_assert_sim_match(dut, None, x, sum_in,
-                               simulations=[SIM_MODEL, SIM_HW_MODEL, SIM_RTL],
+    r = debug_assert_sim_match(dut, None, x,
+                               simulations=[SIM_HW_MODEL, SIM_RTL, SIM_GATE],
                                dir_path='/home/gaspar/git/thesis/playground')
 
     plt.figure(figsize=(8, 3))
     plt.plot(r[0], label='Model')
     plt.plot(r[1], label='Python simulation')
-    plt.plot(r[2], label='RTL simulation')
+    # plt.plot(r[2], label='RTL simulation')
     # plt.plot(r[3], label='Quartus GATE simulation')
 
     plt.grid()
