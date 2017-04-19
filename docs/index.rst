@@ -22,6 +22,7 @@ Thesis!
 
 
     pyha
+    vhdl_extensions
 ..    python_bindings
 
 

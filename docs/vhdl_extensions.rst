@@ -3,6 +3,9 @@
 VHDL as intermediate language
 =============================
 
+This chapter is a fair bit more techincal and requires some knowledge of VHDL and
+hardware synthesis.
+
 This chapter develops synthesizable object-oriented (OOP) programming model for VHDL.
 The main motivation is to use it as an intermediate language for High-Level synthesis of
 hardware.
