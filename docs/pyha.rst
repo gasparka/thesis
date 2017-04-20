@@ -45,6 +45,14 @@ converted to VHDL and how they can be synthesised.
 Pyha tries to be as like to software programming as possible, some things written for soft vs hardware can give
 suprisingly different results, this thesis tries to keep this in mind and hinglight such cases.
 
+Model based design
+~~~~~~~~~~~~~~~~~~
+
+Pyha encourages model based design, it is optional. Idea of the model is to provide a simples possible solution for the problem, this can also serve as some form of
+documentation to the module. Also as programmer guarantees equality of model and RTL, model can be used to run fast
+simulations and experiments. Model can be verified against RTL.
+
+
 
 
 Describing hardware
@@ -65,20 +73,14 @@ Describing hardware
     * Multiply?
 
 
-Kuhu maani int ja kust fixed?
-
-Basic adder
-~~~~~~~~~~~
-
 Stateless is also called combinatory logic. In the sense of software we could think that a function is stateless
 if it only uses local variables, has no side effects, returns are based on inputs only. That is, it may use
 local variables of function but cannot use the class variables, as these are stateful.
 
 This first chapter uses integer types only, as they are well undestood by anyone and also fully synthesizable (to 32 bit logic).
 
-Pyha encourages model based design, it is optional. Idea of the model is to provide a simples possible solution for the problem, this can also serve as some form of
-documentation to the module. Also as programmer guarantees equality of model and RTL, model can be used to run fast
-simulations and experiments. Model can be verified against RTL.
+Basic adder
+~~~~~~~~~~~
 
 Basic Pyha module is a Python class, that is derived from HW subclass. Simple adder with model implementaion is shown
 on :numref:`adder-model`.
@@ -132,6 +134,8 @@ The :numref:`fake` shows the RTL result. It may be suprising for software ppl.
 
 .. todo:: sim image
 
+Debuggability? Demonstrate that even tho different, can be fully debugged! For example if we have variable at some stage
+then in hardware at same point the value will be same.
 
 Main idea here to understand is that while the software and hardware approach do different thing, they result in
 same output, so in that sense they are equal. Just the natural state of software is to execute stuff in sequence, while
@@ -144,6 +148,40 @@ One of the key differences.
 
 In software operations consume time, but in hardware they consume resources, general rule.
 
+
+Control statements
+~~~~~~~~~~~~~~~~~~
+
+if
+
+For if note that we pay for both branches, while in software we only pay for what branch is executing.
+Also note that the in hardware both of the branches are constantly 'executing', the if condition just selects
+which element is routed to the output.
+
+There are differences..but still software and hardware approac give same result.
+
+for
+
+Lesson for for is that it will be fully unrolled. Also the for hardware the for control statement must be constant, since
+it is impossible to unroll dynamic stuff.
+
+
+Conclusions
+~~~~~~~~~~~
+
+This chapter dealt
+
+Basic points:
+
+    - Clock asbtaction
+    - Everything costs in hardware
+    - Debuggable
+    - Sample based processing for model
+    - Sample rate abstraction
+
+
+Sequential logic
+----------------
 
 Registers and Accumulator
 ~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -186,11 +224,8 @@ After setting the :code:`self._delay = 1` in the __init__, we get:
 In Pyha, registers are inferred from the ogject storage, that is everything defined in 'self' will be made registers.
 
 Understanding registers
-~~~~~~~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^^^^^^^
 
-Clearly the way of defining registers is not working properly.
-The mistake was to expect that the registers work in the same way as 'class variables' in traditional programming
-languages.
 
 In traditional programming, class variables are very similar to local variables. The difference is that
 class variables can 'remember' the value, while local variables exist only during the function
@@ -240,17 +275,25 @@ Block processing
 ~~~~~~~~~~~~~~~~
 
 
+Conclusion
+~~~~~~~~~~
+
+Class variables can be used in hardware, but they are delayed by one sample clock.
+
+In digital design signals are assumed to exist between registers. Total delay between the registers determines the
+maximum sample rate.
+
 
 
 Fixed-point designs
 -------------------
 
-A multiply-accumulate(MAC) circuit is used as a demonstration circuit throughout the rest of this chapter.
-It is a good choice as it is powerful element yet not very complex.
-Last chapter of this thesis peresents more serious use cases.
-
 One of the nuiciannce for software ppl in hardware is registers the second one are floating point calculations, or
 to be more clear, the lack of them in the FPGA context. Pyha tries to simplyfy the usage of fixed point stuff.
+
+Semi-automatic conversion
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
 
 
 Extended example
