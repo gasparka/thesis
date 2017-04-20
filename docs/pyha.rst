@@ -42,15 +42,15 @@ are to be interpreted as hardware registers, this fits well as they are long ter
 This chapter focuses on the Python side of Pyha, while the next chapter gives details on how Pyha details are
 converted to VHDL and how they can be synthesised.
 
-.. note:: The first half of this chapter uses 'integers' as base type in order to keep the examples
-    simple. Second half starts using fixed-point numbers, that ade default for Pyha.
-
+Pyha tries to be as like to software programming as possible, some things written for soft vs hardware can give
+suprisingly different results, this thesis tries to keep this in mind and hinglight such cases.
 
 
 
 Describing hardware
 -------------------
 
+    * Model
     * Clocking abstraction
     * Hardware is parallel, for is unrolled, comb example
     * Register needed for longer term state
@@ -59,118 +59,97 @@ Describing hardware
     * Sample based processing to block processing
     * Design reuse
     * Fixed point design?
-
-Assuming we have now enough knowledge and unit-tests we can start implementing
-the Hardware model.
-
-Block processing.
-
-Adder??
-
-Turning to block processing.
-
-Model
-~~~~~
-
-.. code-block:: python
-    :caption: Multiply-accumulate written in pure Python
-    :name: mac-pyha
-
-    class MAC:
-         def model_main(self, xl, hl):
-            y = []
-            acc = 0.0
-            for x, h in zip(xl, hl):
-                mul = x * h
-                acc = acc + mul
-                y.append(acc)
-
-            return y
-
-Pure software-world approach would likely just return
-
-.. note:: This could be also realized with one-liner :code:`return np.cumsum(np.array(xl) * np.array(hl))`. But currently
-    pure Python is better.
+    * Demonstrate multi-clock output?
+    * Float conversions?
+    * State machines
+    * Multiply?
 
 
-.. code-block:: python
-    :caption: Multiply-accumulate written in pure Python
-    :name: mac-pyha
+Kuhu maani int ja kust fixed?
 
-    >>> dut = MAC()
-    >>> xl = [1, 2, 3, 4]
-    >>> hl = [1, 1, 1, 1]
-    >>> dut.model_main(xl, hl)
-    [1.0, 3.0, 6.0, 10.0]
-
-
-:numref:`mac-pyha` shows the MAC model written in Python. It uses the Numpy package for numeric calculations.
-
-
-Stateless logic
-~~~~~~~~~~~~~~~
-
-Teen
-
-Clock abstracted as forever running loop. In hardware determines how long time we need to wait before
-next call to function so that all signals can propagate.
+Basic adder
+~~~~~~~~~~~
 
 Stateless is also called combinatory logic. In the sense of software we could think that a function is stateless
 if it only uses local variables, has no side effects, returns are based on inputs only. That is, it may use
 local variables of function but cannot use the class variables, as these are stateful.
 
+This first chapter uses integer types only, as they are well undestood by anyone and also fully synthesizable (to 32 bit logic).
+
+Pyha encourages model based design, it is optional. Idea of the model is to provide a simples possible solution for the problem, this can also serve as some form of
+documentation to the module. Also as programmer guarantees equality of model and RTL, model can be used to run fast
+simulations and experiments. Model can be verified against RTL.
+
+Basic Pyha module is a Python class, that is derived from HW subclass. Simple adder with model implementaion is shown
+on :numref:`adder-model`.
 
 .. code-block:: python
-   :caption: Stateless MAC implemented in Pyha
-   :name: pyha-comb-mac
+    :caption: Simple adder model
+    :name: adder-model
 
-    class MAC(HW):
-        def main(self, x, sum_in):
-            mul = 123 * x
-            y = sum_in + mul
+    class Adder(HW):
+        def main(self, x):
+            y = x + 1
             return y
 
-        def model_main ...
+        def model_main(self, xl):
+            yl = [x + 1 for x in xl]
+            return yl
+
+.. note:: Pyha reserves the function name :code:`model_main` for defining the model and :code:`main` for the top
+    level function. Designers may freely use other function names as pleased.
+
+:numref:`adder-model` shows the model implementation for the adder. The code loops over the input list 'xl' and adds 1 to each element.
+Important thing to notice is that the model code works on lists, it takes input as list and outputs a list.
+
+Key difference beteween the 'model_main' and 'main' is that the later works on singe samples while the model works
+on lists, it is vectorized. This is big difference because model code has access to all the samples of the scope, while
+main only has the single sample.
+
+.. todo:: rtl image
+
+One of the key abstractions that Pyha uses is that the 'main' is called on each clock. One could imagine that
+it is wrapped in a higher level for loop that continously supplies the samples.
+
+.. todo:: sim image
+
+The :numref:`fake` shows that all the simulations are equal. Pyha runs automatically Model, Python, VHDL and GATE simulations.
+
+Clock abstracted as forever running loop. In hardware determines how long time we need to wait before
+next call to function so that all signals can propagate.
 
 
+More adding
+~~~~~~~~~~~
 
-:numref:`pyha-comb-mac` shows the design of a combinatory logic. In this case it is a simple xor operation between
-two input operands. It is a standard Python class, that is derived from a baseclass *HW,
-purpose of the baseclass is to do some metaclass stuff and register this class as Pyha module.
+Next example is a simple modification of the previous adder. Instead of :code:`y = x + 1` we write
+:code:`y = x + 1 + 2 + 3 + 4`.
 
-.. _mac_rtl_end:
-.. figure:: ../examples/fir_mac/integer_based/img/comb_rtl.png
-    :align: center
-    :figclass: align-center
+.. todo:: rtl image
 
-    Synthesis result of the revised code (Intel Quartus RTL viewer)
-
-:numref:`mac_rtl_end` shows the synthesis result of the source code shown in :numref:`mac-next-update`.
-It is clear that this is now equal to the system presented at the start of this chapter.
+The :numref:`fake` shows the RTL result. It may be suprising for software ppl.
 
 
-.. _mac_comb_sim:
-.. figure:: ../examples/fir_mac/integer_based/img/comb_sim.png
-    :align: center
-    :figclass: align-center
-
-    Synthesis result of the revised code (Intel Quartus RTL viewer)
+.. todo:: sim image
 
 
-Class contains an function 'main', that is considered as the top level function for all Pyha designs. This function
-performs the xor between two inputs 'a' and 'b' and then returns the result.
+Main idea here to understand is that while the software and hardware approach do different thing, they result in
+same output, so in that sense they are equal. Just the natural state of software is to execute stuff in sequence, while
+hardware is parallel (tho, the order of operations still matter).
 
-In general all assigments to local variables are interpreted as combinatory logic.
+Also note that just like in software any operation has a price on the execution time, in hardware any operation has
+a price in term on resource usage.
 
-.. todo:: how this turns to VHDL and RTL picture?
+One of the key differences.
 
 In software operations consume time, but in hardware they consume resources, general rule.
 
-Not clocked...basically useless analog stuff.
 
+Registers and Accumulator
+~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Sequential logic
-~~~~~~~~~~~~~~~~
+All that we have looked so far would actually not work on the FPGA?
+Show how to use class vars as registers.
 
 Delay of 1 seems like not an big deal, but really it very much is. In general big part of the hardware design is
 fighting with bugs introduced by register delays, this is especially true for beginners. Delays can drasticly change
@@ -179,6 +158,32 @@ must be matched with delay of all sequnetial signal paths. Thats why it is impor
 unit tests, this is essential for hardware design.
 
 Show register on two signal paths??
+
+Running the same testing code results in a :numref:`mac_seq_sim_delay`. It shows that while the
+Python, RTL and GATE simulations are equal, model simulation differs. This is the effect of added register,
+it adds one delay to the harwdware simulations.
+
+This is an standard hardware behaviour. Pyha provides special variable
+:code:`self._delay` that specifies the delay of the model, it is useful:
+
+- Document the delay of your blocks
+- Upper level blocks can use it to define their own delay
+- Pyha simulations will adjust for the delay, so you can easily compare to your model.
+
+.. note:: Use :code:`self._delay` to match hardware delay against models
+
+After setting the :code:`self._delay = 1` in the __init__, we get:
+
+
+.. _mac_seq_sim:
+.. figure:: ../examples/fir_mac/integer_based/img/seq_sim.png
+    :align: center
+    :figclass: align-center
+
+    Synthesis result of the revised code (Intel Quartus RTL viewer)
+
+
+In Pyha, registers are inferred from the ogject storage, that is everything defined in 'self' will be made registers.
 
 Understanding registers
 ~~~~~~~~~~~~~~~~~~~~~~~
@@ -208,97 +213,33 @@ Jan Decaluwe, the author of MyHDL package, has written a relevant article about 
 Using an signal assignment inside a clocked process always infers a register, because it exactly represents the
 register model.
 
+Pipelining
+~~~~~~~~~~
+
+In general we expect all the signals to start from a register and end to a register. This is to avoid all the
+analog gliches that go on during the transimission process.
+ The delay from one register to
+other determines the maximum clock rate (how fast registers can update). The slowest register pair determines the
+delay for the whole design, weakest link priciple.
+
+While registers can be used as class storage in software designs, they are also used as checkpoints on the
+signal paths, thus allowing high clock rates.
+
+In Digital signal processing applications we have sampling rate, that is basically equal to the clock rate. Think that
+for each input sample the 'main' function is called, that is for each sample the clock ticks.
 
 
+Registers also used for pipelines.
+Sometimes registers only used for delay.
 
-Registers in hardware have more purposes:
-
-    - delay
-    - max clock speed - how this corresponds to sample rate?
-
-
-Explain somwhere that each call to function is a clock tick.
-
-.. code-block:: python
-   :caption: Basic sequential circuit in Pyha
-   :name: pyha-reg
-
-    class Reg(HW):
-        def __init__(self):
-            self.reg = 0
-
-        def main(self, a, b):
-            self.next.reg = a + b
-            return self.reg
-
-:numref:`pyha-reg` shows the design of a registered adder.
-
-.. _mac_seq_rtl:
-.. figure:: ../examples/fir_mac/integer_based/img/seq_rtl.png
-    :align: center
-    :figclass: align-center
-
-    Synthesis result of the revised code (Intel Quartus RTL viewer)
-
-:numref:`mac_seq_rtl` shows the synthesis result of the source code shown in :numref:`mac-next-update`.
-It is clear that this is now equal to the system presented at the start of this chapter.
-
-
-
-.. _mac_seq_sim_delay:
-.. figure:: ../examples/fir_mac/integer_based/img/seq_sim_delay.png
-    :align: center
-    :figclass: align-center
-
-    Synthesis result of the revised code (Intel Quartus RTL viewer)
-
-Running the same testing code results in a :numref:`mac_seq_sim_delay`. It shows that while the
-Python, RTL and GATE simulations are equal, model simulation differs. This is the effect of added register,
-it adds one delay to the harwdware simulations.
-
-This is an standard hardware behaviour. Pyha provides special variable
-:code:`self._delay` that specifies the delay of the model, it is useful:
-
-- Document the delay of your blocks
-- Upper level blocks can use it to define their own delay
-- Pyha simulations will adjust for the delay, so you can easily compare to your model.
-
-.. note:: Use :code:`self._delay` to match hardware delay against models
-
-After setting the :code:`self._delay = 1` in the __init__, we get:
-
-
-.. _mac_seq_sim:
-.. figure:: ../examples/fir_mac/integer_based/img/seq_sim.png
-    :align: center
-    :figclass: align-center
-
-    Synthesis result of the revised code (Intel Quartus RTL viewer)
-
-
-In Pyha, registers are inferred from the ogject storage, that is everything defined in 'self' will be made registers.
-
-
-The 'main' function performs addition between two inputs 'a' and 'b' and then returns the result.
-It can be noted that the sum is assigned to 'self.next' indicating that this is the next value register takes on
-next clock.
-
-Also returned is self.reg, that is the current value of the register.
-
-In general this system is similiar to VHDL signals:
-
-    - Reading of the signal returns the old value
-    - Register takes the next value in next clock cycle (that is self.next.reg becomes self.reg)
-    - Last value written to register dominates the next value
-
-However there is one huge difference aswell, namely that VHDL signals do not have order, while all Pyha code is stctural.
-
-
-.. todo:: how this turns to VHDL and RTL picture?
+This could have example on pipelining issues, like delay matching?
 
 Pyha way is to register all the outputs, that way i can be assumed that all the inputs are already registered.
 
-Simulation a
+Block processing
+~~~~~~~~~~~~~~~~
+
+
 
 
 Fixed-point designs
