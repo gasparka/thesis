@@ -51,6 +51,15 @@ converted to VHDL and how they can be synthesised.
 Describing hardware
 -------------------
 
+    * Clocking abstraction
+    * Hardware is parallel, for is unrolled, comb example
+    * Register needed for longer term state
+    * Register adds delay
+    * Register for pipelines and clock stuff
+    * Sample based processing to block processing
+    * Design reuse
+    * Fixed point design?
+
 Assuming we have now enough knowledge and unit-tests we can start implementing
 the Hardware model.
 
