@@ -405,8 +405,39 @@ Value of GATE level simulation is that sometimes software appraoch gives some ot
     Simulation results
 
 
+
+.. todo:: Actually hard to write model here..need to prepend data to take account hardware effects.
+
+
 Pipelining
 ~~~~~~~~~~
+
+The block adder built in last section is quite decent, in sense that it is following the digital design approach by
+having all stuff between registers.
+
+The synthesis result gives that the maximum clock rate for this design is ~170 Mhz.
+Imagine that we want to make this design generic, that is make the summing window size easily changeable. Then we will
+see problems, for example going from 4 to 6 changes the max clock speed to ~120 Mhz. Chaning it to 16 gives
+already only ~60 Mhz max clock.
+
+.. todo:: appendix for FPGA chip used
+
+.. _rtl_6_critical:
+.. figure:: ../examples/block_adder/img/rtl_6_critical.png
+    :align: center
+    :figclass: align-center
+
+    Critical path RTL
+
+
+In that sense, it is not a good design since reusing it hard.
+
+The obious solution of adding registes between adder stages would not actually work, when delays come into play
+stuff gets complicated!
+
+.. todo:: CONFUSING!!! adding registers on adders WONT work, need to go transposed solution.
+
+.. todo:: Arvan,et pipelining on liiga raske teema, parem loobuda sellest?
 
 In general we expect all the signals to start from a register and end to a register. This is to avoid all the
 analog gliches that go on during the transimission process.
@@ -430,9 +461,10 @@ Pyha way is to register all the outputs, that way i can be assumed that all the 
 
 Every rule has exeception, for example delays on the feedback paths (data flows backward) are pure evil.
 
+Pipelining is something that does not exist in software world.
 
-Why pipeline stuff?
-^^^^^^^^^^^^^^^^^^^
+Why bother with pipelining?
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 It determines the maximum samplerate for the design. In that sense, designs with low max sample rate are not easly
 reusable, so pipelines mean reusability. Remember that hardware work on the weakest link principe, lowest clock rate
@@ -448,10 +480,23 @@ Another point is clock TDA. Run the design on higher clock rate to save resource
 this has to have sample rate of 20M. But when we run it with say 100M we can push 4 different wify signals trough the same
 circuit. That however depends on the synthesys tool ability to share common resources.
 
+Negatives of pipelining is that the delay of the block is not constant in all configurations also pipelining increases
+resource usage.
+
+Also algorithm becomes more complex and harder to understand.
 
 
-Design reuse
-~~~~~~~~~~~~
+
+Abstraction and Design reuse
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Last section showed that designing even an simple algorithm in hardware can get very confusing as the registers
+come into play.
+
+Good thing about Object-oriented programming is that the complexity of the implementation can be hidden/ abstracted.
+
+Here can list that Pyha has angle and abs for example?
+
 
 Do in fixed point?
 
@@ -471,16 +516,25 @@ the operation of a circuit and what is even worse, they may not change the opera
 must be matched with delay of all sequnetial signal paths. Thats why it is important to always have a model and
 unit tests, this is essential for hardware design.
 
+In general when registers and delays come into play...everything gets very confusing and hard. Thats why it is important
+to have an model, it also serves as an documentation.
+
 
 
 Fixed-point designs
 -------------------
 
-So far this document has used the ``integer`` type in order to keep things simple and understadnable.
+So far only ``integer`` types have been used, in order to keep things simple and understandable.
 
-Problem with floating point number is that as we saw in previous chapter, every operation costs. While in porcessor
-there is only one floating point hardware. Floating point operations take alot of hardware resources. Bishop ref
-that they take about 3 times more. Also fixed-point stuff can be mapped to DSP blocks.
+In DSP applications we would like to rather use floating point numbers. As shown in previous chapter, every operation
+in hardware takes resources and floating point calculations cost alot.
+
+While floating point numbers are usable in hardware, it is common approach to use fixed-point arithmetic
+instead. They work as integer arithmetic, they can also be mapped to DSP blocks that come with FPGAs.
+
+
+.. todo:: some short intro to fixed point, move most to appendix
+
 
 One of the nuiciannce for software ppl in hardware is registers the second one are floating point calculations, or
 to be more clear, the lack of them in the FPGA context. Pyha tries to simplyfy the usage of fixed point stuff.
@@ -488,6 +542,7 @@ to be more clear, the lack of them in the FPGA context. Pyha tries to simplyfy t
 Pyha can convert floating point models to VHDL, and may run simulations up to the GATE level. That is useful as all the
 register effect can be handled before the fixed point conversion. Only when delay effects have been analyzed can the
 design be converted to fixed point.
+
 
 
 

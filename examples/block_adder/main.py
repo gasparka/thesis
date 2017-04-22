@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 class LastAcc(HW):
     def __init__(self):
         # registers
-        self.shr = [0, 0, 0, 0]
+        self.shr = [0] * 16
         self.y = 0
 
         # module delay
@@ -29,6 +29,7 @@ class LastAcc(HW):
 
     def model_main(self, xl):
 
+        # return np.convolve(xl, [1] * 4)
         xl = [0, 0, 0] + xl
         y = []
         for i in range(len(xl)-3):
@@ -40,7 +41,71 @@ class LastAcc(HW):
 
 def test_lastacc():
     dut = LastAcc()
-    x = [0, 1, 2, 3, 4, 3, 2, 1, 0]
+    x = [0, 1, 2, 3, 2, 1, 0]
+
+    r = debug_assert_sim_match(dut, None, x,
+                               simulations=[SIM_MODEL, SIM_HW_MODEL, SIM_RTL, SIM_GATE],
+                               dir_path='/home/gaspar/git/thesis/playground')
+
+
+
+    plt.figure(figsize=(8, 2))
+    plt.stem(x, label='x', basefmt=" ")
+    plt.plot(r[0], label='y: Model')
+    plt.plot(r[1], label='y: Pyha')
+    plt.plot(r[2], label='y: RTL')
+    # plt.plot(r[3], label='y: GATE')
+
+    plt.grid()
+    plt.xlabel("Sample number")
+    plt.ylabel("Value")
+    plt.legend()
+    plt.savefig('img/sim_tmp.png', bbox_inches='tight')
+    plt.show()
+
+    print(r)
+
+
+
+class LastAccPipelined(HW):
+    def __init__(self, lens):
+        self.lens = lens
+
+        # registers
+        self.shr = [0] * lens
+        self.sum = [0] * lens
+        self.y = 0
+
+        # module delay
+        self._delay = 2
+
+    def main(self, x):
+        # add new element to shift register
+        self.next.shr = [x] + self.shr[:-1]
+
+        for i in range(len(self.shr)):
+            if i == 0:
+                self.next.sum[i] = self.shr[i]
+            else:
+                self.next.sum[i] = self.sum[i-1] + self.shr[0]
+
+        return self.sum[-1]
+
+    def model_main(self, xl):
+
+        return np.convolve(xl, [1] * self.lens)
+        xl = [0, 0, 0] + xl
+        y = []
+        for i in range(len(xl)-3):
+            s = sum(xl[i: i+4])
+            y.append(s)
+
+        return y
+
+
+def test_lastacc_pipelined():
+    dut = LastAccPipelined(8)
+    x = [0, 1, 2, 3, 2, 1, 0, 0, 0, 0, 0, 0]
 
     r = debug_assert_sim_match(dut, None, x,
                                simulations=[SIM_MODEL, SIM_HW_MODEL, SIM_RTL, SIM_GATE],
@@ -63,4 +128,3 @@ def test_lastacc():
     plt.show()
 
     print(r)
-

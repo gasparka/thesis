@@ -2,7 +2,8 @@ import numpy as np
 import pytest
 
 from pyha.simulation.simulation_interface import assert_sim_match
-from pyhacores.moving_average.model import MovingAverage
+
+from examples.moving_average.model import MovingAverage
 
 
 class TestMovingAverage:

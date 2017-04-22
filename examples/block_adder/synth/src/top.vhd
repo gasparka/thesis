@@ -15,10 +15,10 @@ entity  top is
         clk, rst_n, enable: in std_logic;
 
         -- inputs
-        in0: in std_logic_vector(31 downto 0);
+        x: in std_logic_vector(31 downto 0);
 
         -- outputs
-        out0: out std_logic_vector(31 downto 0)
+        y: out std_logic_vector(31 downto 0)
     );
 end entity;
 
@@ -32,20 +32,22 @@ begin
         --output variables
         variable var_out0: integer;
     begin
-    if (not rst_n) then
-        LastAcc_0.\_pyha_reset_self\(self);
-    elsif rising_edge(clk) then
-        if enable then
-            --convert slv to normal types
-            var_in0 := to_integer(signed(in0));
+
+	             --convert slv to normal types
+            var_in0 := to_integer(signed(x));
 
             --call the main entry
             LastAcc_0.\_pyha_init_self\(self);
             LastAcc_0.main(self, var_in0, ret_0=>var_out0);
-            LastAcc_0.\_pyha_update_self\(self);
 
             --convert normal types to slv
-            out0 <= std_logic_vector(to_signed(var_out0, 32));
+            y <= std_logic_vector(to_signed(var_out0, 32));
+
+    if (not rst_n) then
+        LastAcc_0.\_pyha_reset_self\(self);
+    elsif rising_edge(clk) then
+        if enable then
+            LastAcc_0.\_pyha_update_self\(self);
         end if;
       end if;
 

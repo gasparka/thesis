@@ -8,12 +8,6 @@ from pyha.common.util import is_power2
 
 
 class MovingAverage(HW):
-    """
-    Moving average algorithm.
-
-    :param window_len: Size of the moving average window, must be power of 2
-    """
-
     def __init__(self, window_len):
         if window_len < 2:
             raise AttributeError('Window length must be >= 2')
@@ -26,37 +20,23 @@ class MovingAverage(HW):
 
         # registers
         self.shift_register = [Sfix()] * self.window_len
-        self.sum = Sfix(left=self.window_pow, overflow_style=fixed_wrap, round_style=fixed_truncate)
-        self.out = Sfix(0, 0, -17, overflow_style=fixed_wrap, round_style=fixed_truncate)
+        self.sum = Sfix(0, 0, -17, overflow_style=fixed_wrap, round_style=fixed_truncate)
 
         # these can be removed actually? Fitter optimizes this out
-        self.window_len = Const(self.window_len)
         self.window_pow = Const(self.window_pow)
 
         # module delay
-        self._delay = 2
+        self._delay = 1
 
     def main(self, x):
-        """
-        This works by keeping a history of 'window_len' elements and sum of them.
-        Every clock last element will be subtracted and new added to the sum.
-        Sum is then divided by the 'window_len'.
-        More good infos: https://www.dsprelated.com/showarticle/58.php
+        mul = x >> self.window_pow
 
-        :param x: input to average
-        :return: averaged output
-        :rtype: Sfix
-        """
-
-        # add new element to shift register
-        self.next.shift_register = [x] + self.shift_register[:-1]
+        self.next.shift_register = [mul] + self.shift_register[:-1]
 
         # calculate new sum
-        self.next.sum = self.sum + x - self.shift_register[-1]
+        self.next.sum = self.sum + mul - self.shift_register[-1]
 
-        # divide sum by amount of window_len
-        self.next.out = self.sum >> self.window_pow
-        return self.out
+        return self.sum
 
     def model_main(self, inputs):
         taps = [1 / self.window_len] * self.window_len
