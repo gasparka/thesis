@@ -504,7 +504,6 @@ Do in fixed point?
 Conclusion
 ~~~~~~~~~~
 
-
 Class variables can be used in hardware, but they are delayed by one sample clock.
 
 In digital design signals are assumed to exist between registers. Total delay between the registers determines the
@@ -536,22 +535,68 @@ instead. They work as integer arithmetic, they can also be mapped to DSP blocks 
 .. todo:: some short intro to fixed point, move most to appendix
 
 
-One of the nuiciannce for software ppl in hardware is registers the second one are floating point calculations, or
-to be more clear, the lack of them in the FPGA context. Pyha tries to simplyfy the usage of fixed point stuff.
-
 Pyha can convert floating point models to VHDL, and may run simulations up to the GATE level. That is useful as all the
 register effect can be handled before the fixed point conversion. Only when delay effects have been analyzed can the
 design be converted to fixed point.
 
 
+Lets consider converting the moving-window adder to fixed-point implementation.
+
+Pyha assumes inputs are normalized to -1 to 1.
+
+Conversion to fixed point requires changes only in the ``__init__`` function.
+
+.. code-block:: python
+    :caption: Accumulator
+    :name: Sfix block adder
+
+    def __init__(self, window_size):
+        self.shr = [Sfix()] * window_size
+        self.sum = Sfix(left=0)
+
+The first line denotest that the shift-register shall be holding ``Sfix`` elements instead of ``integers``.
+Note that it does not define the fixed-point bounds, meaning it will store 'whatever' is assigned to it, it is
+kind of lazy stuff.
+
+For the ``self.sum`` we have used another lazy statement of ``Sfix(left=0)``, this means that the integer bits
+are forced to 0 bits on every assign, that is value is saturated if larger.
+
+
+.. _rtl_sfix_saturate:
+.. figure:: ../examples/block_adder/img/rtl_sfix_saturate.png
+    :align: center
+    :figclass: align-center
+
+    Critical path RTL
 
 
 
-Semi-automatic conversion
-~~~~~~~~~~~~~~~~~~~~~~~~~
+.. _fix_sat_wrap:
+.. figure:: ../examples/block_adder/img/fix_sat_wrap.png
+    :align: center
+    :figclass: align-center
+
+    Wrap vs Saturate
 
 
 
+Example: Moving average filter
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+
+
+
+Example: FIR filter
+~~~~~~~~~~~~~~~~~~~
+
+
+
+
+Conclusion
+~~~~~~~~~~
+
+While fixed-point designs require some extra efforts, Pyha provides reasonably easy way for conversion.
 
 
 Proposed design flow
@@ -565,8 +610,8 @@ Proposed design flow
 
 Siin võiks olla mingi figure?
 
-Conclusions
------------
+Conclusion
+----------
 
 This chapter showed how Python OOP code can be converted into VHDL OOP code.
 
