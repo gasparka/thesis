@@ -607,28 +607,56 @@ and divided by the window length. :numref:`mavg_example` gives an example.
     y[2] = (x[2] + x[3] + x[4] + x[5]) / 4
 
 We have already implemented the sliding sum part of the algorithm, only thing to add is division by the window length.
-Division operation is hard to implement in hardware, instead we can use the multiplication by reciprocal, that is
-dividing with 4 is equal to multiplying with 1/4 that helps because multiplication is easy.
+The division can be implemented by shift right if divisor is power of two. That is good enough, another approach is to use
+1/4.
+
 
 
 .. code-block:: python
-    :caption: Implementation of moving average algorithm in Python
-    :name: pymavg
+    :caption: Moving average implementation
+    :name: mavg-pyha
+    :linenos:
 
-    avg_len = 4
-    taps = [1 / avg_len] * avg_len
-    ret = np.convolve(inputs, taps, mode='full')
+    class MovingAverage(HW):
+        def __init__(self, window_len):
+            self.window_len = window_len
 
-:numref:`pymavg` shows how to implement moving average algorithm in Python, it uses the
-fact that it is basically convolution...bla bla bla.
+            self.shr = [Sfix()] * self.window_len
+            self.sum = Sfix(0, 0, -17, overflow_style=fixed_wrap)
+
+            self.window_pow = Const(int(np.log2(window_len)))
+
+            self._delay = 1
+
+        def main(self, x):
+            div = x >> self.window_pow
+
+            self.next.shr = [div] + self.shr[:-1]
+            self.next.sum = self.sum + div - self.shr[-1]
+            return self.sum
+
+
+:numref:`mavg-pyha` shows the implementation. It has added two new lines to the sliding adder block. The
+``self.window_pow`` calculates power of 2 value from the window length, this is used to indicate shift bits.
 
 
 
 
+.. _mavg_rtl:
+.. figure:: ../examples/moving_average/img/mavg_rtl.png
+    :align: center
+    :figclass: align-center
+
+    RTL view of moving average (Intel Quartus RTL viewer)
 
 
-.. _mavg_noise_reduction:
-.. figure:: img/moving_average_noise.png
+:numref:`mavg_rtl` shows the synthesized result of this work.
+
+
+
+
+.. _moving_average_noise:
+.. figure:: ../examples/moving_average/img/moving_average_noise.png
     :align: center
     :figclass: align-center
 
@@ -636,27 +664,13 @@ fact that it is basically convolution...bla bla bla.
 
 
 
-As shown on :numref:`mavg_noise_reduction`, moving average is a good noise reduction algorithm.
+As shown on :numref:`moving_average_noise`, moving average is a good noise reduction algorithm.
 Increasing the averaging window reduces more noise but also increases the complexity and delay of
-the system.
-
-
-
-.. _mavg_matched:
-.. figure:: img/moving_average_matched.png
-    :align: center
-    :figclass: align-center
-
-    Moving average as matched filter
-
-In addition, moving average is also an optimal solution for performing matched filtering of
-rectangular pulses :cite:`dspbook`.  On :numref:`mavg_matched` (a) digital signal is corrupted
-with noise, by using moving average with length equal to the signal samples per symbol, enables to
-recover the signal and send it to sampler (b).
+the system (moving average is a special case of FIR filter, same delay semantics apply).
 
 
 .. _mavg_freqz:
-.. figure:: img/moving_average_freqz.png
+.. figure:: ../examples/moving_average/img/moving_average_freqz.png
     :align: center
     :figclass: align-center
 
@@ -667,33 +681,21 @@ filter in the frequency domain. Passband width and stopband attenuation are cont
 moving averages length. Note that when taps number get high, then moving average basically returns
 the DC offset of a signal.
 
-In  short,  the  moving  average  is  an exceptionally  good smoothing  filter
-(the  action  in  the  time  domain),  but  an exceptionally bad low-pass filter
-(the action in the frequency domain). :cite:`dspbook`
 
-GATE level simulation
-^^^^^^^^^^^^^^^^^^^^^
-
-As written in some chapter, Pyha supports also rupports running GATE-level simulations
-by integrating with Intel Quartus software
-
-Running the GATE simulation, will produce ‘quartus’ directory in dir_path. One useful tool in Quartus software is RTL viewer, it can be opened from Tools-Netlist viewers-RTL viewer.
-
-RTL of this tutorial:
-
-.. _label:
-.. figure:: img/rtl_annotations.png
+.. _mavg_matched:
+.. figure:: ../examples/moving_average/img/moving_average_matched.png
     :align: center
     :figclass: align-center
 
-    RTL view of moving average (Intel Quartus RTL viewer)
+    Moving average as matched filter
 
 
-:numref:`label` shows the synthesized result of this work. The blue box shows the part of the logic that was inferred
-as to be shift register, red part contains all the logic, as expected two adders are requires. Finally green part is the
-output register.
+In addition, moving average is also an optimal solution for performing matched filtering of
+rectangular pulses :cite:`dspbook`.  On :numref:`mavg_matched` (a) digital signal is corrupted
+with noise, by using moving average with length equal to the signal samples per symbol, enables to
+recover the signal and send it to sampler (b).
 
-Quartus project can be seen at repo [#mavgrepo]_.
+
 
 
 Resource usage
