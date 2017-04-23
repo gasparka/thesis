@@ -652,6 +652,14 @@ The division can be implemented by shift right if divisor is power of two. That 
 
 :numref:`mavg_rtl` shows the synthesized result of this work.
 
+Synhesizing with Quartus gave following resorce usage:
+
+    - Total logic elements: 94 / 39,600 ( < 1 % )
+    - Total memory bits:    54 / 1,161,216 ( < 1 % )
+    - Embedded multipliers: 0 / 232 ( 0 % )
+
+In additon, maximum reported clock speed is 222 MHz, that is over the 200 MHz limit of Cyclone IV device :cite:`cycloneiv`.
+
 
 
 
@@ -697,31 +705,10 @@ recover the signal and send it to sampler (b).
 
 
 
+Example: DC removal
+~~~~~~~~~~~~~~~~~~~
 
-Resource usage
-^^^^^^^^^^^^^^
-
-All the synthesis tests are to be run on the EP4CE40F23C8N chip by Altera. It is from Cyclone IV family.
-In todays standard this is quite an mediocer chip, behind two generations.
-It was chosen because BladeRF and LimeSDR use this chip. It costs about 60 euros (Mouser)
-
-Some features of this FPGA :cite:`cycloneiv`:
-
-    - 39,600 logic elements
-    - 1,134Kbits embedded memory
-    - 116 embedded 18x18 multipliers
-    - 4 PLLs
-
-Synhesizing with Quartus gave following resorce usage:
-
-    - Total logic elements: 94 / 39,600 ( < 1 % )
-    - Total memory bits:    54 / 1,161,216 ( < 1 % )
-    - Embedded multipliers: 0 / 232 ( 0 % )
-
-In additon, maximum reported clock speed is 222 MHz, that is over the 200 MHz limit of Cyclone IV device :cite:`cycloneiv`.
-
-.. [#mavgrepo] https://github.com/petspats/thesis/tree/master/examples/moving_average/conversion
-
+.. include:: ../backup/dc_removal.rst
 
 
 

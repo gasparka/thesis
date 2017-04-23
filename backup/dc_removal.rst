@@ -8,7 +8,7 @@ This happens in direct conversion receivers due to a few different factors.
 One is at the ADC where being off by a single LSB will yield a DC offset.
 Another is at the output of the low-pass filters where any DC bias will propagate through.
 The last is at the mixer where the local oscillator (LO) being on the center of the desired
-frequency will leak through to the receiver. :cite:`bladerfdoc`
+frequency will leak through to the receiver :cite:`bladerfdoc`.
 
 
 In frequency domain, DC offset will look like a peak near the 0 Hz. In time domain, it manifests as a constant
