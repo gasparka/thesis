@@ -114,34 +114,68 @@ The :numref:`adder_sim` is plotted using the data from ``simulate`` function, as
 all the simulations are equal.
 
 
-More adding
-~~~~~~~~~~~
+Operations order
+~~~~~~~~~~~~~~~~
 
-Change this to mult + ?
+Slightly more complex example is given on :numref:`pyha_adder_comp`. It features two outputs, note that the
+``b`` output is dependent of ``a``.
 
-Next example is a simple modification of the previous adder. Instead of :code:`y = x + 1` we write
-:code:`y = x + 1 + 2 + 3 + 4`.
+.. code-block:: python
+    :caption: Simple adder model
+    :name: pyha_adder_comp
 
-.. todo:: rtl image
+    ...
+    def main(self, x):
+        a = x + 1 + 3
+        b = a + 2
+        return a, b
+    ...
 
-The :numref:`fake` shows the RTL result. It may be suprising for software ppl.
+.. _adder_multi_rtl:
+.. figure:: ../examples/adder/img/add_multi_rtl.png
+    :align: center
+    :figclass: align-center
 
+    Synthesis result of :numref:`pyha_adder_comp` (Intel Quartus RTL viewer)
 
-.. todo:: sim image
+The :numref:`adder_multi_rtl` shows the RTL result. Now this RTL may be suprising for people coming from software
+development.
 
-Debuggability? Demonstrate that even tho different, can be fully debugged! For example if we have variable at some stage
-then in hardware at same point the value will be same.
+The simplified CPU can be imagined to have only one adder, then the code above would take 3 cycles of this adder to execute.
+Hardware approach however is that all the operations are done in parallel.
 
-Main idea here to understand is that while the software and hardware approach do different thing, they result in
-same output, so in that sense they are equal. Just the natural state of software is to execute stuff in sequence, while
-hardware is parallel (tho, the order of operations still matter).
-
+So in general, operations in software consume time, while hardware consumes resources, this is general rule. To be
+correct in hardware there are also pipeline delays but these can be ignored at this point.
+In software operations consume time, but in hardware they consume resources, general rule.
 Also note that just like in software any operation has a price on the execution time, in hardware any operation has
 a price in term on resource usage.
 
-One of the key differences.
+Simulation and testing
+^^^^^^^^^^^^^^^^^^^^^^
 
-In software operations consume time, but in hardware they consume resources, general rule.
+Testing of the circuit is done on the same data as previous.
+
+.. _add_multi_sim:
+.. figure:: ../examples/adder/img/add_multi_sim.png
+    :align: center
+    :figclass: align-center
+
+    Simulation result
+
+
+Main idea to understand is that while the software and hardware approach do different thing, they result in
+same output, so in that sense they are equal. Just the natural state of software is to execute stuff in sequence, while
+hardware is parallel (tho, the order of operations still matter).
+
+One huge upside of Pyha is that designs can be debugged, :numref:`add_multi_debug` shows a breakpoint that was
+reached on the first input sample. It is better than conventional methods!
+
+.. _add_multi_debug:
+.. figure:: ../examples/adder/img/add_multi_debug.png
+    :align: center
+    :figclass: align-center
+
+    Debugging using PyCharm (Python editor)
 
 
 Control statements
@@ -163,6 +197,8 @@ Lesson for for is that it will be fully unrolled. Also the for hardware the for 
 it is impossible to unroll dynamic stuff.
 
 .. warning:: Whenever writing a for loop for hardware, try to unroll it in mind, does it make sense?
+
+Show function call
 
 Function calls? instances?
 
