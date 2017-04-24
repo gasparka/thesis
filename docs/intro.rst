@@ -6,6 +6,8 @@ Major goal of this project is to support object-oriented hardware design.
 While other high level tools convert to very low-level VHDL, then Pyha takes and different approach by
 first developing an feasible model in VHDL and then using Python to get around VHDL ugly parts.
 
+Sell this!!!. Has good integration for model, is debuggable. Running simulations is extreamly
+easy. Good fixed point support. Modern software dev tools in hw.
 
 Essentially this is a Python to VHDL converter, with a specific focus on implementing DSP systems.
 

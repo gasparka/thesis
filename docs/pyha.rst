@@ -181,33 +181,122 @@ reached on the first input sample. It is better than conventional methods!
 Control statements
 ~~~~~~~~~~~~~~~~~~
 
-if
+Control statements like if, for and function calls are fully usable in synthesizable code.
 
-For if note that we pay for both branches, while in software we only pay for what branch is executing.
-Also note that the in hardware both of the branches are constantly 'executing', the if condition just selects
-which element is routed to the output.
+If statement
+^^^^^^^^^^^^
 
-There are differences..but still software and hardware approac give same result.
+.. code-block:: python
+    :caption: Select add amount with if
+    :name: pyha_if_code
 
-Make mult and add, so can demonstrate critical path?
+    ...
+    def main(self, x, condition):
+        if condition == 0:
+            y = x + 3
+        else:
+            y = x + 1
+        return y
+    ...
 
-for
+.. _if_rtl:
+.. figure:: ../examples/control/img/if_rtl.png
+    :align: center
+    :figclass: align-center
 
-Lesson for for is that it will be fully unrolled. Also the for hardware the for control statement must be constant, since
-it is impossible to unroll dynamic stuff.
+    Synthesis result of :numref:`pyha_if_code` (Intel Quartus RTL viewer)
 
-.. warning:: Whenever writing a for loop for hardware, try to unroll it in mind, does it make sense?
+Note that in hardware the if clause is implemented with 'multiplexer' it select the signal path based on condition.
+So if ``condition == 0`` then bottom signal path is routed to output. Interesting thing to note is that both of the
+adders are constantly 'executing', even when not selected.
 
-Show function call
+Simulating this designs gives equal output for Model, Pyha, RTL and GATE simulations.
 
-Function calls? instances?
+Even so that the hardware vs software approach to implement this structude is quite differet, they end with equal
+outputs.
 
+For statement
+^^^^^^^^^^^^^
+
+Loop statement usage, like ``for``, is somewhat limited in hardware. Since as we have seen all the hardware will be
+layed out, the for condition cannot be dynamci, it must be constant.
+
+:numref:`pyha_for_code` gives an simple ``for`` example, that adds [0, 1, 2, 3] to the input signal.
+
+.. code-block:: python
+    :caption: For adder
+    :name: pyha_for_code
+
+    ...
+    def main(self, x):
+        y = x
+        for i in range(4):
+            y = y + i
+
+        return y
+    ...
+
+.. _for_rtl:
+.. figure:: ../examples/control/img/for_rtl.png
+    :align: center
+    :figclass: align-center
+
+    Synthesis result of :numref:`pyha_for_code` (Intel Quartus RTL viewer)
+
+
+All the loops in hardware get fully unrolled, that means :numref:`pyha_for_code` is equal to
+:numref:`pyha_for_code_unrolled`. Also because of this the ``for`` condition must be constant.
+
+.. code-block:: python
+    :caption: Unrolled ``for``, equivalent to :numref:`pyha_for_code`
+    :name: pyha_for_code_unrolled
+
+    ...
+    def main(self, x):
+        y = x
+        y = y + 0
+        y = y + 1
+        y = y + 2
+        y = y + 3
+        return y
+    ...
+
+Simulating this designs gives equal output for Model, Pyha, RTL and GATE simulations.
+
+
+Function calls
+^^^^^^^^^^^^^^
+
+So far this paper has only used the ``main`` function to define logic. Generally ``main`` function is just the
+top level function that is first called by ``simulation`` and conversion processes. Shows an example:
+
+.. code-block:: python
+    :caption: For adder
+    :name: pyha_functions_code
+
+    ...
+    def adder(self, x, b):
+        y = x + b
+        return y
+
+    def main(self, x):
+        y = self.adder(x, 1)
+        return y
+    ...
+
+The synthesys result of :numref:`pyha_functions_code` is just an adder,
+there is no mark that a function call has been used, so basically one could assume that all functions are
+inlined during the synthesys process.
+
+.. warning:: There cannot be more than one function call per expression, this limitation may be lifted in the future.
 
 
 
 Conclusions
 ~~~~~~~~~~~
 
+Even tho the hardware implementation of some constructs may be unexpected or suprising, they give same result in the
+end of simulation.
 
 Looks like 'main' is the only function that can be used.. wtf?
 
@@ -520,7 +609,7 @@ Good thing about Object-oriented programming is that the complexity of the imple
 
 Here can list that Pyha has angle and abs for example?
 
-
+Show instances and list of instances.
 Do in fixed point?
 
 
