@@ -295,12 +295,14 @@ inlined during the synthesys process.
 Conclusions
 ~~~~~~~~~~~
 
-Even tho the hardware implementation of some constructs may be unexpected or suprising, they give same result in the
-end of simulation.
+Main takeaway from this chapter is that software approach works for defining stateless hardware. This chapter demonstrated
+that the output of software solution and hardware synthesys is equal for many examples. Even so, the way hardware
+solution arcieves the result is 'unexpected' for the software designer.
 
-Looks like 'main' is the only function that can be used.. wtf?
+Major point to remember is that software cost time while everything in hardware cost resources.
 
-This chapter dealt
+In addition, this work showed how using Pyha enables fast testing of hardware designs by automatically running all
+relavant simulations and enabling debug in Python domain.
 
 Basic points:
 
@@ -310,11 +312,6 @@ Basic points:
     - Sample based processing for model
     - Sample rate abstraction
 
-Main point here is that what we write works as expected, but is just implemented in slightly different ways than in
-software approach.
-
-One majord benefit of Pyha that all the hardware code is defined in sequential statements, thus the code flow is clear
-also degugger can be used!
 
 
 Sequential logic
