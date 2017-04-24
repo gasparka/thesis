@@ -397,8 +397,7 @@ determine the next register values. This happens on every call.
 .. note:: Pyha takes the register initial values from the value written in ``__init__``.
 
 
-Anyways, living in the software world we can just think that class variables in Pyha are delayed by one sample and thats
-about it.
+Anyways, living in the software world we can just think that registers are delayed class variables.
 
 
 
@@ -459,7 +458,8 @@ This can be done by just writing::
     self.memory = [0, 0, 0, 0]
 
 Inside the ``main`` function we can write code that throws away last element of the list and adds the new sample,
-this structure is also known as shift-register in the hardware world.
+this structure is also known as shift-register or delay-chain in the hardware world. Because it shifts the contents
+on every cycle or delays the signal.
 
 ::
 
@@ -520,6 +520,9 @@ Value of GATE level simulation is that sometimes software appraoch gives some ot
 
 Pipelining
 ~~~~~~~~~~
+
+In hardware class variables must be often used when we actually dont need to store anything, the need rises from
+the need for clock speed.
 
 The block adder built in last section is quite decent, in sense that it is following the digital design approach by
 having all stuff between registers.
@@ -905,9 +908,13 @@ Going from 4 to 256 only increases the memory usage of FPGA, still it is below 1
 Conclusion
 ~~~~~~~~~~
 
+
+
 While fixed-point designs require some extra efforts, Pyha provides reasonably easy way for conversion.
 Lazy init helps, auto conversion possible in future.
 
+.. todo:: show high level design, with fsk receiver, can we just connect the blocks? use inspectrum and real remote signal?
+    Ease of reuse..even if we suck at hardware design!
 
 Proposed design flow
 --------------------
