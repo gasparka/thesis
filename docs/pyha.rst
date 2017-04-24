@@ -1,5 +1,5 @@
-Introduction hardware design with Pyha
-======================================
+Introduction to hardware design with Pyha
+=========================================
 
 This chapter introduces the main contribution of this thesis, Pyha, that is a way of designing digital hardware using
 Python programming language.
@@ -12,49 +12,6 @@ many references and abstractsions are made.
 
 The second half of this chapter shows off Pyha features for fixed point design, by gradually designing an FIR filter.
 
-Contributions:
-
-    - Show HW vs SW differences
-    - Development of Object-oriented VHDL model
-    - Ease hardware development for software engineers
-
-Introduction
-------------
-
-Pyha is exploratory project, to see how well software approach could fit into hardware world.
-
-Pyha is a tool that allows writing of digital hardware in Python language. Currently it focuses mostly on the DSP
-applications.
-
-Main features:
-
-    - Simulate hardware in Python. Integration to run RTL and GATE simulations.
-    - Structured, all-sequential and object oriented designs
-    - Fixed point type support(maps to `VHDL fixed point library`_)
-    - Semi-automatic conversion to fixed-point
-    - Decent quality VHDL conversion output (get what you write, keeps hierarchy)
-    - Integration to Intel Quartus (run GATE level simulations)
-    - Tools to simplify verification
-
-
-Pyha specifically focuses on making testing of the DSP algorithms simpler.
-While many alternatives are based on C language, but most of the hardware design time is used up in
-the process of testing and verification, who would like to do this in C, Python is much better language
-for this!
-
-Pyha proposes to use classes as a way of describing hardware. More specifically all the class variables
-are to be interpreted as hardware registers, this fits well as they are long term state elements.
-
-
-This chapter focuses on the Python side of Pyha, while the next chapter gives details on how Pyha details are
-converted to VHDL and how they can be synthesised.
-
-Pyha tries to be as like to software programming as possible, some things written for soft vs hardware can give
-suprisingly different results, this thesis tries to keep this in mind and hinglight such cases.
-
-Target software people, make it easy to transition.
-
-Introduces Pyha and shows how hardware design differs from software design.
 
 Model based design
 ~~~~~~~~~~~~~~~~~~
@@ -320,7 +277,7 @@ In Pyha, registers are inferred from the ogject storage, that is everything defi
 
 
 Understanding registers
-^^^^^^^^^^^^^^^^^^^^^^^
+~~~~~~~~~~~~~~~~~~~~~~~
 
 In traditional programming, class variables are very similar to local variables. The difference is that
 class variables can 'remember' the value, while local variables exist only during the function
@@ -443,7 +400,7 @@ stuff gets complicated!
 
 In general we expect all the signals to start from a register and end to a register. This is to avoid all the
 analog gliches that go on during the transimission process.
- The delay from one register to
+The delay from one register to
 other determines the maximum clock rate (how fast registers can update). The slowest register pair determines the
 delay for the whole design, weakest link priciple.
 
@@ -799,6 +756,7 @@ Conclusion
 ~~~~~~~~~~
 
 While fixed-point designs require some extra efforts, Pyha provides reasonably easy way for conversion.
+Lazy init helps, auto conversion possible in future.
 
 
 Proposed design flow
@@ -814,6 +772,8 @@ Siin võiks olla mingi figure?
 
 Conclusion
 ----------
+
+Easy to use OOP, abstraction.
 
 This chapter showed how Python OOP code can be converted into VHDL OOP code.
 

@@ -20,8 +20,10 @@ Thesis!
 .. toctree::
     :caption: Contents:
 
+    intro
     pyha
     vhdl_extensions
-..    python_bindings
+    python_bindings
+    conclusion
 
 
