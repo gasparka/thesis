@@ -545,6 +545,13 @@ Since Pyha brings the development into Python domain, it opens this whole ecosys
 testing code.
 
 
+Model based design
+~~~~~~~~~~~~~~~~~~
+
+Pyha encourages model based design, it is optional. Idea of the model is to provide a simples possible solution for the problem, this can also serve as some form of
+documentation to the module. Also as programmer guarantees equality of model and RTL, model can be used to run fast
+simulations and experiments. Model can be verified against RTL.
+
 
 
 

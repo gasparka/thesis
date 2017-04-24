@@ -25,18 +25,19 @@ def test_comb():
                                simulations=[SIM_HW_MODEL, SIM_RTL, SIM_GATE],
                                dir_path='/home/gaspar/git/thesis/playground')
 
-    # plt.figure(figsize=(8, 3))
-    # plt.plot(r[0], label='Model')
-    # plt.plot(r[1], label='Python simulation')
-    # plt.plot(r[2], label='RTL simulation')
-    # plt.plot(r[3], label='Quartus GATE simulation')
-    #
-    # plt.grid()
-    # plt.xlabel("Sample number")
-    # plt.ylabel("Value")
-    # plt.legend()
-    # plt.savefig('img/comb_sim.png', bbox_inches='tight')
-    # plt.show()
+    plt.figure(figsize=(8, 3))
+    plt.plot(r[0], label='y: Model')
+    plt.plot(r[1], label='y: Pyha')
+    plt.plot(r[2], label='y: RTL')
+    plt.plot(r[2], label='y: GATE')
+    plt.legend(loc='upper right')
+
+    plt.grid()
+    plt.xlabel("Sample number")
+    plt.ylabel("Value")
+    plt.legend()
+    plt.savefig('img/comb_sim.png', bbox_inches='tight')
+    plt.show()
 
     print(r)
 
@@ -53,24 +54,25 @@ class Adder(HW):
 
 def test_adder():
     dut = Adder()
-    x = [1, 2, 3, 4, 5, 6]
+    x = [1, 2, 2, 3, 3, 1, 1]
 
     r = debug_assert_sim_match(dut, None, x,
-                               simulations=[SIM_MODEL, SIM_HW_MODEL, SIM_RTL, SIM_GATE],
+                               simulations=[SIM_MODEL, SIM_HW_MODEL, SIM_RTL],
                                dir_path='/home/gaspar/git/thesis/playground')
 
-    # plt.figure(figsize=(8, 3))
-    # plt.plot(r[0], label='Model')
-    # plt.plot(r[1], label='Python simulation')
-    # plt.plot(r[2], label='RTL simulation')
-    # plt.plot(r[3], label='Quartus GATE simulation')
-    #
-    # plt.grid()
-    # plt.xlabel("Sample number")
-    # plt.ylabel("Value")
-    # plt.legend()
-    # plt.savefig('img/comb_sim.png', bbox_inches='tight')
-    # plt.show()
+    plt.figure(figsize=(8, 2))
+    plt.plot(x, label='x')
+    plt.plot(r[0], label='y: Model')
+    plt.plot(r[1], label='y: Pyha')
+    plt.plot(r[2], label='y: RTL')
+    plt.plot(r[2], label='y: GATE')
+    plt.legend(loc='upper right')
+
+    plt.grid()
+    plt.xlabel("Sample number")
+    plt.ylabel("Value")
+    plt.savefig('img/add_sim.png', bbox_inches='tight')
+    plt.show()
 
     print(r)
 

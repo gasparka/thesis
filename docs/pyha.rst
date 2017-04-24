@@ -1,6 +1,8 @@
 Introduction to hardware design with Pyha
 =========================================
 
+This chapter shows how Pyha can be used to write digital hardware.
+
 This chapter introduces the main contribution of this thesis, Pyha, that is a way of designing digital hardware using
 Python programming language.
 
@@ -13,19 +15,7 @@ many references and abstractsions are made.
 The second half of this chapter shows off Pyha features for fixed point design, by gradually designing an FIR filter.
 
 
-Model based design
-~~~~~~~~~~~~~~~~~~
-
-Pyha encourages model based design, it is optional. Idea of the model is to provide a simples possible solution for the problem, this can also serve as some form of
-documentation to the module. Also as programmer guarantees equality of model and RTL, model can be used to run fast
-simulations and experiments. Model can be verified against RTL.
-
-
-
-
-Describing hardware
--------------------
-
+to cover:
     * Model
     * Clocking abstraction
     * Hardware is parallel, for is unrolled, comb example
@@ -43,11 +33,16 @@ Describing hardware
     * Design flow, show unit tests..
 
 
+
+
+Stateless design
+----------------
+
 Stateless is also called combinatory logic. In the sense of software we could think that a function is stateless
 if it only uses local variables, has no side effects, returns are based on inputs only. That is, it may use
 local variables of function but cannot use the class variables, as these are stateful.
 
-This first chapter uses integer types only, as they are well undestood by anyone and also fully synthesizable (to 32 bit logic).
+This first chapter uses integer types only, as they are well understood by anyone and also fully synthesizable (to 32 bit logic).
 
 Basic adder
 ~~~~~~~~~~~
@@ -57,7 +52,7 @@ on :numref:`adder-model`.
 
 .. code-block:: python
     :caption: Simple adder model
-    :name: adder-model
+    :name: pyha_adder
 
     class Adder(HW):
         def main(self, x):
@@ -65,11 +60,14 @@ on :numref:`adder-model`.
             return y
 
         def model_main(self, xl):
+            # for each element in xl add 1
             yl = [x + 1 for x in xl]
             return yl
 
 .. note:: Pyha reserves the function name :code:`model_main` for defining the model and :code:`main` for the top
     level function. Designers may freely use other function names as pleased.
+
+``model_main`` can contain any Python code, it is not to be synthesised. ``main`` is the function for synthesis.
 
 :numref:`adder-model` shows the model implementation for the adder. The code loops over the input list 'xl' and adds 1 to each element.
 Important thing to notice is that the model code works on lists, it takes input as list and outputs a list.
@@ -78,23 +76,48 @@ Key difference beteween the 'model_main' and 'main' is that the later works on s
 on lists, it is vectorized. This is big difference because model code has access to all the samples of the scope, while
 main only has the single sample.
 
-.. todo:: rtl image, explain the [31..0]
-
-
 One of the key abstractions that Pyha uses is that the 'main' is called on each clock. One could imagine that
 it is wrapped in a higher level for loop that continously supplies the samples.
-
-.. todo:: sim image
-
-The :numref:`fake` shows that all the simulations are equal. Pyha runs automatically Model, Python, VHDL and GATE simulations.
-Value of GATE level simulation is that sometimes software appraoch gives some other hardware, GATE shows that.
 
 Clock abstracted as forever running loop. In hardware determines how long time we need to wait before
 next call to function so that all signals can propagate.
 
+.. _adder_rtl:
+.. figure:: ../examples/adder/img/add_rtl.png
+    :align: center
+    :figclass: align-center
+
+    Synthesis result of :numref:`pyha_adder` (Intel Quartus RTL viewer)
+
+
+
+
+Simulation and testing
+^^^^^^^^^^^^^^^^^^^^^^
+
+Pyha designs can be simulated in Python or VHDL domain. In addition, Pyha has integration to Intel Quartus software,
+it supports running GATE level simulations, that is simulation of synthesized logic.
+
+Pyha provides an ``simulate(dut, x)`` function, that uses ``x`` as input for module ``dut`` and runs all the
+simulations, returning the outputs.
+
+More information about this in the APPENDIX.
+
+.. _adder_sim:
+.. figure:: ../examples/adder/img/add_sim.png
+    :align: center
+    :figclass: align-center
+
+    Simulation input and outputs
+
+The :numref:`adder_sim` is plotted using the data from ``simulate`` function, as shown
+all the simulations are equal.
+
 
 More adding
 ~~~~~~~~~~~
+
+Change this to mult + ?
 
 Next example is a simple modification of the previous adder. Instead of :code:`y = x + 1` we write
 :code:`y = x + 1 + 2 + 3 + 4`.
@@ -165,9 +188,14 @@ Basic points:
 Main point here is that what we write works as expected, but is just implemented in slightly different ways than in
 software approach.
 
+One majord benefit of Pyha that all the hardware code is defined in sequential statements, thus the code flow is clear
+also degugger can be used!
+
 
 Sequential logic
 ----------------
+
+This denotes that we need to keep track of some value for longer than just one function call.
 
 So far we have dealt with designs that require no state other than the function level. In real designs we frequently need
 to store some value, so that it is accessable by the next function call.
@@ -761,6 +789,9 @@ Lazy init helps, auto conversion possible in future.
 
 Proposed design flow
 --------------------
+
+This text has built the examples in what way, but actually the optimal design flow should go as this:
+
 
     * make model
     * extract unit tests, same can be reused for hw sims
