@@ -705,12 +705,95 @@ recover the signal and send it to sampler (b).
 
 
 
-Example: DC removal
-~~~~~~~~~~~~~~~~~~~
+Example: Linear-phase DC removal Filter
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. include:: ../backup/dc_removal.rst
+Direct conversion (homodyne or zero-IF) receivers have become very popular recently especially in the realm of
+software defined radio. There are many benefits to direct conversion receivers,
+but there are also some serious drawbacks, the largest being DC offset and IQ imbalances :cite:`bladerfdoc`.
 
 
+In frequency domain, DC offset will look like a peak near the 0 Hz. In time domain, it manifests as a constant
+component on the hermonic signal.
+
+
+In :cite:`dcremoval_lyons`, Rick Lyons investigates the feasibility of using moving average algorithm as a DC removal
+circuit by subtracting the MA output from the input signal. This structure works but has a passband ripple of up to
+3 dB. In his work Rick shows that by cascading multiple stages of MA's the ripple can be reduced (:numref:`dc_freqz`).
+
+
+.. _dc_freqz:
+.. figure:: ../examples/dc_removal/img/dc_freqz.png
+    :align: center
+    :figclass: align-center
+
+    Frequency response of DC removal circuit with MA length 8
+
+
+Implementation is rather straight forward, algorithm must chain multiple MAs and then subtract the result from input.
+
+.. code-block:: python
+    :caption: Generic DC-Removal implementation
+    :name: dc_removal
+
+    class DCRemoval(HW):
+        def __init__(self, window_len, cascades):
+            self.mavg = [MovingAverage(window_len) for _ in range(cascades)]
+            self.y = Sfix(0, 0, -17)
+
+            self._delay = 1 + self.mavg[0]._delay * cascades
+
+        def main(self, x):
+            tmp = x
+            for mav in self.mavg:
+                tmp = mav.main(tmp)
+
+            self.next.y = x - tmp
+            return self.y
+
+
+:numref:`dc_removal` shows the Python implementation. Class is parametrized so that count of MA and the
+window length can be changed.
+
+One thing to note that the :code:`model_main` and :code:`main` are nearly identical. That shows that Pyha has archived
+one of the goals by simplifying hardware design portion.
+
+.. _dc_rtl_annotated:
+.. figure:: ../examples/dc_removal/img/dc_rtl_annotated.png
+    :align: center
+    :figclass: align-center
+
+    Synthesis result of ``DCRemoval(window_len=4, cascades=4)`` (Intel Quartus RTL viewer)
+
+
+This implementation is not exactly following the one in :cite:`dcremoval_lyons`. They suggest to delay match the
+MA outputs and input signal, but since we can assume the DC component to be constant, it does not matter.
+
+Note that in real-life design we would use this component with much larger ``window_len``, currently 4 was chosen
+in order to get plottable RTL. As shown in MA chapter, longer ``window_len`` gives narrower filter.
+
+..
+    Total logic elements	204 / 39,600 ( < 1 % )
+    Total memory bits	144 / 1,161,216 ( < 1 % )
+    Max clock speed ~200 MHz
+    Signal delay: 1 sample
+
+..
+    Total logic elements	251 / 39,600 ( < 1 % )
+    Total memory bits	10,150 / 1,161,216 ( < 1 % )
+    Max clock speed ~200 MHz
+    Signal delay: 1 sample
+
+
+
+.. _dc_comp:
+.. figure:: ../examples/dc_removal/img/dc_comp.png
+    :align: center
+    :figclass: align-center
+
+    4 vs 256
+
+Going from 4 to 256 only increases the memory usage of FPGA, still it is below 1%.
 
 Conclusion
 ~~~~~~~~~~
