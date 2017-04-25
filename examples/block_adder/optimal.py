@@ -54,42 +54,36 @@ def test_OptimalSlideAdd():
 
 
 
-class OptimalBlockAddFix(HW):
-    def __init__(self, window_size):
-        self.window_size = window_size
-        # registers
-        self.shr = [Sfix()] * window_size
-        # self.sum = Sfix(left=0, overflow_style=fixed_wrap)
+class OptimalSlidingAddFix(HW):
+    def __init__(self, window_len):
+        self.window_len = window_len
+
+        self.mem = [Sfix()] * window_len
         self.sum = Sfix(left=0)
 
-        # module delay
         self._delay = 1
 
     def main(self, x):
-        self.next.shr = [x] + self.shr[:-1]
+        self.next.mem = [x] + self.mem[:-1]
 
-        self.next.sum = self.sum + x - self.shr[-1]
+        self.next.sum = self.sum + x - self.mem[-1]
 
         return self.sum
 
     def model_main(self, xl):
-        return np.convolve(xl, [1.0] * self.window_size)[:-self.window_size + 1]
+        return np.convolve(xl, [1.0] * self.window_len)[:-self.window_len + 1]
 
 
 def test_lastacc_fix():
-    dut = OptimalBlockAddFix(4)
+    dut = OptimalSlidingAddFix(4)
 
-    x = np.random.uniform(-0.8, 0.8, 64)
-
-    fs = 128
-    x = np.sin(2 * np.pi * 1 * np.linspace(0, 2, 2 * fs)) * 0.27
-    # x = [0.3, 0.3, 0.3, 0.3, 0.3, -0.3, -0.3, -0.3]
+    x = np.random.uniform(-0.5, 0.5, 64)
 
     r = debug_assert_sim_match(dut, None, x,
                                simulations=[SIM_MODEL, SIM_HW_MODEL, SIM_RTL],
                                dir_path='/home/gaspar/git/thesis/playground')
 
-    plt.figure(figsize=(8, 2))
+    plt.figure(figsize=(8, 1.5))
     # plt.stem(x, label='x', basefmt=" ")
     # plt.plot(x)
     plt.plot(r[0], label='y: Model')
@@ -97,7 +91,6 @@ def test_lastacc_fix():
     plt.plot(r[2], label='y: RTL')
     plt.plot(r[2], label='y: GATE')
 
-    plt.title('x=[0.15]*8')
     plt.grid()
     plt.xlabel("Sample number")
     plt.ylabel("Value")

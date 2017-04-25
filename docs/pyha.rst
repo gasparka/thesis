@@ -640,7 +640,7 @@ and 17 bits for fractional part. :numref:`fp_basics` gives some more examples, m
 type is given on APPENDIX.
 
 .. code-block:: python
-    :caption: Accumulator
+    :caption: Fixed point precision
     :name: fp_basics
 
     >>> Sfix(0.3424, left=0, right=-17)
@@ -651,33 +651,33 @@ type is given on APPENDIX.
     0.3125 [0:-4]
 
 Default FP type in Pyha is ``Sfix(left=0, right=-17)``, that is capable of representing numbers between [-1;1] with
-0.000007629 resolution. This format is chosen because it is 18 bits and fits into FPGA DPS blocks and it can represent
-normalized numbers.
+0.000007629 resolution. This format is chosen because it is 18 bits and fits into common FPGA DPS blocks
+:cite:`cycloneiv` and it can represent normalized numbers.
 
 General recommendation is to keep all the inputs and outputs of the block in the default type.
 
 Fixed-point sliding adder
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Lets consider converting the moving-window adder to fixed-point implementation.
+As an example, consider converting the sliding window adder, developed earlier, to FP implementation.
 
-Conversion to fixed point requires changes only in the ``__init__`` function.
+Conversion to FP requires changes only in the ``__init__`` function (:numref:`fp_sliding_adder`).
 
 .. code-block:: python
-    :caption: Accumulator
-    :name: Fixed-point sliding adder
+    :caption: Fixed-point sliding adder
+    :name: fp_sliding_adder
 
     def __init__(self, window_size):
-        self.shr = [Sfix()] * window_size
+        self.mem = [Sfix()] * window_size
         self.sum = Sfix(left=0)
     ...
 
-The first line denotest that the shift-register shall be holding ``Sfix`` elements instead of ``integers``.
-Note that it does not define the fixed-point bounds, meaning it will store 'whatever' is assigned to it, it is
-kind of lazy stuff.
+First line sets ``self.mem`` to store ``Sfix()`` elements instead of ``integers``, note that it does not define the
+fixed-point bounds, meaning it will store 'whatever' is assigned to it. Final bounds are determined during simulation.
 
-For the ``self.sum`` we have used another lazy statement of ``Sfix(left=0)``, this means that the integer bits
-are forced to 0 bits on every assign, that is value is saturated if larger.
+For the ``self.sum`` register, another lazy statement of ``Sfix(left=0)``, this means that the integer bits
+are forced to 0 bits on every assign to this register. Fractional part is left openly determined during simulation.
+Rest of the code is identical to the 'integer' version.
 
 
 .. _rtl_sfix_saturate:
@@ -685,23 +685,42 @@ are forced to 0 bits on every assign, that is value is saturated if larger.
     :align: center
     :figclass: align-center
 
-    RTL with saturation logic
+    RTL with saturation logic (Intel Quartus RTL viewer)
 
 
-Saturation logic prevents the wraparound behaviour by forcing the maximum or negative value when
-out of fixed point format. Otherwise the RTL is similiar to the ones we had with integers, now signals
-have bounds.
+Note that by default, FP types may saturate the result, saturation logic prevents the wraparound behaviour by
+forcing the maximum or negative value when out of fixed point format.
+Otherwise the RTL is similar to the 'integer' one, just now signals have mostly 18 bit widths.
 
-.. note:: By default
-
-Show sim an saturation! Show how real values can be pushed to test function.
+Simulations/Testing
+^^^^^^^^^^^^^^^^^^^
 
 .. _fix_sat_wrap:
-.. figure:: ../examples/block_adder/img/fix_sat_wrap.png
+.. figure:: ../examples/block_adder/img/sim_fix.png
     :align: center
     :figclass: align-center
 
     Wrap vs Saturate
+
+Notice that the hardware simulations are bounded to [-1;1] range by the saturation logic, that is why the model
+simulation is different at some parts (:numref:`fix_sat_wrap`).
+
+Note that the ``simulate`` function automatically converts real inputs to default ``Sfix`` type. In same manner,
+``Sfix`` outputs are converted to floating point numbers. That way designer does not have to deal with FP number
+in unit-testing code. Example is given on :numref:`fp_test`.
+
+.. note:: Pyha converts inputs and outputs to floating point values automatically.
+
+.. code-block:: python
+    :caption: Testing code
+    :name: fp_test
+
+    dut = OptimalSlidingAddFix(window_len=4)
+    x = np.random.uniform(-0.5, 0.5, 64)
+    y = simulate(dut, x)
+    # plotting code ...
+
+
 
 
 
