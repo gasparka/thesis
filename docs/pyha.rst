@@ -1,6 +1,8 @@
 Introduction to hardware design with Pyha
 =========================================
 
+Thiw work tries to look the hardware desctiption process from the software developer side, shows differences.
+
 This chapter shows how Pyha can be used to write digital hardware.
 
 This chapter introduces the main contribution of this thesis, Pyha, that is a way of designing digital hardware using
@@ -314,30 +316,46 @@ Basic points:
 
 
 
-Sequential logic
+Intoducing state
 ----------------
 
-This denotes that we need to keep track of some value for longer than just one function call.
-
+So far this chapter has dealt with designs that require no state, that is data moves in to the ``main``, some operation
+is performed and data moves out. Nothing is saved nor is any history used.
 So far we have dealt with designs that require no state other than the function level. In real designs we frequently need
 to store some value, so that it is accessable by the next function call.
 
-For example, lets consider accumulator, it operates by taking input value and adding it to the current accumulator value.
+Often there is a need to keep track of some value, so that it would be usable in the next function call aswell.
+This denotes that we need to keep track of some value for longer than just one function call.
 
-The model for such kinf of circuit can be implemented with ``cumsum`` function.
+In traditional programming, class variables are very similar to local variables. The difference is that
+class variables can 'remember' the value, while local variables exist only during the function
+execution.
+
+Accumulator
+~~~~~~~~~~~
+
+For example, lets consider the design of accumulator, it operates by sequentially adding up all the input values.
+
+This can be implemented with ``cumsum`` function:
+
+.. code-block:: python
+    :caption: Accumulator model
+    :name: acc-model
 
     >>> x = [1, 2, 3, 4]
     >>> np.cumsum(x)
     array([ 1,  3,  6, 10])
 
-This works well if we have all the inputs known, but for sample based approach we would have to use class scope variable
-in order to save the accumulator variable
+Implemenation on :numref:`acc-model` depends on the fact that all of the input is known, this is not the case for
+hardware designs. As shown in previous section, hardware designs get single sample on each execution.
+
+For single sample based execution we would have to use class scope variable in order to save the accumulator value.
 
 .. code-block:: python
     :caption: Accumulator
     :name: acc
 
-    class Acc(HW):
+    class Acc:
         def __init__(self):
             self.acc = 0
 
@@ -345,27 +363,31 @@ in order to save the accumulator variable
             self.acc = self.acc + x
             return self.acc
 
-        def model_main(self, xl):
-            return np.cumsum(xl)
 
 
 Now, trying to run this would result in Pyha error, suggesting to change the ``self.acc`` to ``self.next.acc``.
 After doing this, code is runnable.
 
-.. todo:: rtl image
+.. _acc_rtl:
+.. figure:: ../examples/accumulator/img/acc_rtl.png
+    :align: center
+    :figclass: align-center
 
-.. todo:: sim image
+    Synthesis result of :numref:`pyha_for_code` (Intel Quartus RTL viewer)
 
 
-Running the same testing code results in a :numref:`mac_seq_sim_delay`. It shows that while the
-Python, RTL and GATE simulations are equal, model simulation differs. This is the effect of added register,
-it adds one delay to the harwdware simulations.
+``rst_n`` signal can be used to set initial states for registers, in Pyha the initial value is determined by the
+value assigned in ``__init__``, in this case it is 0.
 
-So what is up with this delay and 'next' stuff?
+Register
+^^^^^^^^
 
 Registers basically cannot be understuud at software level..they just make no sense, for that reason we have to
 go a bit deeper just for a while.
 
+Hardware registers have just one difference to class variables, the value assigned to them does not take
+effect immediately, but rather on the next clock edge. That is the basic idea of registers, they take a new value
+on clock edge. When the value is set at **this** clock edge, it will be taken on **next** clock edge.
 
 Register is the defining object of digital designs. Think about the adder, two signals feeding in the adder may have
 different propagation delay, meaning that for some time the output of the adder is in invalid state (also each
@@ -380,14 +402,6 @@ registers in such way that it guarantees that register samples the 'clean' value
 
 All the registers in the design update at the same time.
 
-.. todo:: LTSPICE sim?
-
-In general the job of writing hardware is just taking in current register values and by using combinatory logic,
-determine the next register values. This happens on every call.
-
-:numref:`acc` shows the
-
-
     * call
     * set self.next.acc = 1
     * self.acc is still 0
@@ -397,9 +411,31 @@ determine the next register values. This happens on every call.
 .. note:: Pyha takes the register initial values from the value written in ``__init__``.
 
 
+Clock abstraction
+^^^^^^^^^^^^^^^^^
+
+Trying to stay in the software world, we can abstract away the clock edge by thinking that it denotes the
+call to the 'main' function. Meaning that registers take the assigned value on the next function call,
+meaning assignment is delayed by one function call.
+
 Anyways, living in the software world we can just think that registers are delayed class variables.
 
+Testing
+^^^^^^^
 
+.. _acc_sim_delay:
+.. figure:: ../examples/accumulator/img/acc_sim_delay.png
+    :align: center
+    :figclass: align-center
+
+    Simulation of the accumulator (x is random integer [-5;5])
+
+
+Running the same testing code results in a :numref:`acc_sim_delay`. It shows that while the
+model simulation differs from the rest of simulations. This is the effect of added register,
+it adds one delay to the harwdware simulations.
+
+The delay can be determined by counting the registers on the input to output path.
 
 
 This is an standard hardware behaviour. Pyha provides special variable
@@ -413,33 +449,15 @@ This is an standard hardware behaviour. Pyha provides special variable
 
 After setting the :code:`self._delay = 1` in the __init__, we get:
 
+This does not 'fix' the delay, it just shifts the hardware simulation sample so that they match up with model,
+the design is still delayed by 1.
 
-.. _mac_seq_sim:
-.. figure:: ../examples/fir_mac/integer_based/img/seq_sim.png
+.. _acc_sim:
+.. figure:: ../examples/accumulator/img/acc_sim.png
     :align: center
     :figclass: align-center
 
-    Synthesis result of the revised code (Intel Quartus RTL viewer)
-
-
-In Pyha, registers are inferred from the ogject storage, that is everything defined in 'self' will be made registers.
-
-
-Understanding registers
-~~~~~~~~~~~~~~~~~~~~~~~
-
-In traditional programming, class variables are very similar to local variables. The difference is that
-class variables can 'remember' the value, while local variables exist only during the function
-execution.
-
-Hardware registers have just one difference to class variables, the value assigned to them does not take
-effect immediately, but rather on the next clock edge. That is the basic idea of registers, they take a new value
-on clock edge. When the value is set at **this** clock edge, it will be taken on **next** clock edge.
-
-Trying to stay in the software world, we can abstract away the clock edge by thinking that it denotes the
-call to the 'main' function. Meaning that registers take the assigned value on the next function call,
-meaning assignment is delayed by one function call.
-
+    Simulation of the delay **compensated** accumulator (x is random integer [-5;5])
 
 
 
@@ -630,6 +648,12 @@ unit tests, this is essential for hardware design.
 In general when registers and delays come into play...everything gets very confusing and hard. Thats why it is important
 to have an model, it also serves as an documentation.
 
+In general the job of writing hardware is just taking in current register values and by using combinatory logic,
+determine the next register values. This happens on every call.
+
+In Pyha, registers are inferred from the ogject storage, that is everything defined in 'self' will be made registers.
+
+Anyways, living in the software world we can just think that registers are delayed class variables.
 
 
 Fixed-point designs

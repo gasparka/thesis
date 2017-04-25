@@ -61,6 +61,9 @@ Problem statement
 Objective/goal
 --------------
 
+Describe the implementation process, so that even if Pyha is not successful
+something can be learned from it.
+
 Testing and verifying is hard.
 The goal of this study is to implement experimental Python to VHDL compiler.
 Provide an model and unit test based workflow, where tests that are defined for the
@@ -76,6 +79,11 @@ opensource
 How far can we go with the oneprocess design? Everyone else uses
 VHDL as a very low level interface.
 
+Others go for the dataflow way that is hard to understand for
+normal porgrammers, Pyha explores the all.
+
+This work tri
+
 Scope
 -----
 ???
@@ -90,7 +98,10 @@ that provide conversion from higher level languages to Gates.
 Background
 ----------
 
-.. include:: background.rst
+.. todo:: TODO
+
+.. a
+    include:: background.rst
 
 
 
