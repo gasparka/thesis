@@ -593,7 +593,7 @@ critical path is 2 adders.
     Window size 6, RTL (Intel Quartus RTL viewer)
 
 
-Simulation shows that implemented designs behaves same way in software and hardware (:numref:`block_adder_sim`).
+Simulation shows that implemented design behaves same way in software and hardware (:numref:`block_adder_sim`).
 
 .. _block_adder_sim:
 .. figure:: ../examples/block_adder/img/sim.png
@@ -604,50 +604,23 @@ Simulation shows that implemented designs behaves same way in software and hardw
 
 
 
-Abstraction and Design reuse
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-Since Pyha object storage is basically all reigsters it allows submodules also.
-
-
-Show how delay is used from submodules.
-
-Last section showed that designing even an simple algorithm in hardware can get very confusing as the registers
-come into play.
-
-Good thing about Object-oriented programming is that the complexity of the implementation can be hidden/ abstracted.
-
-Here can list that Pyha has angle and abs for example?
-
-Show instances and list of instances.
-Do in fixed point?
-
-
 Conclusion
 ~~~~~~~~~~
 
-Class variables can be used in hardware, but they are delayed by one sample clock.
+Class variables can be used to add state to the design. In Pyha all class variables are interpreted as hardware registers.
+Key difference between software and hardware approach is that hardware registers have **delayed assignment**, because of
+that they must be assigned to ``self.next`` keyword.
 
-key difference, must **assign** to next, delays.
+The delay introduced by the registers can be specified by the ``self._delay`` attribute.
+
+Delay added by the registers may drastically change the algotithm, thats why it is important to always have a model and
+unit tests, this is essential for hardware design.
+
+In hardware, registers are also used to shorten the critical path, thus allowing higher clock rate. It is encouraged
+to register all the outputs of the design.
 
 In digital design signals are assumed to exist between registers. Total delay between the registers determines the
 maximum sample rate.
-
-Delay of 1 seems like not an big deal, but really it very much is. In general big part of the hardware design is
-fighting with bugs introduced by register delays, this is especially true for beginners. Delays can drasticly change
-the operation of a circuit and what is even worse, they may not change the operation drasticly. Delay of one signal path
-must be matched with delay of all sequnetial signal paths. Thats why it is important to always have a model and
-unit tests, this is essential for hardware design.
-
-In general when registers and delays come into play...everything gets very confusing and hard. Thats why it is important
-to have an model, it also serves as an documentation.
-
-In general the job of writing hardware is just taking in current register values and by using combinatory logic,
-determine the next register values. This happens on every call.
-
-In Pyha, registers are inferred from the ogject storage, that is everything defined in 'self' will be made registers.
-
-Anyways, living in the software world we can just think that registers are delayed class variables.
 
 While registers can be used as class storage in software designs, they are also used as checkpoints on the
 signal paths, thus allowing high clock rates.
@@ -931,7 +904,6 @@ Conclusion
 ~~~~~~~~~~
 
 
-
 While fixed-point designs require some extra efforts, Pyha provides reasonably easy way for conversion.
 Lazy init helps, auto conversion possible in future.
 
@@ -951,6 +923,27 @@ This text has built the examples in what way, but actually the optimal design fl
     * unit tests pass? profit!
 
 Siin võiks olla mingi figure?
+
+
+Abstraction and Design reuse
+----------------------------
+
+Since Pyha object storage is basically all reigsters it allows submodules also.
+
+
+Show how delay is used from submodules.
+
+Last section showed that designing even an simple algorithm in hardware can get very confusing as the registers
+come into play.
+
+Good thing about Object-oriented programming is that the complexity of the implementation can be hidden/ abstracted.
+
+Here can list that Pyha has angle and abs for example?
+
+Show instances and list of instances.
+Do in fixed point?
+
+
 
 Conclusion
 ----------
