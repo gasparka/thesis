@@ -18,19 +18,9 @@ The second half of this chapter shows off Pyha features for fixed point design, 
 
 
 to cover:
-    * Model
     * Clocking abstraction
-    * Hardware is parallel, for is unrolled, comb example
-    * Register needed for longer term state
-    * Register adds delay
-    * Register for pipelines and clock stuff
-    * Sample based processing to block processing
     * Design reuse
-    * Fixed point design?
-    * Demonstrate multi-clock output?
-    * Float conversions?
     * State machines
-    * Multiply?
     * Show that __init__ can be used for any python code
     * Design flow, show unit tests..
 
@@ -629,37 +619,58 @@ signal paths, thus allowing high clock rates.
 Fixed-point designs
 -------------------
 
-So far only ``integer`` types have been used, in order to keep things simple and understandable. Downside of integer
-types is that they always synthesize to 32 bit logic (VHDL limitation). Pyha used Sfix to select bit width.
+Previous chapters have used only ``integer`` types, that helped to focus on more important matters.
+While integers are synthesisable, they always end up as 32 bit logic.
 
-In DSP applications, one would rather use floating point numbers. But as shown in previous sections, every operation
-in hardware takes resources and floating point calculations cost alot.
+DSP applications are commonly described using floating point numbers. As shown in previous sections, every operation
+in hardware takes resources and floating point calculations cost greatly. For that reason, it is common approach to
+use fixed-point arithmetic instead.
 
-While floating point numbers are usable in hardware, it is common approach to use fixed-point arithmetic
-instead. They work as integer arithmetic, they can also be mapped to DSP blocks that come with FPGAs.
+Fixed-point arithmetic is in nature equal to integer arithmetic and thus can use the DSP blocks that
+come with many FPGAs (some high-end FPGAs have also floating point DSP blocks :cite:`arria_dsp`).
 
+Basics
+~~~~~~
 
-.. todo:: some short intro to fixed point, move most to appendix
+Pyha implements fixed-point numbers and complex fixed-point numbers, :numref:`fix_examples` gives some examples.
 
+Pyha defines ``Sfix`` for FP objects, it is always signed. It works by defining bits designated for ``left`` and ``right``
+of the decimal point. For example ``Sfix(0.3424, left=0, right=-17)`` has 0 bits for integer part
+and 17 bits for fractional part. :numref:`fp_basics` gives some more examples, more information about the fixed point
+type is given on APPENDIX.
 
-Pyha can convert floating point models to VHDL, and may run simulations up to the GATE level. That is useful as all the
-register effect can be handled before the fixed point conversion. Only when delay effects have been analyzed can the
-design be converted to fixed point.
+.. code-block:: python
+    :caption: Accumulator
+    :name: fp_basics
 
+    >>> Sfix(0.3424, left=0, right=-17)
+    0.34239959716796875 [0:-17]
+    >>> Sfix(0.3424, left=0, right=-7)
+    0.34375 [0:-7]
+    >>> Sfix(0.3424, left=0, right=-4)
+    0.3125 [0:-4]
+
+Default FP type in Pyha is ``Sfix(left=0, right=-17)``, that is capable of representing numbers between [-1;1] with
+0.000007629 resolution. This format is chosen because it is 18 bits and fits into FPGA DPS blocks and it can represent
+normalized numbers.
+
+General recommendation is to keep all the inputs and outputs of the block in the default type.
+
+Fixed-point sliding adder
+~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Lets consider converting the moving-window adder to fixed-point implementation.
-
-Pyha assumes inputs are normalized to -1 to 1.
 
 Conversion to fixed point requires changes only in the ``__init__`` function.
 
 .. code-block:: python
     :caption: Accumulator
-    :name: Sfix block adder
+    :name: Fixed-point sliding adder
 
     def __init__(self, window_size):
         self.shr = [Sfix()] * window_size
         self.sum = Sfix(left=0)
+    ...
 
 The first line denotest that the shift-register shall be holding ``Sfix`` elements instead of ``integers``.
 Note that it does not define the fixed-point bounds, meaning it will store 'whatever' is assigned to it, it is
@@ -681,6 +692,9 @@ Saturation logic prevents the wraparound behaviour by forcing the maximum or neg
 out of fixed point format. Otherwise the RTL is similiar to the ones we had with integers, now signals
 have bounds.
 
+.. note:: By default
+
+Show sim an saturation! Show how real values can be pushed to test function.
 
 .. _fix_sat_wrap:
 .. figure:: ../examples/block_adder/img/fix_sat_wrap.png
@@ -906,6 +920,9 @@ Conclusion
 
 While fixed-point designs require some extra efforts, Pyha provides reasonably easy way for conversion.
 Lazy init helps, auto conversion possible in future.
+
+The way how Python allows 'lazy' types and defautl rule of normalized numbers gives almost some sensation of automatic
+conversion to fixed point.
 
 .. todo:: show high level design, with fsk receiver, can we just connect the blocks? use inspectrum and real remote signal?
     Ease of reuse..even if we suck at hardware design!

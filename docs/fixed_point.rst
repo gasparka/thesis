@@ -46,11 +46,19 @@ For this usages, saturation can be disabled.
     >>> Sfix(0.9 + 0.1, left=0, right=-17, overflow_style=fixed_wrap)
     -1.0 [0:-17]
 
+.. _fix_sat_wrap:
+.. figure:: ../examples/block_adder/img/fix_sat_wrap.png
+    :align: center
+    :figclass: align-center
+
+    Wrap vs Saturate
+
 
 Rounding
 ~~~~~~~~
 
 Pyha support rounding on arithmetic, basically it should be turned off as it costs alot.
+For low level FPGAs.
 
 .. :todo::
     ref https://www.embeddedrelated.com/showarticle/1015.php
@@ -113,16 +121,9 @@ More information is about this package is given in :cite:`vhdlfixed`.
 In general Sfix type is built in such a way that all the functions map to the VHDL library, so no conversion
 is neccesary.
 
-Another option would have been to implement fixed point compiler on my own, it would provide more flexibility but
-it would take many time + it has t be kept in mind that the VHDL library is already production-tested. Ths mapping to
-VHDL library seemed like the best option.
-
-It limits the conversion to VHDL only, for example Verilog has no fixed point package in standard library.
-
-Autoresize? Automatic conversion to fixed point?
-
 Complex fixed-point
 -------------------
+
 Objective of this tool was to simplify model based design and verification of DSP to FPGA models.
 One frequent problem with DSP models was that they commonly want to use complex numbers.
 In order to unify the interface of the model and hardware model, Pyha supports complex numbers for interfacing means,
@@ -144,7 +145,3 @@ be done on :code:`.real` and :code:`.imag` elements, that are just Sfix objects.
     >>> b = Sfix(0.5, 0, -17)
     >>> ComplexSfix(a, b)
     -0.50+0.50j [0:-17]
-
-
-.. :todo::
-    Complex conversion actually not easy due to GHDL limitations. Conversion? Too detailed!
