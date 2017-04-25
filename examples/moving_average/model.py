@@ -10,32 +10,11 @@ from pyha.simulation.simulation_interface import assert_sim_match, debug_assert_
 import matplotlib.pyplot as plt
 
 
-class MovingAverageSimple(HW):
-    def __init__(self):
-        # registers
-        self.shr = [Sfix()] * 4
-        self.sum = Sfix(0, 0, -17, overflow_style=fixed_wrap)
-
-        self._delay = 1
-
-    def main(self, x):
-        div = x >> 2
-
-        self.next.shr = [div] + self.shr[:-1]
-        self.next.sum = self.sum + div - self.shr[-1]
-        return self.sum
-
-    def model_main(self, inputs):
-        taps = [1 / self.window_len] * self.window_len
-        ret = np.convolve(inputs, taps, mode='full')
-        return ret[:-self.window_len + 1]
-
-
 class MovingAverage(HW):
     def __init__(self, window_len):
         self.window_len = window_len
 
-        self.shr = [Sfix()] * self.window_len
+        self.mem = [Sfix()] * self.window_len
         self.sum = Sfix(0, 0, -17, overflow_style=fixed_wrap)
 
         self.window_pow = Const(int(np.log2(window_len)))
@@ -45,8 +24,8 @@ class MovingAverage(HW):
     def main(self, x):
         div = x >> self.window_pow
 
-        self.next.shr = [div] + self.shr[:-1]
-        self.next.sum = self.sum + div - self.shr[-1]
+        self.next.mem = [div] + self.mem[:-1]
+        self.next.sum = self.sum + div - self.mem[-1]
         return self.sum
 
     def model_main(self, inputs):

@@ -656,6 +656,7 @@ Default FP type in Pyha is ``Sfix(left=0, right=-17)``, that is capable of repre
 
 General recommendation is to keep all the inputs and outputs of the block in the default type.
 
+
 Fixed-point sliding adder
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -700,7 +701,7 @@ Simulations/Testing
     :align: center
     :figclass: align-center
 
-    Wrap vs Saturate
+    Simulation results of FP sliding sum
 
 Notice that the hardware simulations are bounded to [-1;1] range by the saturation logic, that is why the model
 simulation is different at some parts (:numref:`fix_sat_wrap`).
@@ -727,58 +728,71 @@ in unit-testing code. Example is given on :numref:`fp_test`.
 Example: Moving average filter
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The moving average is the most common filter in DSP, mainly because it is the easiest digital
+
+The moving average (MA) is the most common filter in DSP, mainly because it is the easiest digital
 filter to understand and use.  In spite of its simplicity, the moving average filter is
 optimal for a common task: reducing random noise while retaining a sharp step response.  This makes it the
-premier filter for time domain encoded signals. :cite:`dspbook`
+premier filter for time domain encoded signals :cite:`dspbook`.
 
-Moving averager is implemented by running an sliding window over the data. The contents of the window are added
-and divided by the window length. :numref:`mavg_example` gives an example.
+.. _moving_average_noise:
+.. figure:: ../examples/moving_average/img/moving_average_noise.png
+    :align: center
+    :figclass: align-center
+
+    Example of MA as noise reduction
+
+Moving average is an good algorithm for noise reduction (:numref:`moving_average_noise`.
+Increasing the window length reduces more noise but also increases the complexity and delay of
+the system (MA is a special case of FIR filter, same delay semantics apply).
+
+.. _mavg_freqz:
+.. figure:: ../examples/moving_average/img/moving_average_freqz.png
+    :align: center
+    :figclass: align-center
+
+    Frequency response of MA filter
+
+Good noise reduction performance can be explained by the frequency response of MA (:numref:`mavg_freqz`),
+showing that it is a low-pass filter. Passband width and stopband attenuation are controlled by the
+window length.
+
+Implementation
+^^^^^^^^^^^^^^
+
+MA is implemented by using an sliding sum and dividing this with the window length.
+
+We have already implemented the sliding sum part of the algorithm,.
+The division can be implemented by shift right if divisor is power of two, that is what we will use this time.
+
+In addition, division can be performed on each sample instead of on the sum, that is ``(a + b) / c == a/c + b/c``.
+Doing this guarantees that the ``sum`` variable is always in [-1;1] range, thus saturation logic can be removed.
 
 .. code-block:: python
-    :caption: Moving average example, window size is 4
-    :name: mavg_example
-
-    x = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6]
-    y[0] = (x[0] + x[1] + x[2] + x[3]) / 4
-    y[1] = (x[1] + x[2] + x[3] + x[4]) / 4
-    y[2] = (x[2] + x[3] + x[4] + x[5]) / 4
-
-We have already implemented the sliding sum part of the algorithm, only thing to add is division by the window length.
-The division can be implemented by shift right if divisor is power of two. That is good enough, another approach is to use
-1/4.
-
-
-
-.. code-block:: python
-    :caption: Moving average implementation
+    :caption: MA implementation in Pyha
     :name: mavg-pyha
     :linenos:
 
     class MovingAverage(HW):
         def __init__(self, window_len):
-            self.window_len = window_len
-
-            self.shr = [Sfix()] * self.window_len
-            self.sum = Sfix(0, 0, -17, overflow_style=fixed_wrap)
-
             self.window_pow = Const(int(np.log2(window_len)))
 
+            self.mem = [Sfix()] * window_len
+            self.sum = Sfix(0, 0, -17, overflow_style=fixed_wrap)
             self._delay = 1
 
         def main(self, x):
             div = x >> self.window_pow
 
-            self.next.shr = [div] + self.shr[:-1]
-            self.next.sum = self.sum + div - self.shr[-1]
+            self.next.mem = [div] + self.mem[:-1]
+            self.next.sum = self.sum + div - self.mem[-1]
             return self.sum
+        ...
 
+Code on :numref:`mavg-pyha` makes only a few significant changes to the sliding sum:
 
-:numref:`mavg-pyha` shows the implementation. It has added two new lines to the sliding adder block. The
-``self.window_pow`` calculates power of 2 value from the window length, this is used to indicate shift bits.
-
-
-
+    * On line 3, ``self.window_pow`` stores the bit shift count (to support generic ``window_len``)
+    * On line 6, type of ``sum`` is changed so that saturation is turned off and default type
+    * On line 10, shift operator performs the division
 
 .. _mavg_rtl:
 .. figure:: ../examples/moving_average/img/mavg_rtl.png
@@ -788,45 +802,17 @@ The division can be implemented by shift right if divisor is power of two. That 
     RTL view of moving average (Intel Quartus RTL viewer)
 
 
-:numref:`mavg_rtl` shows the synthesized result of this work.
-
-Synhesizing with Quartus gave following resorce usage:
-
-    - Total logic elements: 94 / 39,600 ( < 1 % )
-    - Total memory bits:    54 / 1,161,216 ( < 1 % )
-    - Embedded multipliers: 0 / 232 ( 0 % )
-
-In additon, maximum reported clock speed is 222 MHz, that is over the 200 MHz limit of Cyclone IV device :cite:`cycloneiv`.
+:numref:`mavg_rtl` shows the synthesized result of this work, as expexted it **looks** very similiar to the
+sliding sum RTL.
 
 
+Simulation/Testing
+^^^^^^^^^^^^^^^^^^
 
-
-.. _moving_average_noise:
-.. figure:: ../examples/moving_average/img/moving_average_noise.png
-    :align: center
-    :figclass: align-center
-
-    Example of moving averager as noise reduction
-
-
-
-As shown on :numref:`moving_average_noise`, moving average is a good noise reduction algorithm.
-Increasing the averaging window reduces more noise but also increases the complexity and delay of
-the system (moving average is a special case of FIR filter, same delay semantics apply).
-
-
-.. _mavg_freqz:
-.. figure:: ../examples/moving_average/img/moving_average_freqz.png
-    :align: center
-    :figclass: align-center
-
-    Frequency response of moving average filter
-
-:numref:`mavg_freqz` shows that the moving average algorithm acts basically as a low-pass
-filter in the frequency domain. Passband width and stopband attenuation are controlled by the
-moving averages length. Note that when taps number get high, then moving average basically returns
-the DC offset of a signal.
-
+MA is an optimal solution for performing matched filtering of rectangular pulses :cite:`dspbook`.
+This is important for communication systems, :numref:`mavg_matched` shows an example of
+(a) digital signal is corrupted with noise. MA with window length equal to samples per symbol can recover the
+signal from the noise (b).
 
 .. _mavg_matched:
 .. figure:: ../examples/moving_average/img/moving_average_matched.png
@@ -835,12 +821,8 @@ the DC offset of a signal.
 
     Moving average as matched filter
 
-
-In addition, moving average is also an optimal solution for performing matched filtering of
-rectangular pulses :cite:`dspbook`.  On :numref:`mavg_matched` (a) digital signal is corrupted
-with noise, by using moving average with length equal to the signal samples per symbol, enables to
-recover the signal and send it to sampler (b).
-
+The 'model' deviates from rest of the simulations because the input signal viloates the [-1;1] bounds and hardware
+simulations are forced to saturate the values.
 
 
 Example: Linear-phase DC removal Filter
