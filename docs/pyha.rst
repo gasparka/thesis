@@ -725,8 +725,8 @@ in unit-testing code. Example is given on :numref:`fp_test`.
 
 
 
-Example: Moving average filter
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Moving average filter
+~~~~~~~~~~~~~~~~~~~~~
 
 
 The moving average (MA) is the most common filter in DSP, mainly because it is the easiest digital
@@ -825,6 +825,31 @@ The 'model' deviates from rest of the simulations because the input signal viloa
 simulations are forced to saturate the values.
 
 
+Conclusion
+~~~~~~~~~~
+
+Floating point DSP systems can be easily implemented by using the fixed-point type.
+The combination of 'lazy' bounds and default Sfix type provide easy conversion from floating point to fixed point.
+In that sense it could be called 'semi-automatic conversion'.
+
+Test data can be provided as floating point and return is float aswell, test code is not bloated with fixed point
+semantics.
+
+Constantly verifying against the model floating-point model greatly helps the design process.
+
+
+Abstraction and Design reuse
+----------------------------
+
+Since Pyha object storage is basically all reigsters it allows submodules also.
+
+.. note:: Limitation is that all the objects must be defined in the class ```__init__```.
+
+Show how delay is used from submodules.
+
+Good thing about Object-oriented programming is that the complexity of the implementation can be hidden/ abstracted.
+
+
 Example: Linear-phase DC removal Filter
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -832,9 +857,8 @@ Direct conversion (homodyne or zero-IF) receivers have become very popular recen
 software defined radio. There are many benefits to direct conversion receivers,
 but there are also some serious drawbacks, the largest being DC offset and IQ imbalances :cite:`bladerfdoc`.
 
-
 In frequency domain, DC offset will look like a peak near the 0 Hz. In time domain, it manifests as a constant
-component on the hermonic signal.
+component on the harmonic signal.
 
 
 In :cite:`dcremoval_lyons`, Rick Lyons investigates the feasibility of using moving average algorithm as a DC removal
@@ -870,6 +894,7 @@ Implementation is rather straight forward, algorithm must chain multiple MAs and
 
             self.next.y = x - tmp
             return self.y
+        ...
 
 
 :numref:`dc_removal` shows the Python implementation. Class is parametrized so that count of MA and the
@@ -915,21 +940,29 @@ in order to get plottable RTL. As shown in MA chapter, longer ``window_len`` giv
 
 Going from 4 to 256 only increases the memory usage of FPGA, still it is below 1%.
 
-Conclusion
-~~~~~~~~~~
 
+Other examples
+~~~~~~~~~~~~~~
 
-While fixed-point designs require some extra efforts, Pyha provides reasonably easy way for conversion.
-Lazy init helps, auto conversion possible in future.
-
-The way how Python allows 'lazy' types and defautl rule of normalized numbers gives almost some sensation of automatic
-conversion to fixed point.
+Here can list that Pyha has angle and abs for example?
 
 .. todo:: show high level design, with fsk receiver, can we just connect the blocks? use inspectrum and real remote signal?
     Ease of reuse..even if we suck at hardware design!
 
-Proposed design flow
---------------------
+Conclusion
+~~~~~~~~~~
+
+Pyha is object-oriented, meaning that the complexity can be easily hidden in the object definition, while reusing the
+components is easy.
+
+
+
+Suggested design flow
+---------------------
+
+This text has left out the model implementation many times to focus on the hardware details.
+
+.. todo:: move this to intro? make nice figure? Here say that we deviate from this to more focus on hardware side.
 
 This text has built the examples in what way, but actually the optimal design flow should go as this:
 
@@ -941,25 +974,6 @@ This text has built the examples in what way, but actually the optimal design fl
     * unit tests pass? profit!
 
 Siin võiks olla mingi figure?
-
-
-Abstraction and Design reuse
-----------------------------
-
-Since Pyha object storage is basically all reigsters it allows submodules also.
-
-
-Show how delay is used from submodules.
-
-Last section showed that designing even an simple algorithm in hardware can get very confusing as the registers
-come into play.
-
-Good thing about Object-oriented programming is that the complexity of the implementation can be hidden/ abstracted.
-
-Here can list that Pyha has angle and abs for example?
-
-Show instances and list of instances.
-Do in fixed point?
 
 
 
