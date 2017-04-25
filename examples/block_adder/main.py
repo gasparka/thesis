@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 class LastAcc(HW):
     def __init__(self):
         # registers
-        self.shr = [0] * 16
+        self.shr = [0] * 4
         self.y = 0
 
         # module delay
@@ -41,21 +41,22 @@ class LastAcc(HW):
 
 def test_lastacc():
     dut = LastAcc()
-    x = [0, 1, 2, 3, 2, 1, 0]
+    x = [ 1, 1, 1, 1, -1, -1, -1, -1, 1, 1, 1, 1, 1, 1, 1, 1, -1, -1, -1, -1, -1, -1, -1, -1]
 
     r = debug_assert_sim_match(dut, None, x,
-                               simulations=[SIM_MODEL, SIM_HW_MODEL, SIM_RTL, SIM_GATE],
+                               simulations=[SIM_MODEL, SIM_HW_MODEL, SIM_RTL],
                                dir_path='/home/gaspar/git/thesis/playground')
 
 
 
-    plt.figure(figsize=(8, 2))
-    plt.stem(x, label='x', basefmt=" ")
+    plt.figure(figsize=(8, 1.5))
+    plt.plot(x, label='x')
     plt.plot(r[0], label='y: Model')
     plt.plot(r[1], label='y: Pyha')
     plt.plot(r[2], label='y: RTL')
-    # plt.plot(r[3], label='y: GATE')
+    plt.plot(r[2], label='y: GATE')
 
+    plt.yticks([-4, -1, 1, 4])
     plt.grid()
     plt.xlabel("Sample number")
     plt.ylabel("Value")
@@ -64,6 +65,9 @@ def test_lastacc():
     plt.show()
 
     print(r)
+
+
+
 
 
 

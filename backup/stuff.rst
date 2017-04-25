@@ -55,3 +55,83 @@ functionally incorrect.
 
 Benefit here is that the function in VHDL is very similiar to the Python one, conversion process would
 surely be simple. Another result is that VHDL and Python have same result for local variables.
+
+
+Pipelining
+~~~~~~~~~~
+
+In hardware class variables must be often used when we actually dont need to store anything, the need rises from
+the need for clock speed.
+
+The block adder built in last section is quite decent, in sense that it is following the digital design approach by
+having all stuff between registers.
+
+The synthesis result gives that the maximum clock rate for this design is ~170 Mhz.
+Imagine that we want to make this design generic, that is make the summing window size easily changeable. Then we will
+see problems, for example going from 4 to 6 changes the max clock speed to ~120 Mhz. Chaning it to 16 gives
+already only ~60 Mhz max clock.
+
+.. todo:: appendix for FPGA chip used
+
+.. _rtl_6_critical:
+.. figure:: ../examples/block_adder/img/rtl_6_critical.png
+    :align: center
+    :figclass: align-center
+
+    Critical path RTL
+
+
+In that sense, it is not a good design since reusing it hard.
+
+The obious solution of adding registes between adder stages would not actually work, when delays come into play
+stuff gets complicated!
+
+.. todo:: CONFUSING!!! adding registers on adders WONT work, need to go transposed solution.
+
+.. todo:: Arvan,et pipelining on liiga raske teema, parem loobuda sellest?
+
+In general we expect all the signals to start from a register and end to a register. This is to avoid all the
+analog gliches that go on during the transimission process.
+The delay from one register to
+other determines the maximum clock rate (how fast registers can update). The slowest register pair determines the
+delay for the whole design, weakest link priciple.
+
+While registers can be used as class storage in software designs, they are also used as checkpoints on the
+signal paths, thus allowing high clock rates.
+
+In Digital signal processing applications we have sampling rate, that is basically equal to the clock rate. Think that
+for each input sample the 'main' function is called, that is for each sample the clock ticks.
+
+
+Registers also used for pipelines.
+Sometimes registers only used for delay.
+
+This could have example on pipelining issues, like delay matching?
+
+Pyha way is to register all the outputs, that way i can be assumed that all the inputs are already registered.
+
+Every rule has exeception, for example delays on the feedback paths (data flows backward) are pure evil.
+
+Pipelining is something that does not exist in software world.
+
+Why bother with pipelining?
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+It determines the maximum samplerate for the design. In that sense, designs with low max sample rate are not easly
+reusable, so pipelines mean reusability. Remember that hardware work on the weakest link principe, lowest clock rate
+determines the whole clock rate for the design.
+
+But why pipeline over lets say 20Mhz, thats the largest Wifiy band. One point is that it is just easier to
+add register after each arithmetic operation, than to calculate in mind that maybe we can do 3 or 4 operations berofer
+register.
+
+Retiming?
+
+Another point is clock TDA. Run the design on higher clock rate to save resources. Imagine Wify receiver for 20M band,
+this has to have sample rate of 20M. But when we run it with say 100M we can push 4 different wify signals trough the same
+circuit. That however depends on the synthesys tool ability to share common resources.
+
+Negatives of pipelining is that the delay of the block is not constant in all configurations also pipelining increases
+resource usage.
+
+Also algorithm becomes more complex and harder to understand.

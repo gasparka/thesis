@@ -331,8 +331,8 @@ In traditional programming, class variables are very similar to local variables.
 class variables can 'remember' the value, while local variables exist only during the function
 execution.
 
-Accumulator
-~~~~~~~~~~~
+Accumulator and registers
+~~~~~~~~~~~~~~~~~~~~~~~~~
 
 For example, lets consider the design of accumulator, it operates by sequentially adding up all the input values.
 
@@ -382,6 +382,12 @@ value assigned in ``__init__``, in this case it is 0.
 Register
 ^^^^^^^^
 
+In general we expect all the signals to start from a register and end to a register. This is to avoid all the
+analog gliches that go on during the transimission process.
+The delay from one register to
+other determines the maximum clock rate (how fast registers can update). The slowest register pair determines the
+delay for the whole design, weakest link priciple.
+
 Registers basically cannot be understuud at software level..they just make no sense, for that reason we have to
 go a bit deeper just for a while.
 
@@ -410,6 +416,8 @@ All the registers in the design update at the same time.
 
 .. note:: Pyha takes the register initial values from the value written in ``__init__``.
 
+Pyha way is to register all the outputs, that way i can be assumed that all the inputs are already registered.
+
 
 Clock abstraction
 ^^^^^^^^^^^^^^^^^
@@ -419,6 +427,9 @@ call to the 'main' function. Meaning that registers take the assigned value on t
 meaning assignment is delayed by one function call.
 
 Anyways, living in the software world we can just think that registers are delayed class variables.
+
+In Digital signal processing applications we have sampling rate, that is basically equal to the clock rate. Think that
+for each input sample the 'main' function is called, that is for each sample the clock ticks.
 
 Testing
 ^^^^^^^
@@ -461,33 +472,17 @@ the design is still delayed by 1.
 
 
 
-Block processing
-~~~~~~~~~~~~~~~~
+Block processing and sliding adder
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+This far we have been stuck with '1 sample' per function call. Now with the use of registers we could keep history
+of samples, thus be block processing.
 One very common task in real-life designs is to calculate results based not only the input samples but also some
 history of samples. That is some form of block processing.
 
-As an example imagine that we want to output the sum of last 4 inputs.
-
-For this we need to keep track of the last 4 inputs. This can be solved by defining an list of register with 4 elements.
-
-This can be done by just writing::
-
-    self.memory = [0, 0, 0, 0]
-
-Inside the ``main`` function we can write code that throws away last element of the list and adds the new sample,
-this structure is also known as shift-register or delay-chain in the hardware world. Because it shifts the contents
-on every cycle or delays the signal.
-
-::
-
-    self.next.memory = [x] + self.memory[:-1]
-
-In Python ``[x]`` turns the sample into list, then ``+`` operator can be used to concat two lists. The ``[:-1]`` indexing
-selects all the element, except the last one (denoted by -1).
-
-After this we have a list that always contains the last 4 elements of input. Next we can add all the elements and
-output the result.
+As an example imagine that we want to output the sum of last 4 inputs. To implement this, we could just keep
+track of the last 4 elements and sum them up, implementation of this is show on :numref:`block_adder`. Note that
+it also uses the output register ``y``.
 
 .. code-block:: python
     :caption: Accumulator
@@ -495,22 +490,26 @@ output the result.
 
     class LastAcc(HW):
         def __init__(self):
-            self.shr = [0, 0, 0, 0]
+            self.mem = [0, 0, 0, 0] # list of registers
             self.y = 0
 
         def main(self, x):
-            self.next.shr = [x] + self.shr[:-1]
+            # add new 'x' to list, throw away last element
+            self.next.mem = [x] + self.mem[:-1]
 
+            # add all element in the list
             sum = 0
-            for a in self.shr:
+            for a in self.mem:
                 sum = sum + a
 
             self.next.y = sum
             return self.y
+        ...
 
-        def model_main ...
+The ``self.next.mem = [x] + self.mem[:-1]`` line is also known as an 'shift register', because on every call it
+shifts the list contents right and adds new ``x`` as first element. Also sometimes it is called delay-chain, as the
+sample ``x`` takes 4 calls to travel from ``mem[0]`` to ``mem[3]``.
 
-Note that we also use output register as suggested.
 
 .. _block_adder_rtl:
 .. figure:: ../examples/block_adder/img/rtl.png
@@ -520,27 +519,8 @@ Note that we also use output register as suggested.
     Synthesis result of :numref:`block_adder` (Intel Quartus RTL viewer)
 
 
-The :numref:`fake` shows that all the simulations are equal. Pyha runs automatically Model, Python, VHDL and GATE simulations.
-Value of GATE level simulation is that sometimes software appraoch gives some other hardware, GATE shows that.
-
-
-.. _block_adder_sim:
-.. figure:: ../examples/block_adder/img/sim.png
-    :align: center
-    :figclass: align-center
-
-    Simulation results
-
-
-
-.. todo:: Actually hard to write model here..need to prepend data to take account hardware effects.
-
-
-Pipelining
-~~~~~~~~~~
-
-In hardware class variables must be often used when we actually dont need to store anything, the need rises from
-the need for clock speed.
+Optimizing the design
+^^^^^^^^^^^^^^^^^^^^^
 
 The block adder built in last section is quite decent, in sense that it is following the digital design approach by
 having all stuff between registers.
@@ -548,7 +528,8 @@ having all stuff between registers.
 The synthesis result gives that the maximum clock rate for this design is ~170 Mhz.
 Imagine that we want to make this design generic, that is make the summing window size easily changeable. Then we will
 see problems, for example going from 4 to 6 changes the max clock speed to ~120 Mhz. Chaning it to 16 gives
-already only ~60 Mhz max clock.
+already only ~60 Mhz max clock. Also for larger windows, it start using much more logic resources, as each
+window requires an adder.
 
 .. todo:: appendix for FPGA chip used
 
@@ -557,68 +538,79 @@ already only ~60 Mhz max clock.
     :align: center
     :figclass: align-center
 
-    Critical path RTL
+    Window size 6, RTL (Intel Quartus RTL viewer)
 
 
 In that sense, it is not a good design since reusing it hard.
 
-The obious solution of adding registes between adder stages would not actually work, when delays come into play
-stuff gets complicated!
 
-.. todo:: CONFUSING!!! adding registers on adders WONT work, need to go transposed solution.
+Conveniently, this design can be optimized to always use only 2 adders, no matter the window length.
 
-.. todo:: Arvan,et pipelining on liiga raske teema, parem loobuda sellest?
+.. code-block:: python
+    :caption: Accumulator
+    :name: slider_optim
 
-In general we expect all the signals to start from a register and end to a register. This is to avoid all the
-analog gliches that go on during the transimission process.
-The delay from one register to
-other determines the maximum clock rate (how fast registers can update). The slowest register pair determines the
-delay for the whole design, weakest link priciple.
+    y[4] = x[4] + x[5] + x[6] + x[7] + x[8] + x[9]
+    y[5] =        x[5] + x[6] + x[7] + x[8] + x[9] + x[10]
+    y[6] =               x[6] + x[7] + x[8] + x[9] + x[10] + x[11]
 
-While registers can be used as class storage in software designs, they are also used as checkpoints on the
-signal paths, thus allowing high clock rates.
+    # reusing overlapping parts implementation
+    y[5] = y[4] + x[10] - x[4]
+    y[6] = y[5] + x[11] - x[5]
 
-In Digital signal processing applications we have sampling rate, that is basically equal to the clock rate. Think that
-for each input sample the 'main' function is called, that is for each sample the clock ticks.
+As shown on :numref:`slider_optim`, instead of summing all the elements, we can reuse the overlapping part of
+the calculation to significantly optimize the algorithm.
 
 
-Registers also used for pipelines.
-Sometimes registers only used for delay.
+.. code-block:: python
+    :caption: Optimal sliding adder
+    :name: optimal_adder
 
-This could have example on pipelining issues, like delay matching?
+    class OptimalSlideAdd(HW):
+        def __init__(self, window_len):
+            self.mem = [0] * window_len
+            self.sum = 0
 
-Pyha way is to register all the outputs, that way i can be assumed that all the inputs are already registered.
+            self._delay = 1
 
-Every rule has exeception, for example delays on the feedback paths (data flows backward) are pure evil.
+        def main(self, x):
+            self.next.mem = [x] + self.mem[:-1]
 
-Pipelining is something that does not exist in software world.
+            self.next.sum = self.sum + x - self.mem[-1]
+            return self.sum
+        ...
 
-Why bother with pipelining?
-^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-It determines the maximum samplerate for the design. In that sense, designs with low max sample rate are not easly
-reusable, so pipelines mean reusability. Remember that hardware work on the weakest link principe, lowest clock rate
-determines the whole clock rate for the design.
+:numref:`optimal_adder` gives the implementation of optimal sliding adder. Note that the ``mem`` stayed the same, but
+now it is rather used as a delay-chain. :numref:`rtl_optimal_int_critical` shows the synthesis result, as expected,
+critical path is 2 adders.
 
-But why pipeline over lets say 20Mhz, thats the largest Wifiy band. One point is that it is just easier to
-add register after each arithmetic operation, than to calculate in mind that maybe we can do 3 or 4 operations berofer
-register.
+.. _rtl_optimal_int_critical:
+.. figure:: ../examples/block_adder/img/rtl_optimal_int_critical.png
+    :align: center
+    :figclass: align-center
 
-Retiming?
+    Window size 6, RTL (Intel Quartus RTL viewer)
 
-Another point is clock TDA. Run the design on higher clock rate to save resources. Imagine Wify receiver for 20M band,
-this has to have sample rate of 20M. But when we run it with say 100M we can push 4 different wify signals trough the same
-circuit. That however depends on the synthesys tool ability to share common resources.
 
-Negatives of pipelining is that the delay of the block is not constant in all configurations also pipelining increases
-resource usage.
+Simulation shows that implemented designs behaves same way in software and hardware (:numref:`block_adder_sim`).
 
-Also algorithm becomes more complex and harder to understand.
+.. _block_adder_sim:
+.. figure:: ../examples/block_adder/img/sim.png
+    :align: center
+    :figclass: align-center
+
+    Simulation results for ``OptimalSlideAdd(window_len=4)``
 
 
 
 Abstraction and Design reuse
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Since Pyha object storage is basically all reigsters it allows submodules also.
+
+
+Show how delay is used from submodules.
 
 Last section showed that designing even an simple algorithm in hardware can get very confusing as the registers
 come into play.
@@ -635,6 +627,8 @@ Conclusion
 ~~~~~~~~~~
 
 Class variables can be used in hardware, but they are delayed by one sample clock.
+
+key difference, must **assign** to next, delays.
 
 In digital design signals are assumed to exist between registers. Total delay between the registers determines the
 maximum sample rate.
@@ -655,13 +649,17 @@ In Pyha, registers are inferred from the ogject storage, that is everything defi
 
 Anyways, living in the software world we can just think that registers are delayed class variables.
 
+While registers can be used as class storage in software designs, they are also used as checkpoints on the
+signal paths, thus allowing high clock rates.
+
 
 Fixed-point designs
 -------------------
 
-So far only ``integer`` types have been used, in order to keep things simple and understandable.
+So far only ``integer`` types have been used, in order to keep things simple and understandable. Downside of integer
+types is that they always synthesize to 32 bit logic (VHDL limitation). Pyha used Sfix to select bit width.
 
-In DSP applications we would like to rather use floating point numbers. As shown in previous chapter, every operation
+In DSP applications, one would rather use floating point numbers. But as shown in previous sections, every operation
 in hardware takes resources and floating point calculations cost alot.
 
 While floating point numbers are usable in hardware, it is common approach to use fixed-point arithmetic

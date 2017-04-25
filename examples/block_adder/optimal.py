@@ -7,48 +7,42 @@ from pyha.simulation.simulation_interface import debug_assert_sim_match, SIM_GAT
 import matplotlib.pyplot as plt
 
 
-class OptimalBlockAdd(HW):
-    def __init__(self, window_size):
-        # registers
-        self.shr = [0] * window_size
+class OptimalSlideAdd(HW):
+    def __init__(self, window_len):
+        self.window_len = window_len
+        self.mem = [0] * window_len
         self.sum = 0
 
-        # module delay
-        self._delay = 2
+        self._delay = 1
 
     def main(self, x):
-        self.next.shr = [x] + self.shr[:-1]
+        self.next.mem = [x] + self.mem[:-1]
 
-        self.next.sum = self.sum + x - self.shr[-1]
-
+        self.next.sum = self.sum + x - self.mem[-1]
         return self.sum
 
     def model_main(self, xl):
-        # return np.convolve(xl, [1] * 4)
-        xl = [0, 0, 0] + xl
-        y = []
-        for i in range(len(xl) - 3):
-            s = sum(xl[i: i + 4])
-            y.append(s)
-
-        return y
+        return np.convolve(xl, [1.0] * self.window_len)[:-self.window_len + 1]
 
 
-def test_lastacc():
-    dut = OptimalBlockAdd(4)
-    x = [0, 1, 2, 3, 2, 1, 0]
+def test_OptimalSlideAdd():
+    dut = OptimalSlideAdd(4)
+    x = [ 1, 1, 1, 1, -1, -1, -1, -1, 1, 1, 1, 1, 1, 1, 1, 1, -1, -1, -1, -1, -1, -1, -1, -1]
 
     r = debug_assert_sim_match(dut, None, x,
                                simulations=[SIM_MODEL, SIM_HW_MODEL, SIM_RTL],
                                dir_path='/home/gaspar/git/thesis/playground')
 
-    plt.figure(figsize=(8, 2))
-    plt.stem(x, label='x', basefmt=" ")
+
+
+    plt.figure(figsize=(8, 1.5))
+    plt.plot(x, label='x')
     plt.plot(r[0], label='y: Model')
     plt.plot(r[1], label='y: Pyha')
     plt.plot(r[2], label='y: RTL')
-    # plt.plot(r[3], label='y: GATE')
+    plt.plot(r[2], label='y: GATE')
 
+    plt.yticks([-4, -1, 1, 4])
     plt.grid()
     plt.xlabel("Sample number")
     plt.ylabel("Value")
@@ -57,6 +51,7 @@ def test_lastacc():
     plt.show()
 
     print(r)
+
 
 
 class OptimalBlockAddFix(HW):
