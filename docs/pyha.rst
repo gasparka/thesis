@@ -315,7 +315,7 @@ Note that calling the function multiple times would infer parallel hardware.
 Conclusions
 ~~~~~~~~~~~
 
-This chapter has demonstrated that many of the software world constructs can be mapped to the hardware. In addition,
+This chapter has demonstrated that many of the software world constructs can be mapped to the hardware and
 the outputs of the software and hardware simulations are equal. Some limitations exsist,
 for example the ``for`` loop must be unrollable in order to use in hardware.
 
@@ -323,44 +323,27 @@ Major point to remember is that every statement converted to hardware costs reso
 software world where statements instead cost execution time.
 
 
-Intoducing state
-----------------
+Designs with memory
+-------------------
 
-So far this chapter has dealt with designs that require no state, that is data moves in to the ``main``, some operation
-is performed and data moves out. Nothing is saved nor is any history used.
-So far we have dealt with designs that require no state other than the function level. In real designs we frequently need
-to store some value, so that it is accessable by the next function call.
+So far all the designs presented have been stateless or in other words without memory. Often there is a need
+to store some value so that it would be usable by the next function call, this indicates that the design
+must contain memory elements.
 
-Often there is a need to keep track of some value, so that it would be usable in the next function call aswell.
-This denotes that we need to keep track of some value for longer than just one function call.
+This chapter gives overview of memory based designs in Pyha.
 
-In traditional programming, class variables are very similar to local variables. The difference is that
-class variables can 'remember' the value, while local variables exist only during the function
-execution.
+In software programming, class variables are the main method of saving the some information from function call to another.
+
 
 Accumulator and registers
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
 For example, lets consider the design of accumulator, it operates by sequentially adding up all the input values.
 
-This can be implemented with ``cumsum`` function:
-
-.. code-block:: python
-    :caption: Accumulator model
-    :name: acc-model
-
-    >>> x = [1, 2, 3, 4]
-    >>> np.cumsum(x)
-    array([ 1,  3,  6, 10])
-
-Implemenation on :numref:`acc-model` depends on the fact that all of the input is known, this is not the case for
-hardware designs. As shown in previous section, hardware designs get single sample on each execution.
-
-For single sample based execution we would have to use class scope variable in order to save the accumulator value.
-
 .. code-block:: python
     :caption: Accumulator
     :name: acc
+    :linenos:
 
     class Acc:
         def __init__(self):
@@ -370,10 +353,10 @@ For single sample based execution we would have to use class scope variable in o
             self.acc = self.acc + x
             return self.acc
 
+Now, trying to run this would result in Pyha error, suggesting to change the line 6 to to ``self.next.acc = ...``.
+After this code is runnable, reasons for this modification are explained shortly.
 
-
-Now, trying to run this would result in Pyha error, suggesting to change the ``self.acc`` to ``self.next.acc``.
-After doing this, code is runnable.
+Synthesis result shown on the :numref:`acc_rtl` features an new element known as register.
 
 .. _acc_rtl:
 .. figure:: ../examples/accumulator/img/acc_rtl.png
@@ -383,69 +366,50 @@ After doing this, code is runnable.
     Synthesis result of :numref:`pyha_for_code` (Intel Quartus RTL viewer)
 
 
-``rst_n`` signal can be used to set initial states for registers, in Pyha the initial value is determined by the
-value assigned in ``__init__``, in this case it is 0.
-
 Register
 ^^^^^^^^
 
-In general we expect all the signals to start from a register and end to a register. This is to avoid all the
-analog gliches that go on during the transimission process.
-The delay from one register to
-other determines the maximum clock rate (how fast registers can update). The slowest register pair determines the
-delay for the whole design, weakest link priciple.
+Register is an hardware memory component, it samples the input signal ``D`` on the edge of the  ``CLK`` signal. In
+that sense it acts like a buffer.
 
-Registers basically cannot be understuud at software level..they just make no sense, for that reason we have to
-go a bit deeper just for a while.
+One of the new signals on the RTL figure is ``clk``, that is a clock signal that instructs the registers
+to update the saved value (``D``).
 
-Hardware registers have just one difference to class variables, the value assigned to them does not take
-effect immediately, but rather on the next clock edge. That is the basic idea of registers, they take a new value
-on clock edge. When the value is set at **this** clock edge, it will be taken on **next** clock edge.
+In hardware clock is a mean of synchronizing the registers, thus allowing accurate timing analsys that allows
+placing the components on the FPGA fabric in such way that all the analog transients happen **between** the clock
+edges, thus the registers are guaranteed to sample the clean and correct signal.
 
-Register is the defining object of digital designs. Think about the adder, two signals feeding in the adder may have
-different propagation delay, meaning that for some time the output of the adder is in invalid state (also each
-bit may have slightly different stuff, different delay for each bit), in fact is is
-probably fluctiating between many random values. After some measurable time we can say that the adder output is stable.
-Register is like a checkpoint between the signal flow path.
+Registers have one difference to software class variables, the value assigned to them does not take
+effect immediately, but rather on the next clock edge.
+When the value is set at **this** clock edge, it will be taken on **next** clock edge.
 
-Register is object that allows to 'skip' the analog fluctuations.
+Pyha tries to stay in the software world, so the clock signal can be abstracted away
+by thinking that it denotes the call to the 'main' function. Meaning that registers update their value on
+every call to ``main`` (just before the call).
 
-Basically on FPGA all delays for every component and wire is known. So the synthesis process can place components and
-registers in such way that it guarantees that register samples the 'clean' value.
+Think that the ``main`` function is started with the **current** register values known and the objective of
+the ``main`` function is to find the **next** values for the registers.
 
-All the registers in the design update at the same time.
-
-    * call
-    * set self.next.acc = 1
-    * self.acc is still 0
-    * next call self.acc is 1
-
-
-.. note:: Pyha takes the register initial values from the value written in ``__init__``.
-
-Pyha way is to register all the outputs, that way i can be assumed that all the inputs are already registered.
-
-
-Clock abstraction
-^^^^^^^^^^^^^^^^^
-
-Trying to stay in the software world, we can abstract away the clock edge by thinking that it denotes the
-call to the 'main' function. Meaning that registers take the assigned value on the next function call,
-meaning assignment is delayed by one function call.
-
-Anyways, living in the software world we can just think that registers are delayed class variables.
-
+In DSP systems one important variable is sample rate. In hardware the maximum clock rate and sample rate are
+basically the same thing.
 In Digital signal processing applications we have sampling rate, that is basically equal to the clock rate. Think that
 for each input sample the 'main' function is called, that is for each sample the clock ticks.
 
-One of the key abstractions that Pyha uses is that the 'main' is called on each clock. One could imagine that
-it is wrapped in a higher level for loop that continously supplies the samples.
+Note that the way how the hardware is designed determines the maximum clock rate it can run off. So if we do
+a bad job we may have to work with low sample rate designs. This is determined by the worst critical path.
 
-Clock abstracted as forever running loop. In hardware determines how long time we need to wait before
-next call to function so that all signals can propagate.
+Pyha way is to register all the outputs, that way i can be assumed that all the inputs are already registered.
+
+``rst_n`` signal can be used to set initial states for registers, in Pyha the initial value is determined by the
+value assigned in ``__init__``, in this case it is 0.
+
 
 Testing
 ^^^^^^^
+
+Running the same testing code results in a :numref:`acc_sim_delay`. It shows that the **model** simulation differs
+from the rest of the simulations. It is visible that the hardware related simulations are **delayed by 1**.
+This is the side-effect of the hardware registers, each register on the signal path adds one sample delay.
 
 .. _acc_sim_delay:
 .. figure:: ../examples/accumulator/img/acc_sim_delay.png
@@ -454,27 +418,11 @@ Testing
 
     Simulation of the accumulator (x is random integer [-5;5])
 
+Pyha provides an :code:`self._delay` variable, that hardware classes can use to specify their delay.
+Simulation functions can read this variable and compensate the simulation data so that the delay is compensated, that
+eases the design of unit-tests.
 
-Running the same testing code results in a :numref:`acc_sim_delay`. It shows that while the
-model simulation differs from the rest of simulations. This is the effect of added register,
-it adds one delay to the harwdware simulations.
-
-The delay can be determined by counting the registers on the input to output path.
-
-
-This is an standard hardware behaviour. Pyha provides special variable
-:code:`self._delay` that specifies the delay of the model, it is useful:
-
-    - Document the delay of your blocks
-    - Upper level blocks can use it to define their own delay
-    - Pyha simulations will adjust for the delay, so you can easily compare to your model.
-
-.. note:: Use :code:`self._delay` to match hardware delay against models
-
-After setting the :code:`self._delay = 1` in the __init__, we get:
-
-This does not 'fix' the delay, it just shifts the hardware simulation sample so that they match up with model,
-the design is still delayed by 1.
+All the simulations match in output (:numref:`acc_sim`), after setting the :code:`self._delay = 1` in the ``__init__``.
 
 .. _acc_sim:
 .. figure:: ../examples/accumulator/img/acc_sim.png
