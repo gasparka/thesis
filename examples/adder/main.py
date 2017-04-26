@@ -94,82 +94,9 @@ def test_adder():
     print(r)
 
 
-class Acc(HW):
-    def __init__(self):
-        self.acc = 0
+def test_add():
+    x =      [1, 2, 2, 3, 3, 1, 1]
+    expect = [2, 3, 3, 4, 4, 2, 2]
 
-    def main(self, x):
-        self.next.acc = self.acc + x
-        return self.acc
-
-    def model_main(self, xl):
-        return np.cumsum(xl)
-
-def test_acc():
-    dut = Acc()
-    x = [1, 2, 3, 4, 5, 6]
-
-    r = debug_assert_sim_match(dut, None, x,
-                               simulations=[SIM_MODEL, SIM_HW_MODEL, SIM_RTL, SIM_GATE],
-                               dir_path='/home/gaspar/git/thesis/playground')
-
-    # plt.figure(figsize=(8, 3))
-    # plt.plot(r[0], label='Model')
-    # plt.plot(r[1], label='Python simulation')
-    # plt.plot(r[2], label='RTL simulation')
-    # plt.plot(r[3], label='Quartus GATE simulation')
-    #
-    # plt.grid()
-    # plt.xlabel("Sample number")
-    # plt.ylabel("Value")
-    # plt.legend()
-    # plt.savefig('img/comb_sim.png', bbox_inches='tight')
-    # plt.show()
-
-    print(r)
-
-
-class LastAcc(HW):
-    def __init__(self):
-
-        # registers
-        self.shr = [0, 0, 0, 0]
-        self.sum = 0
-
-        # module delay
-        self._delay = 1
-
-    def main(self, x):
-        # add new element to shift register
-        self.next.shr = [x] + self.shr[:-1]
-
-        for a in self.shr:
-            self.next.sum = self.sum + a
-
-        return self.sum
-
-    def model_main(self, xl):
-        return np.cumsum(xl)
-
-def test_lastacc():
-    dut = LastAcc()
-    x = [1, 2, 3, 4, 5, 6]
-
-    r = debug_assert_sim_match(dut, None, x,
-                               simulations=[SIM_MODEL, SIM_HW_MODEL, SIM_RTL, SIM_GATE],
-                               dir_path='/home/gaspar/git/thesis/playground')
-
-    # plt.figure(figsize=(8, 3))
-    # plt.plot(r[0], label='Model')
-    # plt.plot(r[1], label='Python simulation')
-    # plt.plot(r[2], label='RTL simulation')
-    # plt.plot(r[3], label='Quartus GATE simulation')
-    #
-    # plt.grid()
-    # plt.xlabel("Sample number")
-    # plt.ylabel("Value")
-    # plt.legend()
-    # plt.savefig('img/comb_sim.png', bbox_inches='tight')
-    # plt.show()
-
-    print(r)
+    dut = Adder()
+    assert_simulation(dut, expect, x)

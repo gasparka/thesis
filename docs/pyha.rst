@@ -1,49 +1,38 @@
-Introduction to hardware design with Pyha
-=========================================
+Hardware design with Pyha
+=========================
 
-Thiw work tries to look the hardware desctiption process from the software developer side, shows differences.
+This chapter introduces the main contribution of this thesis, Pyha - tool to design digital hardware in Python.
 
-This chapter shows how Pyha can be used to write digital hardware.
+Pyha proposes to program hardware in same way as software is programmed, for that reason much of the efforts
+of this chapter is to show to what hardware Pyha constructs maps.
 
-This chapter introduces the main contribution of this thesis, Pyha, that is a way of designing digital hardware using
-Python programming language.
+First half of this chapter gives introduction to the generic hardware components. Note that the conversion to VHDL
+is considered in the next chapter. Examples in the first half operate on the integer data type, to keep stuff
+simple.
 
-First part of this chapter gives an short introduction to the hardware design with Pyha. Just as Pyha tries to bring
-software world practices to hardware world, i trie to write this chapter in readable way to software people.
+Second half of this chapter shows how Pyha can be used to implement fixed-point DSP systems, examples are
+developed for moving-average filter and linar-phase-dc-removal.
 
-This chapter is written in mind software developers that could start hardware programming, for that reason
-many references and abstractsions are made.
-
-The second half of this chapter shows off Pyha features for fixed point design, by gradually designing an FIR filter.
-
-
-to cover:
-    * Clocking abstraction
-    * Design reuse
-    * State machines
-    * Show that __init__ can be used for any python code
-    * Design flow, show unit tests..
+All the examples presented in this chapter can be found online HERE, these include all the Python sources, unit-tests,
+VHDL conversion files and Quartus project for synthesis.
 
 
+Introduction
+------------
 
+Pyha follows the object-oriented design paradigm. Basic design unit is an Python class,
+that is derived from HW subclass (to inherit hardware related functionality).
 
-Stateless design
-----------------
+Pyha encourages the model based design flow, where model is the non-synthesisable code for simples possible
+implementation. Most often the model is implemented with a call to Numpy or Scipy library, for DSP systems.
+Helps testing
 
-Stateless is also called combinatory logic. In the sense of software we could think that a function is stateless
-if it only uses local variables, has no side effects, returns are based on inputs only. That is, it may use
-local variables of function but cannot use the class variables, as these are stateful.
-
-This first chapter uses integer types only, as they are well understood by anyone and also fully synthesizable (to 32 bit logic).
-
-Basic adder
-~~~~~~~~~~~
-
-Basic Pyha module is a Python class, that is derived from HW subclass. Simple adder with model implementaion is shown
-on :numref:`adder-model`.
+:numref:`pyha_adder` shows the implementation of simple circtuit that adds 1 to each input. Pyha reserves
+the ``model_main`` functoon for defining the model and ``main`` as the toplevel for synthesis. Note that the
+``model_main`` is completely ignored for synthesis.
 
 .. code-block:: python
-    :caption: Simple adder model
+    :caption: Simple adder, implemented in Pyha
     :name: pyha_adder
 
     class Adder(HW):
@@ -56,44 +45,38 @@ on :numref:`adder-model`.
             yl = [x + 1 for x in xl]
             return yl
 
-.. note:: Pyha reserves the function name :code:`model_main` for defining the model and :code:`main` for the top
-    level function. Designers may freely use other function names as pleased.
+Note that the model implementation takes in a list of inputs wile the synthesisable code works with single sample
+input, as is in hardware. Model code can be that way easily vectorized.
 
-``model_main`` can contain any Python code, it is not to be synthesised. ``main`` is the function for synthesis.
-
-:numref:`adder-model` shows the model implementation for the adder. The code loops over the input list 'xl' and adds 1 to each element.
-Important thing to notice is that the model code works on lists, it takes input as list and outputs a list.
-
-Key difference beteween the 'model_main' and 'main' is that the later works on singe samples while the model works
-on lists, it is vectorized. This is big difference because model code has access to all the samples of the scope, while
-main only has the single sample.
-
-One of the key abstractions that Pyha uses is that the 'main' is called on each clock. One could imagine that
-it is wrapped in a higher level for loop that continously supplies the samples.
-
-Clock abstracted as forever running loop. In hardware determines how long time we need to wait before
-next call to function so that all signals can propagate.
-
-.. _adder_rtl:
-.. figure:: ../examples/adder/img/add_rtl.png
-    :align: center
-    :figclass: align-center
-
-    Synthesis result of :numref:`pyha_adder` (Intel Quartus RTL viewer)
-
-
+.. note:: All the examples in this chapter include the model implementation but most of them are not included in future
+    code listings, that is to focus more on the hardware side of things.
 
 
 Simulation and testing
-^^^^^^^^^^^^^^^^^^^^^^
+~~~~~~~~~~~~~~~~~~~~~~
 
 Pyha designs can be simulated in Python or VHDL domain. In addition, Pyha has integration to Intel Quartus software,
-it supports running GATE level simulations, that is simulation of synthesized logic.
+it supports running GATE level simulations (simulation of synthesized logic).
 
-Pyha provides an ``simulate(dut, x)`` function, that uses ``x`` as input for module ``dut`` and runs all the
-simulations, returning the outputs.
+Pyha provides functions to automatically run all the simulations on the set of input data. :numref:`pyha_adder_test`
+shows an example unit test for the 'adder' module.
 
-More information about this in the APPENDIX.
+.. code-block:: python
+    :caption: Adder tester
+    :name: pyha_adder_test
+
+    x =      [1, 2, 2, 3, 3, 1, 1]
+    expect = [2, 3, 3, 4, 4, 2, 2]
+
+    dut = Adder()
+    assert_simulation(dut, expect, x)
+
+The ``assert_simulation(dut, expect, x)`` runs all the simulations (Model, Pyha, RTL and GATE)
+and asserts the results equal the ``expexct``.
+
+
+In addition there is a function ``simulations(dut, x)`` that returns all the outputs of different simulations, this
+can be used to plot the results, as shown on :numref:`adder_sim`, all the simulations are equal.
 
 .. _adder_sim:
 .. figure:: ../examples/adder/img/add_sim.png
@@ -102,9 +85,70 @@ More information about this in the APPENDIX.
 
     Simulation input and outputs
 
-The :numref:`adder_sim` is plotted using the data from ``simulate`` function, as shown
-all the simulations are equal.
 
+More information about the simulation functions can be found in the APPENDIX.
+
+
+Synthesis
+~~~~~~~~~
+
+Running the GATE simulations require synthesis of the design. For this Pyha integrates to the Intel Quartus
+software.
+
+The synthesis target device is EP4CE40F23C8N, of Cyclone IV family. This is the same FPGA that powers the latest
+LimeSDR chip and the BladeRF board.
+
+In general it is a low cost FPGA with following features :cite:`cycloneiv`:
+
+    - 39,600 logic elements
+    - 1,134Kbits embedded memory
+    - 116 embedded 18x18 multipliers
+    - 4 PLLs
+    - 200 MHz maximum clock speed
+
+One useful tool in Quartus software is RTL viewer, it can be opened from ``Tools->Netlist viewers->RTL viewer``.
+RTL viewer is useful to inspect the hardware synthesised for the Pyha design, this chapter uses it extensively.
+
+.. _adder_rtl:
+.. figure:: ../examples/adder/img/add_rtl.png
+    :align: center
+    :figclass: align-center
+
+    RTL of the adder circuit
+
+:numref:`adder_rtl` shows the RTL of the adder circuit. Notice that the integer types were synthesised to
+32 bit logic ([31..0] is the signal width).
+
+Design flow
+~~~~~~~~~~~
+
+General desing flow for Pyha designs is first to define the model code by preferably using some higher level library
+like Numpy (numerical computing) or Scipy (scientific package). Then write unit tests that assert the required
+performance requirements. For unit tests use the Pyha ``simulate`` functions so that the same tests can be later
+run on hardware models.
+
+Next step is to implement the synthesizable code, this step is greatly simplified if enough unit tests were already
+collected while developing the model.
+
+.. todo:: fixed point?
+
+That is model based development with test-driven approach.
+
+.. note:: While this is the best way to design, rest of this document does not follow it in order to keep stuff
+simple.
+
+
+
+
+
+Stateless designs
+-----------------
+
+Stateless is also called combinatory logic. In the sense of software we could think that a function is stateless
+if it only uses local variables, has no side effects, returns are based on inputs only. That is, it may use
+local variables of function but cannot use the class variables, as these are stateful.
+
+This first chapter uses integer types only, as they are well understood by anyone and also fully synthesizable (to 32 bit logic).
 
 Operations order
 ~~~~~~~~~~~~~~~~
@@ -420,6 +464,12 @@ Anyways, living in the software world we can just think that registers are delay
 
 In Digital signal processing applications we have sampling rate, that is basically equal to the clock rate. Think that
 for each input sample the 'main' function is called, that is for each sample the clock ticks.
+
+One of the key abstractions that Pyha uses is that the 'main' is called on each clock. One could imagine that
+it is wrapped in a higher level for loop that continously supplies the samples.
+
+Clock abstracted as forever running loop. In hardware determines how long time we need to wait before
+next call to function so that all signals can propagate.
 
 Testing
 ^^^^^^^
@@ -948,6 +998,8 @@ Testing
 ^^^^^^^
 
 :numref:`dc_sim` shows the simulation result of removing constant DC component from harmonic signal.
+The input is sinusoidal siganal with added DC component(+0.25), the output of the filter starts countering the
+DC component until it is removed.
 
 
 .. _dc_sim:
@@ -957,52 +1009,34 @@ Testing
 
     Simulation of DC-removal filter in time domain
 
-Conclusion
-~~~~~~~~~~
-
-Thanks to the object-oriented nature of Pyha, reusing of componentis is easy. There is no significant difference between
-software and hardware approaches.
-
-Pyha is object-oriented, meaning that the complexity can be easily hidden in the object definition, while reusing the
-components is easy.
-
-
-
-Suggested design flow
----------------------
-
-This text has left out the model implementation many times to focus on the hardware details.
-
-.. todo:: move this to intro? make nice figure? Here say that we deviate from this to more focus on hardware side.
-
-This text has built the examples in what way, but actually the optimal design flow should go as this:
-
-
-    * make model
-    * extract unit tests, same can be reused for hw sims
-    * make hw using floats, handle register effects
-    * convert to fixed point
-    * unit tests pass? profit!
-
-Siin võiks olla mingi figure?
-
 
 
 Conclusion
 ----------
 
-Easy to use OOP, abstraction.
+This chapter has demonstrated that traditional software language features can be used to infer hardware components.
+And the output of them are equal.
+One must still keep in mind of how the code converts to hardware. For example that the loops will be unrolled.
 
-This chapter showed how Python OOP code can be converted into VHDL OOP code.
+Big difference between hardware and software is that in hardware, every arithmetical operator takes up resources.
 
-It is clear that Pyha provides many conveneince functions to greatly simplyfy the testing of
-model based designs.
+Class variables can be used to add state to the design. In Pyha, class variables must be assigned to
+``self.next`` as this mimics the hardware register behaviour. General rule is to always register the outputs of
+Pyha designs.
 
-The initial goal of Pyha was to test ou how well could the software approach apply to the hardware world. As this
-thesis shows that it is working well, the generated hardware output is unexpected to software people but resulting
-output is the same. Pyha is an exploratory project, many things work and ca be done but still much improvements are needed
-for example, inclusion of bus models like Wishbone, Avalon, AXI etc. Also currently Pyha works on single clock designs,
-while its ok because mostly today desings are just many single clock designs connected with buses.
+DSP systems can be implemented by using the fixed-point type. Pyha has ‘semi-automatic conversion’ from
+floating point to fixed point numbers. Verifying against floating point model helps the iteration speed.
 
-Future stuff:
-Make it easier to use, windows build?
+Thanks to the object-oriented nature of Pyha, reusing of componentis is easy. There is no significant difference between
+software and hardware approaches.
+Pyha is object-oriented, meaning that the complexity can be easily hidden in the object definition, while reusing the
+components is easy.
+
+Pyha provides ``simulate`` function that can automatically run Model, Pyha, RTL and GATE level simultions. In
+addition, ``assert_simulate`` can be used for fast design of unit-tests. These functions can automatically handle
+fixed point conversion, so that testcode does not have to include fixed point semantics.
+
+Pyha designs can be debugged in Python domain.
+
+
+

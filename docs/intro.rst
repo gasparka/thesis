@@ -95,6 +95,24 @@ First chapter gives an short background about the context of this thesis and exi
 that provide conversion from higher level languages to Gates.
 
 
+Suggested design flow
+---------------------
+
+This text has left out the model implementation many times to focus on the hardware details.
+
+.. todo:: move this to intro? make nice figure? Here say that we deviate from this to more focus on hardware side.
+
+This text has built the examples in what way, but actually the optimal design flow should go as this:
+
+
+    * make model
+    * extract unit tests, same can be reused for hw sims
+    * make hw using floats, handle register effects
+    * convert to fixed point
+    * unit tests pass? profit!
+
+Siin võiks olla mingi figure?
+
 Background
 ----------
 

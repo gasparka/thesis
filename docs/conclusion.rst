@@ -40,7 +40,11 @@ the simulations, so automatic conversion is very much possible in the future.
 Integration to bus structures is another item in the wish-list. Streaming blocks already exist in very basic form.
 Ideally AvalonMM like buses should be supported, with automatic HAL generation, that would allow design of reconfigurable FIR filters for example.
 
-
+The initial goal of Pyha was to test ou how well could the software approach apply to the hardware world. As this
+thesis shows that it is working well, the generated hardware output is unexpected to software people but resulting
+output is the same. Pyha is an exploratory project, many things work and ca be done but still much improvements are needed
+for example, inclusion of bus models like Wishbone, Avalon, AXI etc. Also currently Pyha works on single clock designs,
+while its ok because mostly today desings are just many single clock designs connected with buses.
 
 
 
