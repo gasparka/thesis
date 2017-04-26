@@ -7,9 +7,9 @@ from examples.moving_average.model import MovingAverage
 
 
 class TestMovingAverage:
-    def test_window1(self):
-        with pytest.raises(AttributeError):
-            mov = MovingAverage(window_len=1)
+    # def test_window1(self):
+    #     with pytest.raises(AttributeError):
+    #         mov = MovingAverage(window_len=1)
 
     def test_window2(self):
         mov = MovingAverage(window_len=2)

@@ -841,17 +841,16 @@ Constantly verifying against the model floating-point model greatly helps the de
 Abstraction and Design reuse
 ----------------------------
 
-Since Pyha object storage is basically all reigsters it allows submodules also.
+Pyha is based on object-oriented design practices. One benefit of this is that the implementation details can be
+nicely abstracted by the class implementation. Another benefit is that it simplifies the design reuse, objects can
+be created easily.
 
 .. note:: Limitation is that all the objects must be defined in the class ```__init__```.
 
-Show how delay is used from submodules.
+This chapter shows an example on how to reuse the moving average filter, developed earlier.
 
-Good thing about Object-oriented programming is that the complexity of the implementation can be hidden/ abstracted.
-
-
-Example: Linear-phase DC removal Filter
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Linear-phase DC removal Filter
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Direct conversion (homodyne or zero-IF) receivers have become very popular recently especially in the realm of
 software defined radio. There are many benefits to direct conversion receivers,
@@ -860,97 +859,109 @@ but there are also some serious drawbacks, the largest being DC offset and IQ im
 In frequency domain, DC offset will look like a peak near the 0 Hz. In time domain, it manifests as a constant
 component on the harmonic signal.
 
-
-In :cite:`dcremoval_lyons`, Rick Lyons investigates the feasibility of using moving average algorithm as a DC removal
-circuit by subtracting the MA output from the input signal. This structure works but has a passband ripple of up to
-3 dB. In his work Rick shows that by cascading multiple stages of MA's the ripple can be reduced (:numref:`dc_freqz`).
-
+In :cite:`dcremoval_lyons`, Rick Lyons investigates the use of moving average algorithm as a DC removal
+circuit. This works by subtracting the MA output from the input signal. Problem with this approach is that it has
+passband ripple of 3 dB. However, by conninting multiple stages of MA's in series, the ripple can be avoided
+(:numref:`dc_freqz`) :cite:`dcremoval_lyons`.
 
 .. _dc_freqz:
 .. figure:: ../examples/dc_removal/img/dc_freqz.png
     :align: center
     :figclass: align-center
 
-    Frequency response of DC removal circuit with MA length 8
+    Frequency response of DC removal filter (MA window length is 8)
 
 
-Implementation is rather straight forward, algorithm must chain multiple MAs and then subtract the result from input.
+Implementation
+^^^^^^^^^^^^^^
+
+The algorithm is composed of two parts. First four MA's are connected in series, outputting the DC component of the
+signal. Second the MAs output is subtracted from the input signal, thus giving the signal without
+DC component.
+
+This implementation is not exactly following the one in :cite:`dcremoval_lyons`. They suggest to delay-match the
+step 1 and 2 of the algorithm, but since we can assume the DC component to be more or less stable, it does not matter.
 
 .. code-block:: python
     :caption: Generic DC-Removal implementation
     :name: dc_removal
 
     class DCRemoval(HW):
-        def __init__(self, window_len, cascades):
-            self.mavg = [MovingAverage(window_len) for _ in range(cascades)]
+        def __init__(self, window_len):
+            self.mavg = [MovingAverage(window_len), MovingAverage(window_len),
+                         MovingAverage(window_len), MovingAverage(window_len)]
             self.y = Sfix(0, 0, -17)
 
-            self._delay = 1 + self.mavg[0]._delay * cascades
+            self._delay = 1
 
         def main(self, x):
+            # run input signal over all the MA's
             tmp = x
             for mav in self.mavg:
                 tmp = mav.main(tmp)
 
+            # dc-free signal
             self.next.y = x - tmp
             return self.y
         ...
 
 
-:numref:`dc_removal` shows the Python implementation. Class is parametrized so that count of MA and the
+:numref:`dc_removal` shows the Python implementation. Class is parametrized so that the
 window length can be changed.
-
-One thing to note that the :code:`model_main` and :code:`main` are nearly identical. That shows that Pyha has archived
-one of the goals by simplifying hardware design portion.
 
 .. _dc_rtl_annotated:
 .. figure:: ../examples/dc_removal/img/dc_rtl_annotated.png
     :align: center
     :figclass: align-center
 
-    Synthesis result of ``DCRemoval(window_len=4, cascades=4)`` (Intel Quartus RTL viewer)
+    Synthesis result of ``DCRemoval(window_len=4)`` (Intel Quartus RTL viewer)
+
+As expected, the synthesis generates RTL for 4 MA filters that are connected in series, output of this is subtracted
+from the input :numref:`dc_rtl_annotated`.
 
 
-This implementation is not exactly following the one in :cite:`dcremoval_lyons`. They suggest to delay match the
-MA outputs and input signal, but since we can assume the DC component to be constant, it does not matter.
-
-Note that in real-life design we would use this component with much larger ``window_len``, currently 4 was chosen
-in order to get plottable RTL. As shown in MA chapter, longer ``window_len`` gives narrower filter.
-
-..
-    Total logic elements	204 / 39,600 ( < 1 % )
-    Total memory bits	144 / 1,161,216 ( < 1 % )
-    Max clock speed ~200 MHz
-    Signal delay: 1 sample
-
-..
-    Total logic elements	251 / 39,600 ( < 1 % )
-    Total memory bits	10,150 / 1,161,216 ( < 1 % )
-    Max clock speed ~200 MHz
-    Signal delay: 1 sample
-
-
+Note that in real design, one would want to use this component with larger ``window_len``. Here 4 was chosen to keep
+the RTL simple. For example, using ``window_len=64`` gives much lower cutoff frequency (:numref:`dc_comp`),
+FIR filter with the same performance would require hundreds of taps :cite:`dcremoval_lyons`. Another benefit is that
+this filter delays the signal by only 1 sample.
 
 .. _dc_comp:
 .. figure:: ../examples/dc_removal/img/dc_comp.png
     :align: center
     :figclass: align-center
 
-    4 vs 256
-
-Going from 4 to 256 only increases the memory usage of FPGA, still it is below 1%.
+    Comparison of frequency response
 
 
-Other examples
-~~~~~~~~~~~~~~
+This implementation is also very light on the FPGA resource usage (:numref:`resource_usage`).
 
-Here can list that Pyha has angle and abs for example?
+.. code-block:: text
+    :caption: Cyclone IV FPGA resource usage (``window_len = 64``)
+    :name: resource_usage
 
-.. todo:: show high level design, with fsk receiver, can we just connect the blocks? use inspectrum and real remote signal?
-    Ease of reuse..even if we suck at hardware design!
+    Total logic elements                242 / 39,600 ( < 1 % )
+    Total memory bits                   2,964 / 1,161,216 ( < 1 % )
+    Embedded Multiplier 9-bit elements	0 / 232 ( 0 % )
+
+
+Testing
+^^^^^^^
+
+:numref:`dc_sim` shows the simulation result of removing constant DC component from harmonic signal.
+
+
+.. _dc_sim:
+.. figure:: ../examples/dc_removal/img/dc_sim.png
+    :align: center
+    :figclass: align-center
+
+    Simulation of DC-removal filter in time domain
 
 Conclusion
 ~~~~~~~~~~
+
+Thanks to the object-oriented nature of Pyha, reusing of componentis is easy. There is no significant difference between
+software and hardware approaches.
 
 Pyha is object-oriented, meaning that the complexity can be easily hidden in the object definition, while reusing the
 components is easy.
