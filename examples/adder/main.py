@@ -7,10 +7,10 @@ from pyha.simulation.simulation_interface import debug_assert_sim_match, SIM_GAT
 import matplotlib.pyplot as plt
 
 
-class Adders(HW):
+class Basic(HW):
     def main(self, x):
         a = x + 1 + 3
-        b = a + 2
+        b = a * 314
         return a, b
 
     def model_main(self, xl):
@@ -20,11 +20,11 @@ class Adders(HW):
 
 
 def test_comb():
-    dut = Adders()
+    dut = Basic()
     x = [1, 2, 2, 3, 3, 1, 1]
 
     r = debug_assert_sim_match(dut, None, x,
-                               simulations=[SIM_MODEL, SIM_HW_MODEL, SIM_RTL],
+                               simulations=[SIM_MODEL, SIM_HW_MODEL, SIM_RTL, SIM_GATE],
                                dir_path='/home/gaspar/git/thesis/playground')
 
     fig, axes = plt.subplots(2, 1, sharex=True, sharey=True, figsize=(8, 3.5))

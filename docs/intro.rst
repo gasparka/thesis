@@ -53,6 +53,8 @@ Target software people, make it easy to transition.
 
 Introduces Pyha and shows how hardware design differs from software design.
 
+Shows how regular software constructs maps into hardware!
+
 Problem statement
 -----------------
 

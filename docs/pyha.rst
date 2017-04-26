@@ -144,28 +144,30 @@ simple.
 Stateless designs
 -----------------
 
-Stateless is also called combinatory logic. In the sense of software we could think that a function is stateless
-if it only uses local variables, has no side effects, returns are based on inputs only. That is, it may use
-local variables of function but cannot use the class variables, as these are stateful.
+Designs that don't contain any memory elements can be considered stateless. In hardware world this is also known as
+combinotary logic. In software world, this can be understood as an function that only uses local variables,
+using class variables would introduce state.
 
-This first chapter uses integer types only, as they are well understood by anyone and also fully synthesizable (to 32 bit logic).
 
-Operations order
+Basic operations
 ~~~~~~~~~~~~~~~~
 
-Slightly more complex example is given on :numref:`pyha_adder_comp`. It features two outputs, note that the
+:numref:`pyha_adder_comp` shows the Pyha design, featuring circuit with one input and two outputs. Note that the
 ``b`` output is dependent of ``a``.
 
 .. code-block:: python
-    :caption: Simple adder model
+    :caption: Basic stateless operations
     :name: pyha_adder_comp
 
-    ...
-    def main(self, x):
-        a = x + 1 + 3
-        b = a + 2
-        return a, b
-    ...
+    class Basic(HW):
+        def main(self, x):
+            a = x + 1 + 3
+            b = a * 314
+            return a, b
+
+The :numref:`adder_multi_rtl` shows the RTL result. Note that each adder is an actual resource used in the FPGA
+fabric. The ``a`` output is formed by running the ``x`` signal trough two adders (one adding 1 and next 3). The
+``b`` has extra multiplier on signal path.
 
 .. _adder_multi_rtl:
 .. figure:: ../examples/adder/img/add_multi_rtl.png
@@ -174,37 +176,21 @@ Slightly more complex example is given on :numref:`pyha_adder_comp`. It features
 
     Synthesis result of :numref:`pyha_adder_comp` (Intel Quartus RTL viewer)
 
-The :numref:`adder_multi_rtl` shows the RTL result. Now this RTL may be suprising for people coming from software
-development.
 
-The simplified CPU can be imagined to have only one adder, then the code above would take 3 cycles of this adder to execute.
-Hardware approach however is that all the operations are done in parallel.
+This example shows that in hardware operations have a price in terms of resource usage.
+This is a big difference to software, where operations cost execution time.
 
-So in general, operations in software consume time, while hardware consumes resources, this is general rule. To be
-correct in hardware there are also pipeline delays but these can be ignored at this point.
-In software operations consume time, but in hardware they consume resources, general rule.
-Also note that just like in software any operation has a price on the execution time, in hardware any operation has
-a price in term on resource usage.
+Sharing the hardware resources is possible by using state-machines, but this quickly rises the design complexity.
 
-Simulation and testing
-^^^^^^^^^^^^^^^^^^^^^^
-
-Testing of the circuit is done on the same data as previous.
-
-.. _add_multi_sim:
-.. figure:: ../examples/adder/img/add_multi_sim.png
-    :align: center
-    :figclass: align-center
-
-    Simulation result
+All the simulations for this designs result in same output.
+Key idea to understand is that while the software and hardware execute the ``main`` function in
+different ways, they result in same output, so in that sense they are equal.
 
 
-Main idea to understand is that while the software and hardware approach do different thing, they result in
-same output, so in that sense they are equal. Just the natural state of software is to execute stuff in sequence, while
-hardware is parallel (tho, the order of operations still matter).
-
-One huge upside of Pyha is that designs can be debugged, :numref:`add_multi_debug` shows a breakpoint that was
-reached on the first input sample. It is better than conventional methods!
+Huge upside of Pyha is that designs can be debugged, the 'Pyha' simulations just runs the ``main`` function
+so all kinds of Python tools can be used.
+:numref:`add_multi_debug` shows a debugging session on the :numref:`pyha_adder_comp` code. Using Python tools
+for debugging can greatly increase the designers productivity.
 
 .. _add_multi_debug:
 .. figure:: ../examples/adder/img/add_multi_debug.png
