@@ -135,7 +135,8 @@ collected while developing the model.
 That is model based development with test-driven approach.
 
 .. note:: While this is the best way to design, rest of this document does not follow it in order to keep stuff
-simple.
+    simple. Following text rather gets fast into the hardware part and tends to ignore the model and unit-testing
+    part.
 
 
 
@@ -200,26 +201,26 @@ for debugging can greatly increase the designers productivity.
     Debugging using PyCharm (Python editor)
 
 
-Control statements
-~~~~~~~~~~~~~~~~~~
 
-Control statements like if, for and function calls are fully usable in synthesizable code.
+Conditional statements
+~~~~~~~~~~~~~~~~~~~~~~
 
-If statement
-^^^^^^^^^^^^
+Main conditional statement in Python is ``if``, it can be combined with ``elif`` and ``else``. All
+of these are convertible to hardware. :numref:`pyha_if_code` shows an example of basic ``if else`` statement.
 
 .. code-block:: python
     :caption: Select add amount with if
     :name: pyha_if_code
 
-    ...
-    def main(self, x, condition):
-        if condition == 0:
-            y = x + 3
-        else:
-            y = x + 1
-        return y
-    ...
+    class If(HW):
+        def main(self, x, condition):
+            if condition == 0:
+                y = x + 3
+            else:
+                y = x + 1
+            return y
+
+
 
 .. _if_rtl:
 .. figure:: ../examples/control/img/if_rtl.png
@@ -228,35 +229,34 @@ If statement
 
     Synthesis result of :numref:`pyha_if_code` (Intel Quartus RTL viewer)
 
-Note that in hardware the if clause is implemented with 'multiplexer' it select the signal path based on condition.
-So if ``condition == 0`` then bottom signal path is routed to output. Interesting thing to note is that both of the
-adders are constantly 'executing', even when not selected.
+In hardware the ``if`` clause is implemented with 'multiplexer'.
+It works by, based on condition, routing one of the inputs to the output.
+For example if ``condition == 0`` then bottom signal path is routed to output.
+Interesting thing to note is that both of the adders are constantly 'executing', just one of the result is thrown away.
 
-Simulating this designs gives equal output for Model, Pyha, RTL and GATE simulations.
+All the simulations for this design give equal outputs. Once again, it is worth noting that software and hardware
+implementation give equal outputs.
 
-Even so that the hardware vs software approach to implement this structude is quite differet, they end with equal
-outputs.
 
-For statement
-^^^^^^^^^^^^^
+Loop statements
+~~~~~~~~~~~~~~~
 
-Loop statement usage, like ``for``, is somewhat limited in hardware. Since as we have seen all the hardware will be
-layed out, the for condition cannot be dynamci, it must be constant.
+All the loop statements will be unrolled in hardware, this requires that the loop control statement cannot
+be dynamic.
 
-:numref:`pyha_for_code` gives an simple ``for`` example, that adds [0, 1, 2, 3] to the input signal.
+:numref:`pyha_for_code` shows an simple ``for`` example, that adds [0, 1, 2, 3] to the input signal.
 
 .. code-block:: python
-    :caption: For adder
+    :caption: ``for`` example
     :name: pyha_for_code
 
-    ...
-    def main(self, x):
-        y = x
-        for i in range(4):
-            y = y + i
+    class For(HW):
+        def main(self, x):
+            y = x
+            for i in range(4):
+                y = y + i
 
-        return y
-    ...
+            return y
 
 .. _for_rtl:
 .. figure:: ../examples/control/img/for_rtl.png
@@ -265,75 +265,62 @@ layed out, the for condition cannot be dynamci, it must be constant.
 
     Synthesis result of :numref:`pyha_for_code` (Intel Quartus RTL viewer)
 
-
-All the loops in hardware get fully unrolled, that means :numref:`pyha_for_code` is equal to
-:numref:`pyha_for_code_unrolled`. Also because of this the ``for`` condition must be constant.
+The RTL may make more sense if we consider the unrolled version of the :numref:`pyha_for_code`, shown on
+:numref:`pyha_for_code_unrolled`.
 
 .. code-block:: python
     :caption: Unrolled ``for``, equivalent to :numref:`pyha_for_code`
     :name: pyha_for_code_unrolled
 
-    ...
-    def main(self, x):
-        y = x
-        y = y + 0
-        y = y + 1
-        y = y + 2
-        y = y + 3
-        return y
-    ...
+    y = x
+    y = y + 0
+    y = y + 1
+    y = y + 2
+    y = y + 3
 
-Simulating this designs gives equal output for Model, Pyha, RTL and GATE simulations.
+As expected, software and hardware simulations give equal results.
 
 
 Function calls
-^^^^^^^^^^^^^^
+~~~~~~~~~~~~~~
 
-So far this paper has only used the ``main`` function to define logic. Generally ``main`` function is just the
-top level function that is first called by ``simulation`` and conversion processes. Shows an example:
+So far only the ``main`` function has been used to define logic. in Pyha ``main`` function is just the
+top level function that is first called by simulation and conversion processes. Other functions can be
+freely be defined and called.
 
 .. code-block:: python
     :caption: For adder
     :name: pyha_functions_code
 
-    ...
-    def adder(self, x, b):
-        y = x + b
-        return y
+    class Functions(HW):
+        def adder(self, x, b):
+            y = x + b
+            return y
 
-    def main(self, x):
-        y = self.adder(x, 1)
-        return y
-    ...
+        def main(self, x):
+            y = self.adder(x, 1)
+            return y
 
-The synthesys result of :numref:`pyha_functions_code` is just an adder,
-there is no mark that a function call has been used, so basically one could assume that all functions are
-inlined during the synthesys process.
+The synthesis result of :numref:`pyha_functions_code` is just an adder,
+there is no indication that a function call has been used, one can assume that all functions are
+inlined during the synthesis process.
 
-.. warning:: There cannot be more than one function call per expression, this limitation may be lifted in the future.
+Note that calling the function multiple times would infer parallel hardware.
+
+..
+    .. warning:: There cannot be more than one function call per expression, this limitation may be lifted in the future.
 
 
 
 Conclusions
 ~~~~~~~~~~~
 
-Main takeaway from this chapter is that software approach works for defining stateless hardware. This chapter demonstrated
-that the output of software solution and hardware synthesys is equal for many examples. Even so, the way hardware
-solution arcieves the result is 'unexpected' for the software designer.
+This chapter has demonstrated that many of the software world constructs can be mapped to the hardware. In addition,
+the outputs of the software and hardware simulations are equal. Some limitations exsist,
+for example the ``for`` loop must be unrollable in order to use in hardware.
 
-Major point to remember is that software cost time while everything in hardware cost resources.
-
-In addition, this work showed how using Pyha enables fast testing of hardware designs by automatically running all
-relavant simulations and enabling debug in Python domain.
-
-Basic points:
-
-    - Clock asbtaction
-    - Everything costs in hardware
-    - Debuggable
-    - Sample based processing for model
-    - Sample rate abstraction
-
+Major point to remember is that every statement converted to hardware costs resources. This is different to the
+software world where statements instead cost execution time.
 
 
 Intoducing state
