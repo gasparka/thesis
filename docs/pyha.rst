@@ -38,15 +38,23 @@ the ``model_main`` functoon for defining the model and ``main`` as the toplevel 
     :name: pyha_adder
 
     class Adder(HW):
+        def __init__(self, coef)
+            self.coef = coef
 
         def main(self, x):
-            y = x + 1
+            y = x + self.coef
             return y
 
         def model_main(self, xl):
             # for each element in xl add 1
-            yl = [x + 1 for x in xl]
+            yl = [x + self.coef for x in xl]
             return yl
+
+The ``__init__`` part of the class can be used to run any Python code, all the class variables will be interpreted
+as hardware registers and the values assigned in ``__init__`` as reset values.
+
+In Pyha all class variables are interpreted as hardware registers. The ``__init__`` function may contain any Python code
+to evaluate reset values for registers.
 
 Note that the model implementation takes in a list of inputs wile the synthesisable code works with single sample
 input, as is in hardware. Model code can be that way easily vectorized.
@@ -574,16 +582,17 @@ Note that the class has ``self._delay=1`` to compensate for the register delay.
 Conclusion
 ~~~~~~~~~~
 
-Class variables can be used to add state to the design. In Pyha all class variables are interpreted as hardware registers.
-Key difference between software and hardware approach is that hardware registers have **delayed assignment**, because of
-that they must be assigned to ``self.next`` keyword.
+In Pyha all class variables are interpreted as hardware registers. The ``__init__`` function may contain any Python code
+to evaluate reset values for registers.
 
-The delay introduced by the registers can be specified by the ``self._delay`` attribute.
+Key difference between software and hardware approach is that hardware registers have **delayed assignment**,
+they must be assigned to ``self.next``.
 
-Delay added by the registers may drastically change the algotithm, thats why it is important to always have a model and
-unit tests, this is essential for hardware design.
+The delay introduced by the registers may drastically change the algorithm,
+thats why it is important to always have a model and unit tests, before starting hardware implementation.
+Model delay can be specified by ``self._delay`` attribute, this helps the simulation functions to compensate for the delay.
 
-In hardware, registers are also used to shorten the critical path, thus allowing higher clock rate. It is encouraged
+Registers are also used to shorten the critical path or logic elements, thus allowing higher clock rate. It is encouraged
 to register all the outputs of Pyha designs.
 
 
