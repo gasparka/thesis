@@ -55,10 +55,27 @@ Introduces Pyha and shows how hardware design differs from software design.
 
 Shows how regular software constructs maps into hardware!
 
+part of the value of this project is that it shows that even though stuff ends up as data flow stuff it is equal
+to plain software code...this is the major difference.
+
 Problem statement
 -----------------
 
+This work sets out to develop an alternative .
 
+
+It is safe to say that Vivado HLS and others support everything that Pyha does and that makes sense they are devbelopd
+by big companies and are years ahead.
+However Pyha has some huge advantages:
+
+    - Fully open source
+    - No pragma TCL sctipting bullshit
+    - Trival conversion to VHDL, no magic intended
+    - Power of full RTL desing, but also abstractable by parametrizable classes
+    - Python vs C
+    - Integration of model based designs to unit process
+    - Testing simplification, share unit-tests for model and hardware!
+    - Bridge to VHDL people, build castle and bridge
 
 Objective/goal
 --------------
