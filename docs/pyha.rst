@@ -225,27 +225,25 @@ of these are convertible to hardware. :numref:`pyha_if_code` shows an example of
             return y
 
 
+:numref:`if_rtl` shows that in hardware the ``if`` clause is implemented by the 'multiplexer' component.
+It works by, based on condition, routing one of the inputs to the output.
+For example if ``condition == 0`` then bottom signal path is routed to output.
+Interesting thing to note is that both of the adders are 'executing', just one of the result is thrown away.
 
 .. _if_rtl:
-.. figure:: ../examples/control/img/if_rtl.png
+.. figure:: ../examples/control/img/rtl_if.png
     :align: center
     :figclass: align-center
 
     Synthesis result of :numref:`pyha_if_code` (Intel Quartus RTL viewer)
 
-In hardware the ``if`` clause is implemented with 'multiplexer'.
-It works by, based on condition, routing one of the inputs to the output.
-For example if ``condition == 0`` then bottom signal path is routed to output.
-Interesting thing to note is that both of the adders are constantly 'executing', just one of the result is thrown away.
 
-All the simulations for this design give equal outputs. Once again, it is worth noting that software and hardware
-implementation give equal outputs.
-
+Once again, all the simulations result in equal outputs.
 
 Loop statements
 ~~~~~~~~~~~~~~~
 
-All the loop statements will be unrolled in hardware, this requires that the loop control statement cannot
+All the loop statements will be unrolled in hardware, this indicates that the loop control statement cannot
 be dynamic.
 
 :numref:`pyha_for_code` shows an simple ``for`` example, that adds [0, 1, 2, 3] to the input signal.
@@ -262,14 +260,16 @@ be dynamic.
 
             return y
 
+:numref:`for_rtl` shows that RTL consists of chained adders, that have been also somewhat optimized.
+
 .. _for_rtl:
-.. figure:: ../examples/control/img/for_rtl.png
+.. figure:: ../examples/control/img/rtl_for.png
     :align: center
     :figclass: align-center
 
     Synthesis result of :numref:`pyha_for_code` (Intel Quartus RTL viewer)
 
-The RTL may make more sense if we consider the unrolled version of the :numref:`pyha_for_code`, shown on
+The RTL may make more sense if we consider the unrolled version, shown on
 :numref:`pyha_for_code_unrolled`.
 
 .. code-block:: python
@@ -282,18 +282,18 @@ The RTL may make more sense if we consider the unrolled version of the :numref:`
     y = y + 2
     y = y + 3
 
-As expected, software and hardware simulations give equal results.
+Most importantly, all the simulations provide equal results.
 
 
 Function calls
 ~~~~~~~~~~~~~~
 
 So far only the ``main`` function has been used to define logic. in Pyha ``main`` function is just the
-top level function that is first called by simulation and conversion processes. Other functions can be
-freely be defined and called.
+top level function that is first called by simulation and conversion processes. Other functions can
+freely be defined and called as shown on :numref:`pyha_functions_code`.
 
 .. code-block:: python
-    :caption: For adder
+    :caption: Calling an function in Pyha
     :name: pyha_functions_code
 
     class Functions(HW):
@@ -320,7 +320,7 @@ Conclusions
 ~~~~~~~~~~~
 
 This chapter has demonstrated that many of the software world constructs can be mapped to the hardware and
-the outputs of the software and hardware simulations are equal. Some limitations exsist,
+the outputs of the software and hardware simulations are equal. Some limitations exist,
 for example the ``for`` loop must be unrollable in order to use in hardware.
 
 Major point to remember is that every statement converted to hardware costs resources. This is different to the
