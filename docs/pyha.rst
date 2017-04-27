@@ -712,16 +712,20 @@ filter to understand and use.  In spite of its simplicity, the moving average fi
 optimal for a common task: reducing random noise while retaining a sharp step response.  This makes it the
 premier filter for time domain encoded signals :cite:`dspbook`.
 
+:numref:`moving_average_noise` shows that MA is an good algorithm for noise reduction.
+Increasing the window length reduces more noise but also increases the complexity and delay of
+the system (MA is a special case of FIR filter, same delay semantics apply).
+
 .. _moving_average_noise:
 .. figure:: ../examples/moving_average/img/moving_average_noise.png
     :align: center
     :figclass: align-center
 
-    Example of MA as noise reduction
+    MA algorithm in removing noise
 
-Moving average is an good algorithm for noise reduction (:numref:`moving_average_noise`.
-Increasing the window length reduces more noise but also increases the complexity and delay of
-the system (MA is a special case of FIR filter, same delay semantics apply).
+Good noise reduction performance can be explained by the frequency response of MA (:numref:`mavg_freqz`),
+showing that it is a low-pass filter. Passband width and stopband attenuation are controlled by the
+window length.
 
 .. _mavg_freqz:
 .. figure:: ../examples/moving_average/img/moving_average_freqz.png
@@ -730,20 +734,16 @@ the system (MA is a special case of FIR filter, same delay semantics apply).
 
     Frequency response of MA filter
 
-Good noise reduction performance can be explained by the frequency response of MA (:numref:`mavg_freqz`),
-showing that it is a low-pass filter. Passband width and stopband attenuation are controlled by the
-window length.
 
-Implementation
-^^^^^^^^^^^^^^
+Implementation in Pyha
+^^^^^^^^^^^^^^^^^^^^^^
 
-MA is implemented by using an sliding sum and dividing this with the window length.
+MA is implemented by using an sliding sum, that is divided by the sliding window length.
+Sliding sum part has already been implemented in previous chapter.
+The division can be implemented by shift right if divisor is power of two.
 
-We have already implemented the sliding sum part of the algorithm,.
-The division can be implemented by shift right if divisor is power of two, that is what we will use this time.
-
-In addition, division can be performed on each sample instead of on the sum, that is ``(a + b) / c == a/c + b/c``.
-Doing this guarantees that the ``sum`` variable is always in [-1;1] range, thus saturation logic can be removed.
+In addition, division can be performed on each sample instead of on the sum, that is ``(a + b) / c = a/c + b/c``.
+Doing this guarantees that the ``sum`` variable is always in [-1;1] range, thus the saturation logic can be removed.
 
 .. code-block:: python
     :caption: MA implementation in Pyha
@@ -766,11 +766,17 @@ Doing this guarantees that the ``sum`` variable is always in [-1;1] range, thus 
             return self.sum
         ...
 
-Code on :numref:`mavg-pyha` makes only a few significant changes to the sliding sum:
+Code on :numref:`mavg-pyha` makes only few changes to the sliding sum:
 
     * On line 3, ``self.window_pow`` stores the bit shift count (to support generic ``window_len``)
-    * On line 6, type of ``sum`` is changed so that saturation is turned off and default type
+    * On line 6, type of ``sum`` is changed so that saturation is turned off
     * On line 10, shift operator performs the division
+
+
+
+:numref:`mavg_rtl` shows the synthesized result of this work, as expected it looks very similar to the
+sliding sum RTL. In general, shift operators are hard to notice on the RTL graphs because they are implemented
+by routing semantics.
 
 .. _mavg_rtl:
 .. figure:: ../examples/moving_average/img/mavg_rtl.png
@@ -780,16 +786,13 @@ Code on :numref:`mavg-pyha` makes only a few significant changes to the sliding 
     RTL view of moving average (Intel Quartus RTL viewer)
 
 
-:numref:`mavg_rtl` shows the synthesized result of this work, as expexted it **looks** very similiar to the
-sliding sum RTL.
-
 
 Simulation/Testing
 ^^^^^^^^^^^^^^^^^^
 
 MA is an optimal solution for performing matched filtering of rectangular pulses :cite:`dspbook`.
 This is important for communication systems, :numref:`mavg_matched` shows an example of
-(a) digital signal is corrupted with noise. MA with window length equal to samples per symbol can recover the
+(a) digital signal is corrupted with noise. MA with window length equal to samples per symbol recovering the
 signal from the noise (b).
 
 .. _mavg_matched:
@@ -799,21 +802,21 @@ signal from the noise (b).
 
     Moving average as matched filter
 
-The 'model' deviates from rest of the simulations because the input signal viloates the [-1;1] bounds and hardware
+The 'model' deviates from rest of the simulations because the input signal violates the [-1;1] bounds and hardware
 simulations are forced to saturate the values.
 
 
 Conclusion
 ~~~~~~~~~~
 
-Floating point DSP systems can be easily implemented by using the fixed-point type.
-The combination of 'lazy' bounds and default Sfix type provide easy conversion from floating point to fixed point.
+In Pyha, DSP systems can be implemented by using the fixed-point type.
+The combination of 'lazy' bounds and default Sfix type provide simplified conversion from floating point to fixed point.
 In that sense it could be called 'semi-automatic conversion'.
 
-Test data can be provided as floating point and return is float aswell, test code is not bloated with fixed point
-semantics.
+Simulation functions can automatically perform the floating to fixed point conversion, this enables writing
+unit-tests using floating point numbers.
 
-Constantly verifying against the model floating-point model greatly helps the design process.
+Comparing the FP implementation to the floating-point model can greatly simplify the final design process.
 
 
 Abstraction and Design reuse
