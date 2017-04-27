@@ -31,11 +31,14 @@ Helps testing
 the ``model_main`` functoon for defining the model and ``main`` as the toplevel for synthesis. Note that the
 ``model_main`` is completely ignored for synthesis.
 
+.. todo:: init can have any code?
+
 .. code-block:: python
     :caption: Simple adder, implemented in Pyha
     :name: pyha_adder
 
     class Adder(HW):
+
         def main(self, x):
             y = x + 1
             return y
@@ -436,41 +439,41 @@ All the simulations match in output (:numref:`acc_sim`), after setting the :code
 Block processing and sliding adder
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-This far we have been stuck with '1 sample' per function call. Now with the use of registers we could keep history
-of samples, thus be block processing.
-One very common task in real-life designs is to calculate results based not only the input samples but also some
-history of samples. That is some form of block processing.
+One very common task in DSP designs is to calculate results based on some number of input samples (block processing).
+Currently the ``main`` function has worked with the single input sample,
+this can now be changed by keeping the history with registers.
 
-As an example imagine that we want to output the sum of last 4 inputs. To implement this, we could just keep
-track of the last 4 elements and sum them up, implementation of this is show on :numref:`block_adder`. Note that
-it also uses the output register ``y``.
+Consider an algorithm that adds the last 4 inputs. :numref:`block_adder` shows an implementation that keeps
+track of the last 4 inputs and sums them. Note that
+the design also uses the output register ``y``.
 
 .. code-block:: python
-    :caption: Accumulator
+    :caption: Sliding adder algorithm
     :name: block_adder
 
-    class LastAcc(HW):
+    class SlidingAdder(HW):
         def __init__(self):
-            self.mem = [0, 0, 0, 0] # list of registers
+            self.shr = [0, 0, 0, 0] # list of registers
             self.y = 0
 
         def main(self, x):
             # add new 'x' to list, throw away last element
-            self.next.mem = [x] + self.mem[:-1]
+            self.next.shr = [x] + self.shr[:-1]
 
             # add all element in the list
             sum = 0
-            for a in self.mem:
+            for a in self.shr:
                 sum = sum + a
 
             self.next.y = sum
             return self.y
-        ...
 
-The ``self.next.mem = [x] + self.mem[:-1]`` line is also known as an 'shift register', because on every call it
-shifts the list contents right and adds new ``x`` as first element. Also sometimes it is called delay-chain, as the
-sample ``x`` takes 4 calls to travel from ``mem[0]`` to ``mem[3]``.
+The ``self.next.shr = [x] + self.shr[:-1]`` line is also known as an 'shift register', because on every call
+shifts the list contents right and adds new ``x`` as the first element. Sometimes the same structure is used as an
+delay-chain, because the sample ``x`` takes 4 updates to travel from ``shr[0]`` to ``shr[3]``.
+This is a very common element in hardware DSP designs.
 
+:numref:`block_adder_rtl` shows the RTL for this design, as expected the ``for``
 
 .. _block_adder_rtl:
 .. figure:: ../examples/block_adder/img/rtl.png
@@ -483,29 +486,36 @@ sample ``x`` takes 4 calls to travel from ``mem[0]`` to ``mem[3]``.
 Optimizing the design
 ^^^^^^^^^^^^^^^^^^^^^
 
-The block adder built in last section is quite decent, in sense that it is following the digital design approach by
-having all stuff between registers.
+This desing can be made generic by chaning the ``__init__`` function to take the window length as a parameter
+(:numref:`block_adder_generic`).
 
-The synthesis result gives that the maximum clock rate for this design is ~170 Mhz.
-Imagine that we want to make this design generic, that is make the summing window size easily changeable. Then we will
-see problems, for example going from 4 to 6 changes the max clock speed to ~120 Mhz. Chaning it to 16 gives
-already only ~60 Mhz max clock. Also for larger windows, it start using much more logic resources, as each
-window requires an adder.
+.. code-block:: python
+    :caption: Generic sliding adder
+    :name: block_adder_generic
 
-.. todo:: appendix for FPGA chip used
+    class SlidingAdder(HW):
+        def __init__(self, window_len):
+            self.shr = [0] * window_len
+        ...
+
+
+Problem with this design is that it starts using more resources as the ``window_len`` gets larger as every
+stage requires an separate adder. Another problem is that the critical path gets longer decreasing the
+clock rate. For example, the design with ``window_len=4`` synthesises to maximum clock of
+170 MHz, while ``window_len=6`` to only 120 MHz.
 
 .. _rtl_6_critical:
 .. figure:: ../examples/block_adder/img/rtl_6_critical.png
     :align: center
     :figclass: align-center
 
-    Window size 6, RTL (Intel Quartus RTL viewer)
+    RTL of ``window_len=6``, red line is critical path (Intel Quartus RTL viewer)
 
 
-In that sense, it is not a good design since reusing it hard.
-
-
-Conveniently, this design can be optimized to always use only 2 adders, no matter the window length.
+In that sense it can be considered a bad design, as it is hard to reuse.
+Conveniently, the algorithm can be optimized to use only 2 adders, no matter the window length.
+:numref:`slider_optim` shows that instead of summing all the elements, the overlapping part of
+previous calculation can be used to significantly optimize the algorithm.
 
 .. code-block:: python
     :caption: Accumulator
@@ -519,9 +529,8 @@ Conveniently, this design can be optimized to always use only 2 adders, no matte
     y[5] = y[4] + x[10] - x[4]
     y[6] = y[5] + x[11] - x[5]
 
-As shown on :numref:`slider_optim`, instead of summing all the elements, we can reuse the overlapping part of
-the calculation to significantly optimize the algorithm.
-
+:numref:`optimal_adder` gives the implementation of optimal sliding adder, it features new register ``sum`` that keeps
+track of the previous output. Note that the ``shr`` stayed the same, but is now rather used as a delay-chain.
 
 .. code-block:: python
     :caption: Optimal sliding adder
@@ -529,32 +538,30 @@ the calculation to significantly optimize the algorithm.
 
     class OptimalSlideAdd(HW):
         def __init__(self, window_len):
-            self.mem = [0] * window_len
+            self.shr = [0] * window_len
             self.sum = 0
 
             self._delay = 1
 
         def main(self, x):
-            self.next.mem = [x] + self.mem[:-1]
+            self.next.shr = [x] + self.shr[:-1]
 
-            self.next.sum = self.sum + x - self.mem[-1]
+            self.next.sum = self.sum + x - self.shr[-1]
             return self.sum
         ...
 
 
-:numref:`optimal_adder` gives the implementation of optimal sliding adder. Note that the ``mem`` stayed the same, but
-now it is rather used as a delay-chain. :numref:`rtl_optimal_int_critical` shows the synthesis result, as expected,
-critical path is 2 adders.
+:numref:`rtl_optimal_int_critical` shows the synthesis result, as expected, critical path is 2 adders.
 
 .. _rtl_optimal_int_critical:
 .. figure:: ../examples/block_adder/img/rtl_optimal_int_critical.png
     :align: center
     :figclass: align-center
 
-    Window size 6, RTL (Intel Quartus RTL viewer)
+    Synthesis result of :numref:`block_adder`, ``window_len=4`` (Intel Quartus RTL viewer)
 
-
-Simulation shows that implemented design behaves same way in software and hardware (:numref:`block_adder_sim`).
+Simulations results(:numref:`block_adder_sim`) show that the hardware desing behaves exactly as the software model.
+Note that the class has ``self._delay=1`` to compensate for the register delay.
 
 .. _block_adder_sim:
 .. figure:: ../examples/block_adder/img/sim.png
@@ -562,7 +569,6 @@ Simulation shows that implemented design behaves same way in software and hardwa
     :figclass: align-center
 
     Simulation results for ``OptimalSlideAdd(window_len=4)``
-
 
 
 Conclusion
@@ -578,13 +584,7 @@ Delay added by the registers may drastically change the algotithm, thats why it 
 unit tests, this is essential for hardware design.
 
 In hardware, registers are also used to shorten the critical path, thus allowing higher clock rate. It is encouraged
-to register all the outputs of the design.
-
-In digital design signals are assumed to exist between registers. Total delay between the registers determines the
-maximum sample rate.
-
-While registers can be used as class storage in software designs, they are also used as checkpoints on the
-signal paths, thus allowing high clock rates.
+to register all the outputs of Pyha designs.
 
 
 Fixed-point designs
