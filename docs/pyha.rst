@@ -941,29 +941,24 @@ the output of the filter starts countering the DC component until it is removed.
 Conclusion
 ----------
 
-This chapter has demonstrated that traditional software language features can be used to infer hardware components.
-And the output of them are equal.
-One must still keep in mind of how the code converts to hardware. For example that the loops will be unrolled.
-
+This chapter has demonstrated that in Pyha traditional software language features can be used
+to infer hardware components and the output of them are equal.
+One must still keep in mind of how the code converts to hardware, for example that the loops will be unrolled.
 Big difference between hardware and software is that in hardware, every arithmetical operator takes up resources.
 
-Class variables can be used to add state to the design. In Pyha, class variables must be assigned to
-``self.next`` as this mimics the hardware register behaviour. General rule is to always register the outputs of
+Class variables can be used to add memory to the design. In Pyha, class variables must be assigned to
+``self.next`` as this mimics the **delayed** nature of registers. General rule is to always register the outputs of
 Pyha designs.
 
 DSP systems can be implemented by using the fixed-point type. Pyha has ‘semi-automatic conversion’ from
 floating point to fixed point numbers. Verifying against floating point model helps the iteration speed.
 
-Thanks to the object-oriented nature of Pyha, reusing of componentis is easy. There is no significant difference between
-software and hardware approaches.
-Pyha is object-oriented, meaning that the complexity can be easily hidden in the object definition, while reusing the
-components is easy.
+Reusing Pyha designs is easy thanks to the object-oriented style that also works well for design abstraction.
 
-Pyha provides ``simulate`` function that can automatically run Model, Pyha, RTL and GATE level simultions. In
+Pyha provides ``simulate`` function that can automatically run Model, Pyha, RTL and GATE level simulations. In
 addition, ``assert_simulate`` can be used for fast design of unit-tests. These functions can automatically handle
-fixed point conversion, so that testcode does not have to include fixed point semantics.
-
-Pyha designs can be debugged in Python domain.
+fixed point conversion, so that tests do not have to include fixed point semantics. Pyha designs are debuggable
+in Python domain.
 
 
 
