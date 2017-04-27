@@ -3,35 +3,38 @@ Hardware design with Pyha
 
 This chapter introduces the main contribution of this thesis, Pyha - tool to design digital hardware in Python.
 
-Pyha proposes to program hardware in same way as software is programmed, for that reason much of the efforts
-of this chapter is to show to what hardware Pyha constructs maps.
+Pyha proposes to program hardware in same way as software is programmed, much of this chapter is focused on showing
+differences between hardware and software constructs.
 
-First half of this chapter gives introduction to the generic hardware components. Note that the conversion to VHDL
-is considered in the next chapter. Examples in the first half operate on the integer data type, to keep stuff
-simple.
+First half of this chapter is focuses on the basic hardware construct and how they can be described using Pyha.
+Examples in this section operate on the integer data type, to reduce the initial complexity.
 
-Second half of this chapter shows how Pyha can be used to implement fixed-point DSP systems, examples are
-developed for moving-average filter and linar-phase-dc-removal.
+Second half of this chapter introduces the fixed-point type and demonstrates how it can be used to develop
+moving average and linear phase DC removal filters.
 
 All the examples presented in this chapter can be found online HERE, these include all the Python sources, unit-tests,
 VHDL conversion files and Quartus project for synthesis.
+
+.. todo:: organise examples to web and put link
 
 
 Introduction
 ------------
 
-Pyha follows the object-oriented design paradigm. Basic design unit is an Python class,
+
+Pyha follows the object-oriented design paradigm, basic design unit is an Python class,
 that is derived from HW subclass (to inherit hardware related functionality).
 
-Pyha encourages the model based design flow, where model is the non-synthesisable code for simples possible
-implementation. Most often the model is implemented with a call to Numpy or Scipy library, for DSP systems.
-Helps testing
+Model based design is encouraged, where model is non-synthesisable code for simplest possible
+implementation. Most often the model is implemented with a call to Numpy or Scipy (Python scientific computing libraries).
+Model helps the testing process and can also serve as an documentation.
 
-:numref:`pyha_adder` shows the implementation of simple circtuit that adds 1 to each input. Pyha reserves
-the ``model_main`` functoon for defining the model and ``main`` as the toplevel for synthesis. Note that the
+:numref:`pyha_adder` shows the implementation of simple adder circuit.
+In Pyha all class variables are interpreted as hardware registers. The ``__init__`` function may contain any Python code
+to evaluate reset values for registers.
+The ``model_main`` function is reserved for defining the model and ``main`` as the top level for synthesis. Note that the
 ``model_main`` is completely ignored for synthesis.
 
-.. todo:: init can have any code?
 
 .. code-block:: python
     :caption: Simple adder, implemented in Pyha
@@ -50,17 +53,11 @@ the ``model_main`` functoon for defining the model and ``main`` as the toplevel 
             yl = [x + self.coef for x in xl]
             return yl
 
-The ``__init__`` part of the class can be used to run any Python code, all the class variables will be interpreted
-as hardware registers and the values assigned in ``__init__`` as reset values.
+Notice how the ``model_main`` function works on lists, it gets all the inputs at once, this enabled vectorized
+implementations. The ``main`` however works on single input, as is the hardware way.
 
-In Pyha all class variables are interpreted as hardware registers. The ``__init__`` function may contain any Python code
-to evaluate reset values for registers.
-
-Note that the model implementation takes in a list of inputs wile the synthesisable code works with single sample
-input, as is in hardware. Model code can be that way easily vectorized.
-
-.. note:: All the examples in this chapter include the model implementation but most of them are not included in future
-    code listings, that is to focus more on the hardware side of things.
+.. note:: All the examples in this chapter include the model implementation. In order to keep code examples smaller,
+    future listings omit the model code.
 
 
 Simulation and testing
@@ -79,15 +76,15 @@ shows an example unit test for the 'adder' module.
     x =      [1, 2, 2, 3, 3, 1, 1]
     expect = [2, 3, 3, 4, 4, 2, 2]
 
-    dut = Adder()
+    dut = Adder(coef=1)
     assert_simulation(dut, expect, x)
 
 The ``assert_simulation(dut, expect, x)`` runs all the simulations (Model, Pyha, RTL and GATE)
 and asserts the results equal the ``expexct``.
 
 
-In addition there is a function ``simulations(dut, x)`` that returns all the outputs of different simulations, this
-can be used to plot the results, as shown on :numref:`adder_sim`, all the simulations are equal.
+In addition, ``simulations(dut, x)`` returns all the outputs of different simulations, this
+can be used to plot the results, as shown on :numref:`adder_sim`.
 
 .. _adder_sim:
 .. figure:: ../examples/adder/img/add_sim.png
@@ -99,16 +96,17 @@ can be used to plot the results, as shown on :numref:`adder_sim`, all the simula
 
 More information about the simulation functions can be found in the APPENDIX.
 
+.. todo:: Add simulation function definitins to appendix.
+
 
 Synthesis
 ~~~~~~~~~
 
-Running the GATE simulations require synthesis of the design. For this Pyha integrates to the Intel Quartus
-software.
+Synthesis is required to run the GATE level simulations, Pyha integrates to the Intel Quartus
+software in order to archive this.
 
 The synthesis target device is EP4CE40F23C8N, of Cyclone IV family. This is the same FPGA that powers the latest
 LimeSDR chip and the BladeRF board.
-
 In general it is a low cost FPGA with following features :cite:`cycloneiv`:
 
     - 39,600 logic elements
@@ -117,8 +115,11 @@ In general it is a low cost FPGA with following features :cite:`cycloneiv`:
     - 4 PLLs
     - 200 MHz maximum clock speed
 
-One useful tool in Quartus software is RTL viewer, it can be opened from ``Tools->Netlist viewers->RTL viewer``.
-RTL viewer is useful to inspect the hardware synthesised for the Pyha design, this chapter uses it extensively.
+One useful tool in Quartus software is RTL viewer, it can be opened via ``Tools->Netlist viewers->RTL viewer``.
+RTL viewer visualizes the synthesised hardware for the Pyha design, this chapter uses it extensively.
+
+:numref:`adder_rtl` shows the RTL of the adder circuit. Notice that the integer types were synthesised to
+32 bit logic ([31..0] is the signal width).
 
 .. _adder_rtl:
 .. figure:: ../examples/adder/img/add_rtl.png
@@ -127,37 +128,28 @@ RTL viewer is useful to inspect the hardware synthesised for the Pyha design, th
 
     RTL of the adder circuit
 
-:numref:`adder_rtl` shows the RTL of the adder circuit. Notice that the integer types were synthesised to
-32 bit logic ([31..0] is the signal width).
-
 Design flow
 ~~~~~~~~~~~
 
-General desing flow for Pyha designs is first to define the model code by preferably using some higher level library
-like Numpy (numerical computing) or Scipy (scientific package). Then write unit tests that assert the required
-performance requirements. For unit tests use the Pyha ``simulate`` functions so that the same tests can be later
-run on hardware models.
+Suggested design flow for Pyha designs is model based development with test-driven approach.
+Meaning that the unit tests should be developed to assert the performance of the model.
+For unit tests use the Pyha ``simulate`` functions, so that the same tests can be later executed for hardware models.
 
-Next step is to implement the synthesizable code, this step is greatly simplified if enough unit tests were already
-collected while developing the model.
+Last step is to implement the synthesizable code (``main``), development is greatly simplified
+if enough unit tests were collected while developing the model.
 
-.. todo:: fixed point?
-
-That is model based development with test-driven approach.
-
-.. note:: While this is the best way to design, rest of this document does not follow it in order to keep stuff
-    simple. Following text rather gets fast into the hardware part and tends to ignore the model and unit-testing
-    part.
+.. todo:: Needs more info, make figure, fixed point?
 
 
-
+.. note:: Following examples in this chapter tend to ignore the model and unit-testing part and rush to the
+    hardware implementation, since this is the focus of this chapter.
 
 
 Stateless designs
 -----------------
 
-Designs that don't contain any memory elements can be considered stateless. In hardware world this is also known as
-combinotary logic. In software world, this can be understood as an function that only uses local variables,
+Designs that don't contain any memory elements can be considered stateless. This is also called combinatory logic in
+hardware terms. In software world, this can be understood as an function that only uses local variables,
 using class variables would introduce state.
 
 
@@ -168,7 +160,7 @@ Basic operations
 ``b`` output is dependent of ``a``.
 
 .. code-block:: python
-    :caption: Basic stateless operations
+    :caption: Basic stateless design
     :name: pyha_adder_comp
 
     class Basic(HW):
@@ -177,7 +169,7 @@ Basic operations
             b = a * 314
             return a, b
 
-The :numref:`adder_multi_rtl` shows the RTL result. Note that each adder is an actual resource used in the FPGA
+:numref:`adder_multi_rtl` shows that each add instruction is synthesised to an actual resource in the FPGA
 fabric. The ``a`` output is formed by running the ``x`` signal trough two adders (one adding 1 and next 3). The
 ``b`` has extra multiplier on signal path.
 
@@ -190,16 +182,17 @@ fabric. The ``a`` output is formed by running the ``x`` signal trough two adders
 
 
 This example shows that in hardware operations have a price in terms of resource usage.
-This is a big difference to software, where operations cost execution time.
+This is a big difference to software, where operations cost execution time instead.
 
-Sharing the hardware resources is possible by using state-machines, but this quickly rises the design complexity.
+..
+    Sharing the hardware resources is possible by using state-machines, but this quickly rises the design complexity.
 
-All the simulations for this designs result in same output.
 Key idea to understand is that while the software and hardware execute the ``main`` function in
 different ways, they result in same output, so in that sense they are equal.
+This idea is confirmed by Pyha simulation, reporting equal outputs for all simulations.
 
 
-Huge upside of Pyha is that designs can be debugged, the 'Pyha' simulations just runs the ``main`` function
+Huge upside of Pyha is that designs can be debugged. Pyha simulations just runs the ``main`` function
 so all kinds of Python tools can be used.
 :numref:`add_multi_debug` shows a debugging session on the :numref:`pyha_adder_comp` code. Using Python tools
 for debugging can greatly increase the designers productivity.
