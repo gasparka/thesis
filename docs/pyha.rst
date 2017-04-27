@@ -822,13 +822,12 @@ Comparing the FP implementation to the floating-point model can greatly simplify
 Abstraction and Design reuse
 ----------------------------
 
-Pyha is based on object-oriented design practices. One benefit of this is that the implementation details can be
-nicely abstracted by the class implementation. Another benefit is that it simplifies the design reuse, objects can
-be created easily.
+Pyha is based on the object-oriented design practices, this greatly simplifies the design reuse as the classes
+can be used to initiate objects.
+Another benefit is that classes can abstract away the implementation details, in that sense Pyha can become
+High-Level Synthesis (HLS) language.
 
-.. note:: Limitation is that all the objects must be defined in the class ```__init__```.
-
-This chapter shows an example on how to reuse the moving average filter, developed earlier.
+This chapter gives an example on how to reuse the moving average filter.
 
 Linear-phase DC removal Filter
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -837,12 +836,12 @@ Direct conversion (homodyne or zero-IF) receivers have become very popular recen
 software defined radio. There are many benefits to direct conversion receivers,
 but there are also some serious drawbacks, the largest being DC offset and IQ imbalances :cite:`bladerfdoc`.
 
-In frequency domain, DC offset will look like a peak near the 0 Hz. In time domain, it manifests as a constant
-component on the harmonic signal.
+DC offset looks like a peak near the 0Hz on the frequenscy response.
+In time domain, it manifests as a constant component on the harmonic signal.
 
 In :cite:`dcremoval_lyons`, Rick Lyons investigates the use of moving average algorithm as a DC removal
-circuit. This works by subtracting the MA output from the input signal. Problem with this approach is that it has
-passband ripple of 3 dB. However, by conninting multiple stages of MA's in series, the ripple can be avoided
+circuit. This works by subtracting the MA output from the input signal. Problem of this approach is the
+3 dB passband ripple. However, by connecting multiple stages of MA's in series, the ripple can be avoided
 (:numref:`dc_freqz`) :cite:`dcremoval_lyons`.
 
 .. _dc_freqz:
@@ -856,15 +855,14 @@ passband ripple of 3 dB. However, by conninting multiple stages of MA's in serie
 Implementation
 ^^^^^^^^^^^^^^
 
-The algorithm is composed of two parts. First four MA's are connected in series, outputting the DC component of the
-signal. Second the MAs output is subtracted from the input signal, thus giving the signal without
-DC component.
+The algorithm is composed of two parts. First, four MA's are connected in series, outputting the DC component of the
+signal. Second the MA's output is subtracted from the input signal, thus giving the signal without
+DC component. :numref:`dc_removal` shows the Pyha implementation.
 
-This implementation is not exactly following the one in :cite:`dcremoval_lyons`. They suggest to delay-match the
-step 1 and 2 of the algorithm, but since we can assume the DC component to be more or less stable, it does not matter.
+
 
 .. code-block:: python
-    :caption: Generic DC-Removal implementation
+    :caption: DC-Removal implementation
     :name: dc_removal
 
     class DCRemoval(HW):
@@ -887,8 +885,11 @@ step 1 and 2 of the algorithm, but since we can assume the DC component to be mo
         ...
 
 
-:numref:`dc_removal` shows the Python implementation. Class is parametrized so that the
-window length can be changed.
+This implementation is not exactly following the  :cite:`dcremoval_lyons`. They suggest to delay-match the
+step 1 and 2 of the algorithm, but since we can assume the DC component to be more or less stable, it does not matter.
+
+:numref:`dc_rtl_annotated` shows that the synthesis generated 4 MA filters that are connected in series,
+output of this is subtracted from the input.
 
 .. _dc_rtl_annotated:
 .. figure:: ../examples/dc_removal/img/dc_rtl_annotated.png
@@ -897,12 +898,9 @@ window length can be changed.
 
     Synthesis result of ``DCRemoval(window_len=4)`` (Intel Quartus RTL viewer)
 
-As expected, the synthesis generates RTL for 4 MA filters that are connected in series, output of this is subtracted
-from the input :numref:`dc_rtl_annotated`.
 
-
-Note that in real design, one would want to use this component with larger ``window_len``. Here 4 was chosen to keep
-the RTL simple. For example, using ``window_len=64`` gives much lower cutoff frequency (:numref:`dc_comp`),
+In real application, one would want to use this component with larger ``window_len``. Here 4 was chosen to keep
+the RTL simple. For example, using ``window_len=64`` gives much better cutoff frequency (:numref:`dc_comp`),
 FIR filter with the same performance would require hundreds of taps :cite:`dcremoval_lyons`. Another benefit is that
 this filter delays the signal by only 1 sample.
 
@@ -928,10 +926,8 @@ This implementation is also very light on the FPGA resource usage (:numref:`reso
 Testing
 ^^^^^^^
 
-:numref:`dc_sim` shows the simulation result of removing constant DC component from harmonic signal.
-The input is sinusoidal siganal with added DC component(+0.25), the output of the filter starts countering the
-DC component until it is removed.
-
+:numref:`dc_sim` shows the situation where the input signal is corrupted with DC component (+0.25),
+the output of the filter starts countering the DC component until it is removed.
 
 .. _dc_sim:
 .. figure:: ../examples/dc_removal/img/dc_sim.png
