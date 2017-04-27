@@ -17,7 +17,7 @@ Thesis!
         design_examples
         conclusion
 
-.. toctree::
+.. .. toctree::
     :caption: Contents:
 
     intro
@@ -25,5 +25,12 @@ Thesis!
     vhdl_extensions
     python_bindings
     conclusion
+
+.. toctree::
+    :caption: Contents:
+
+    pyha
+    vhdl_extensions
+
 
 

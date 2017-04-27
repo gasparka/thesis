@@ -77,7 +77,7 @@ def test_adder():
                                simulations=[SIM_MODEL, SIM_HW_MODEL, SIM_RTL],
                                dir_path='/home/gaspar/git/thesis/playground')
 
-    plt.figure(figsize=(8, 2))
+    plt.figure(figsize=(8, 1.5))
     plt.plot(x, label='x')
     plt.plot(r[0], label='y: Model')
     plt.plot(r[1], label='y: Pyha')

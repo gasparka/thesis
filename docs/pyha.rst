@@ -330,26 +330,24 @@ software world where statements instead cost execution time.
 Designs with memory
 -------------------
 
-So far all the designs presented have been stateless or in other words without memory. Often there is a need
-to store some value so that it would be usable by the next function call, this indicates that the design
-must contain memory elements.
+So far, all the designs presented have been stateless (without memory). Often algorithms need to store
+some value for later use, this indicates that the design must contain memory elements.
 
 This chapter gives overview of memory based designs in Pyha.
-
-In software programming, class variables are the main method of saving the some information from function call to another.
-
 
 Accumulator and registers
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
-For example, lets consider the design of accumulator, it operates by sequentially adding up all the input values.
+Consider the design of accumulator, it operates by sequentially adding up all the input values.
+:numref:`acc` shows the Pyha implementation, class scope variable is defined in the ``__init__`` function
+to store the accumulator value.
 
 .. code-block:: python
-    :caption: Accumulator
+    :caption: Accumulator implemented in Pyha
     :name: acc
     :linenos:
 
-    class Acc:
+    class Acc(HW):
         def __init__(self):
             self.acc = 0
 
@@ -357,7 +355,7 @@ For example, lets consider the design of accumulator, it operates by sequentiall
             self.acc = self.acc + x
             return self.acc
 
-Now, trying to run this would result in Pyha error, suggesting to change the line 6 to to ``self.next.acc = ...``.
+Trying to run this, would result in Pyha error, suggesting to change the line 6 to to ``self.next.acc = ...``.
 After this code is runnable, reasons for this modification are explained shortly.
 
 Synthesis result shown on the :numref:`acc_rtl` features an new element known as register.
@@ -372,6 +370,10 @@ Synthesis result shown on the :numref:`acc_rtl` features an new element known as
 
 Register
 ^^^^^^^^
+
+.. todo:: this section is not finished
+
+In software programming, class variables are the main method of saving the some information from function call to another.
 
 Register is an hardware memory component, it samples the input signal ``D`` on the edge of the  ``CLK`` signal. In
 that sense it acts like a buffer.

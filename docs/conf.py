@@ -59,7 +59,7 @@ author = 'Gaspar Karm'
 # built documents.
 #
 # The short X.Y version.
-version = '0.0.2'
+version = '0.0.3'
 # The full version, including alpha/beta/rc tags.
 release = version
 
@@ -177,7 +177,8 @@ latex_elements = {
     # disable index printing
     'printindex': '',
 
-    'figure_align': '!htbp',
+    # 'figure_align': '!htbp',
+    'figure_align': 'H',
 }
 
 
