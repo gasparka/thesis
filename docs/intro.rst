@@ -71,7 +71,7 @@ However Pyha has some huge advantages:
     - Fully open source
     - No pragma TCL sctipting bullshit
     - Trival conversion to VHDL, no magic intended
-    - Power of full RTL desing, but also abstractable by parametrizable classes
+    - Power of full RTL desing, but also abstractable by parametrizable classes (RLT and HLS in one thing)
     - Python vs C
     - Integration of model based designs to unit process
     - Testing simplification, share unit-tests for model and hardware!
