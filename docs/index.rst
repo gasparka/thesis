@@ -30,6 +30,7 @@ Thesis!
     :caption: Contents:
     :numbered:
 
+    intro
     pyha
     vhdl_extensions
 

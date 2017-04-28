@@ -15,6 +15,8 @@ VHDL conversion files and Quartus project for synthesis.
 
 .. todo:: organise examples to web and put link
 
+.. todo:: write not on how to read examples and simulation results in this chapter!
+
 
 Introduction
 ------------
@@ -133,6 +135,8 @@ this chapter uses it extensively to illustrate synthesis results.
 
 Stateless designs
 -----------------
+
+.. todo:: improve this, show how functions with only inputs are stateless!
 
 Designs that do not contain any memory elements can be considered stateless (a.k.a. combinatory logic in hardware terms).
 In the software world, this can be understood as a function that only uses local variables.
@@ -324,10 +328,14 @@ Major point to remember is that every statement converted to hardware costs reso
 Designs with memory
 -------------------
 
+.. todo:: more general info about the state!
+
 So far, all the designs presented have been stateless (without memory). Often algorithms need to store
 some value for later use, this indicates that the design must contain memory elements.
 
 This chapter gives an overview of memory based designs in Pyha.
+
+How is this done in Pyha?
 
 Accumulator and registers
 ~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -826,6 +834,10 @@ Comparing the FP implementation to the floating-point model can greatly simplify
 
 Abstraction and Design reuse
 ----------------------------
+
+Pyha has been designed in the way that it can represent RTL designs exactly as the user defines, however thanks
+to the object-oriented nature all these low level details can be abstracted away and then Pyha turns into HLS
+language. To increase productivity, abstraction is needed.
 
 Pyha is based on the object-oriented design practices, this greatly simplifies the design reuse as the classes
 can be used to initiate objects.

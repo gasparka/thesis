@@ -25,6 +25,22 @@ The ``model_main`` function is reserved for defining the model and ``main`` as t
 Notice how the ``model_main`` function works on lists, it gets all the inputs at once, this enabled vectorized
 implementations. The ``main`` however works on single input, as is the hardware way.
 
+Design flow
+~~~~~~~~~~~
+
+The Suggested design flow for Pyha designs is model based development with test-driven approach.
+This means that the unit tests should be developed to assert the performance of the model.
+For unit tests use the Pyha ``simulate`` functions, so that the same tests can be later executed for hardware models.
+
+The last step is to implement the synthesizable code (``main``); development is greatly simplified
+if enough unit tests were collected while developing the model.
+
+.. todo:: Needs more info, make figure, fixed point?
+
+
+.. note:: The following examples in this chapter tend to ignore the model and unit-testing part and go straight to the
+    hardware implementation, since this is the focus of this chapter.
+
 
 .. include:: moving_average.rst
 
