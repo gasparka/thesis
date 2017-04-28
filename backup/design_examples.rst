@@ -15,6 +15,17 @@ Third design example shows how to chain togather already exsisting Pyha blocks t
 In this case it is FSK receiver. This examples does not go into details.
 
 
+Model based design is encouraged, where model is non-synthesisable code for simplest possible
+implementation. Most often the model is implemented with a call to Numpy or Scipy (Python scientific computing libraries).
+Model helps the testing process and can also serve as an documentation.
+
+The ``model_main`` function is reserved for defining the model and ``main`` as the top level for synthesis. Note that the
+``model_main`` is completely ignored for synthesis.
+
+Notice how the ``model_main`` function works on lists, it gets all the inputs at once, this enabled vectorized
+implementations. The ``main`` however works on single input, as is the hardware way.
+
+
 .. include:: moving_average.rst
 
 .. include:: dc_removal.rst

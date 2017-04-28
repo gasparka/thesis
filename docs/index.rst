@@ -28,6 +28,7 @@ Thesis!
 
 .. toctree::
     :caption: Contents:
+    :numbered:
 
     pyha
     vhdl_extensions

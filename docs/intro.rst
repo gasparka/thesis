@@ -58,6 +58,10 @@ Shows how regular software constructs maps into hardware!
 part of the value of this project is that it shows that even though stuff ends up as data flow stuff it is equal
 to plain software code...this is the major difference.
 
+Rather than forcing software construct to desciribe some hardware,
+the Pyha way has been developed to just embrace what ever
+is the output of the software approach.
+
 Problem statement
 -----------------
 
@@ -76,6 +80,16 @@ However Pyha has some huge advantages:
     - Integration of model based designs to unit process
     - Testing simplification, share unit-tests for model and hardware!
     - Bridge to VHDL people, build castle and bridge
+
+Biggest contribution is designed into the Pyha verification
+processes, Pyha designs are **debuggable**, fully structured( no dataflow nonsense)
+and provide functions to run all simulations.
+
+One big goal is to enable simple connection of Pyha blocks,
+so that for example GNURadio blocks could be mimiced.
+
+Lazy fixed point types, simplify conversion. automatic
+conversion ready design.
 
 Objective/goal
 --------------
@@ -102,6 +116,22 @@ Others go for the dataflow way that is hard to understand for
 normal porgrammers, Pyha explores the all.
 
 This work tri
+
+Design flow
+~~~~~~~~~~~
+
+The Suggested design flow for Pyha designs is model based development with test-driven approach.
+This means that the unit tests should be developed to assert the performance of the model.
+For unit tests use the Pyha ``simulate`` functions, so that the same tests can be later executed for hardware models.
+
+The last step is to implement the synthesizable code (``main``); development is greatly simplified
+if enough unit tests were collected while developing the model.
+
+.. todo:: Needs more info, make figure, fixed point?
+
+
+.. note:: The following examples in this chapter tend to ignore the model and unit-testing part and go straight to the
+    hardware implementation, since this is the focus of this chapter.
 
 Scope
 -----
