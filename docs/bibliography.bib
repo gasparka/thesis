@@ -242,3 +242,74 @@
 	author = {Amulya Vishwanath},
 	url = {https://www.altera.com/content/dam/altera-www/global/en_US/pdfs/literature/wp/wp-01267-fpgas-enable-high-performance-floating-point.pdf},
 }
+
+
+@inproceedings{hls_legup,
+ author = {Canis, Andrew and Choi, Jongsok and Aldham, Mark and Zhang, Victor and Kammoona, Ahmed and Anderson, Jason H. and Brown, Stephen and Czajkowski, Tomasz},
+ title = {LegUp: High-level Synthesis for FPGA-based Processor/Accelerator Systems},
+ booktitle = {Proceedings of the 19th ACM/SIGDA International Symposium on Field Programmable Gate Arrays},
+ series = {FPGA '11},
+ year = {2011},
+ isbn = {978-1-4503-0554-9},
+ location = {Monterey, CA, USA},
+ pages = {33--36},
+ numpages = {4},
+ url = {http://doi.acm.org/10.1145/1950413.1950423},
+ doi = {10.1145/1950413.1950423},
+ acmid = {1950423},
+ publisher = {ACM},
+ address = {New York, NY, USA},
+ keywords = {field-programmable gate arrays, fpgas, hardware/software co-design, high-level synthesis},
+}
+
+@phdthesis{clash_phd,
+          number = {14-335},
+           month = {January},
+          author = {Christiaan Pieter Rudolf {Baaij}},
+          series = {CTIT Ph.D. thesis series},
+         address = {Enschede},
+           title = {Digital circuits in C$\lambda$aSH: functional specifications and type-directed synthesis},
+       publisher = {University of Twente},
+            year = {2015},
+             url = {http://doc.utwente.nl/93962/},
+        abstract = {Over the last three decades, the number of transistors used in microchips has increased by three orders of magnitude, from millions to billions. The productivity of the designers, however, lags behind. Managing to implement complex algorithms, while keeping non-functional properties within desired bounds, and thoroughly verifying the design against its specification, are the main difficulties in circuit design.
+
+As a motivation for our work we make a qualitative analysis of the tools available to circuit designers. Here we see that progress has been slow, and that the same techniques have been used for over 20 years.
+
+We claim that functional languages can be used to raise the abstraction level in circuit design. Especially higher-order functional languages, where functions are first-class and can be manipulated by other functions, offer a single abstraction mechanism that can capture many design patterns.
+
+This thesis explores the idea of using the functional language Haskell directly as a hardware specification language, and move beyond the limitations of embedded languages. Additionally, we can use normal functions from existing Haskell libraries to model the behaviour of our circuits.
+
+This thesis describes the inner workings of our C?aSH compiler, which translates the aforementioned circuit descriptions written in Haskell to low-level descriptions in VHDL. The challenge then becomes the reduction of the higher-level abstractions in the descriptions to a form where synthesis is feasible.
+
+This thesis describes a term rewrite system (with bound variables) to achieve this reduction. We prove that this term rewrite system always reduces a polymorphic, higher-order circuit description to a synthesisable variant.
+
+Even when descriptions use high-level abstractions, the C?aSH compiler can synthesize efficient circuits. Case studies show that circuits designed in Haskell, and synthesized with the C?aSH compiler, are on par with hand-written VHDL, in both area and gate propagation delay.
+
+This thesis thus shows the merits of using a modern functional language for circuit design. The advanced type system and higher-order functions allow us to design circuits that have the desired property of being correct-by-construction. Finally, our synthesis approach enables us to derive efficient circuits from descriptions that use high-level abstractions.}
+}
+
+
+@MISC{vhdl_dead,
+	title = {Designers debate 'VHDL is dead' assertion},
+	author = {Richard Goering},
+	url = {http://www.eetimes.com/document.asp?doc_id=1216820},
+}
+
+@MISC{vhdl_iee,
+	title = {IEEE P1076 Working Group VHDL Analysis and Standardization Group (VASG)},
+	author = {},
+	url = {http://www.eda-twiki.org/cgi-bin/view.cgi/P1076/WebHome},
+}
+
+@MISC{osvvm,
+	title = {Open Source VHDL Verification Methodology (OSVVM)},
+    author = {},
+	url = {http://osvvm.org/},
+}
+
+@MISC{vunit,
+	title = {VUnit},
+    author = {Lars Asplund},
+	url = {http://vunit.github.io/},
+}

@@ -26,6 +26,12 @@ HLS languages work on 'function' based designs. Advantage of the object-oriented
 can represent the combinatory logic while class variables represent state..ie registers. This is also more similiar
 to regular software programming.
 
+KEY IDEA in Pyha is to only add the register behaviour to the
+
+Pyha proposes to use classes as a way of describing hardware. More specifically all the class variables
+are to be interpreted as hardware registers, this fits well as they are long term state elements.
+
+
 .. todo:: improve me
 
 .. basic design unit is a Python class,
