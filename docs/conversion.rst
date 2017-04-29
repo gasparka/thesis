@@ -1,7 +1,25 @@
 .. _ch_vhdl:
 
+Conversion to VHDL
+==================
+
+This chapter shows how Pyha converts to VHDL.
+
+
+Introduction
+------------
+
+.. todo:: Pilt converterist
+
+    * Simulatsioon tüüpide leidmiseks
+    * Python AST modifikatsioonid
+    * Pythont to VHDL
+    * Sequential OOP VHDL IR
+
+
+
 VHDL as intermediate language
-=============================
+-----------------------------
 
 This chapter is a fair bit more techincal and requires some knowledge of VHDL and
 hardware synthesis.
@@ -44,8 +62,6 @@ sequential logic (registers). Using this structure, the complete algorithm can b
 in sequential (non-concurrent) statements in the combinational process while the
 sequential process only contains registers, i.e. the state :cite:`structvhdl_gaisler`.
 
-.. todo:: Are there publications or other sources that comment/evaluate his approach (i.e. what are the pros and cons?)
-
 
 Object-oriented style in VHDL has been studied before. In :cite:`Benzakki1997` a proposal was
 made to extend the VHDL language with OOP semantics (dataflow based), this effort ended with the development of
@@ -53,16 +69,6 @@ OO-VHDL :cite:`oovhdl`, a VHDL preprocessor, turning proposed extensions to stan
 VHDL. This work did not make it the VHDL standard, the status of compiler is unknown, latest publicly
 available document dates to year 1999.
 
-
-
-Many tools on the market are capable of converting higher level language to VHDL.
-However, these tools only make use of the very basic dataflow semantics of VHDL language,
-resulting in complex conversion process and typically unreadable VHDL output.
-
-.. todo:: Description of the tools?
-
-The author of MyHDL package has written good blog posts about signal assignments :cite:`jan_myhdl_signals` and software side of hardware
-design :cite:`jan_myhdl_soft`. These ideas are relevant for this chapter.
 
 Objective
 ~~~~~~~~~
@@ -169,30 +175,6 @@ The objective of this work is to develop a synthesizable VHDL model that could e
 
 .. todo:: Elaborate on what you mean with 'clear' and 'simplify'.
 
-
-Using SystemVerilog instead of VHDL
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-SystemVerilog (SV) is the new standard for Verilog language, it adds significant amount of new features to the language
-:cite:`sysverilog`. Most of the added synthesizable features already existed in VHDL, making the synthesizable subset
-of these two languages almost equal. In that sense it is highly likely that ideas developed in this chapter could
-apply for both programming languages.
-
-.. todo:: Be careful when using opinions in scientific work.
-    It is fine that you clearly indicate that this is your opinion, but it is maybe safer to rephrase a bit. Or do you have references that also support your opinion?
-
-However, in my opinion, SV is a worse IR language compared to VHDL, because it is much more permissive.
-For example it allows out-of-bounds array indexing. This 'feature' is actually written into the
-language reference manual :cite:`sysverilog_gotcha`. VHDL would error out the simulation, possibly saving debugging time.
-
-While some communities have considered the verbosity and strictness of VHDL to be a downside, in my opinion it has always been an
-strength, and even more now when the idea is to use it as IR language.
-
-The only motivation for using SystemVerilog over VHDL is tool support. For example Yosys :cite:`yosys`, an open-source
-synthesis tool, supports only Verilog; however, to the best of my knowledge it does not yet support SystemVerilog features. There have
-been also some efforts in adding a VHDL frontend :cite:`vhdl_yosys`.
-
-.. todo:: What is the VHDL frontend status?
 
 Object-oriented style in VHDL
 -----------------------------
@@ -596,7 +578,332 @@ Note that nothing has to be changed in the data model or main function.
 Synthesis result (:numref:`mac_parallel_two_clocks`) is as expected, MAC's are still in parallel but now the
 registers are clocked by different clocks. The reset signal is common for the whole design.
 
-.. todo:: Add TDA example here? Would demonstrate statemechines and control structures...
+
+
+Conversion methodology
+----------------------
+
+Conversion process is based heavily on the results of last chapter, that developed OOP style for VHDL.
+This simplifies the conversion process in a way, that mostly no complex conversions are not needed.
+Basically the converter should only care about syntax conversion, that is Python syntax to VHDL.
+
+Thats why this can be called Python bindings.. everything you write in Python has a direct mapping to VHDL, most
+of the time mapping is just syntax difference.
+
+Still converting Python syntax to VHDL syntax poses some problems. First, there is a need to traverse the Python
+source code and convert it. Next problem is the types, while VHDL is strongly types language, Python is not, somehow the
+conversion progress should find out all the types.
+
+This chapter deals with these problems.
+
+This chapter aims to convert the Python based model into VHDL, with the goal of synthesis.
+
+
+Problem of types
+~~~~~~~~~~~~~~~~
+
+The biggest challenge in conversion from Python to VHDL is types, namely Python does not have them, while VHDL has.
+
+For example in VHDL, when we want to use local variable, it must be defined with type.
+
+.. code-block:: vhdl
+    :caption: VHDL variable action
+    :name: vhdl-variable
+
+    -- define variable a as integer
+    variable a: integer;
+
+    -- assign 'b' to 'a', this requires that 'b' is same type as 'a'
+    a := b;
+
+
+.. code-block:: python
+    :caption: Python variable action
+    :name: python-variable
+
+    # assign 'b' to 'a', 'a' will inherit type of 'b'
+    a = b
+
+:numref:`vhdl-variable` and :numref:`python-variable` show the variable difference in VHDl and Python.
+In general this can be interpreted in a way that VHDL icludes all the information required but Python leaves
+some things open.
+In Python it is even possible that 'a' is different type for different function callers.
+Python way is called dynamic-typing while VHDl way is static. Dynamic, meaning that
+types only come into play when the code is executing.
+
+The advantage of the Python way is that it is easier to program, no need to define variables and ponder about the types.
+Downsides are that there may be unexpected bugs when some variable changes type also the code readability suffers.
+
+In sense of conversion, dynamic typing poses a major problem, somehow the missing type info should be recovered for the
+VHDL code.
+
+Most straightforward  way to tackle this problem is to request the user to provide top level input types on conversion.
+As the main types are known, clearly all other types can be derived from them. Problem with this method is that is much more
+complex than it initially appears. For example :code:`a = b`. To find the type of 'a' converter would need to lookup type
+of 'b', also the the assign could be part of expression like :code:`a = b < 1`, anyhow this solution gets complex really fast
+and is not feasible option.
+
+
+Alternative would be to embrace the dynamic typing of Python and simulate the design before conversion, in that way
+all the variables resolve some type, thanks to running the code.
+
+
+Class
+^^^^^
+
+Class variables are easy to infer after code has been executed as all of them can be readily accessed.
+
+
+.. code-block:: python
+    :caption: Type problems
+    :name: cond-main
+
+    class SimpleClass(HW):
+        def __init__(self, coef):
+            self.coef = coef
+
+        def main(self, a):
+            local_var = a
+
+Class variables types can be extracted even without 'simulation'. On class creation '__init__' function runs that also
+assigns something to all class variables, that is enough to determine type. Still simulation can help Lazy types to converge.
+
+Example:
+
+.. code-block:: python
+    :caption: Class variable type
+    :name: class-vars
+
+    >>> dut = SimpleClass(5)
+    >>> dut.coef
+    5
+    >>> type(dut.coef)
+    <class 'int'>
+
+:numref:`class-vars` show example for getting the type of class variable. It initializes the class with argument 5, that is
+passed to the 'coef' variable. After Python 'type' can be used to determine the variable type. Clearly this variables could
+be converted to VHDL 'integer' type (not really...Python is infinite).
+
+
+Locals
+^^^^^^
+
+Locals mean here the local variables of a function including the function arguments, in VHDL these also require to be
+typed.
+
+Inferring the type of function local variables is much harder as Python provides no standard way of doing so. This task
+is hard as locals only exsist in the stack, thus they will be gone once the function exection is done.
+Luckly this problem has been encountered before in :cite:`py_locals_decorator`, whicp provides an solution.
+
+
+This approach works by defining a profile tracer function, which has access to the internal frame of a function,
+and is called at the entry and exit of functions and when an exception is called. :cite:`py_locals_decorator`
+
+Solution is to wrap the function under inspection in other function that sets a traceback function on the return and
+saves the result of the last locals call.
+
+That way all the locals can be found on each call. Pyha uses this approach to keep track of the local values.
+Below is an example:
+
+.. code-block:: python
+    :caption: Function locals variable type
+    :name: class-locals
+
+    >>> dut.main.locals # before any call, locals are empty
+    {}
+    >>> dut.main(1) # call function
+    >>> dut.main.locals # locals can be extracted
+    {'a': 1, 'local_var': 1}
+    >>> type(dut.main.locals['local_var'])
+    <class 'int'>
+
+
+
+Advantages
+^^^^^^^^^^
+
+Major advantage of this method is that the type info is extracted easily and complexity is low. Potential perk in the
+future is that this way could keep track of all values that any variable takes during the simulation, this will be
+essential if in the future some automatic float to fixed point compiler is to be implementend.
+
+Other advantages this way makes possible to use 'lazy' coding, meaning that only the type after the end of simulation
+matters.
+
+Another advantage is that programming in Python can be even more lazy..
+
+
+Disadvantages
+^^^^^^^^^^^^^
+
+Downside of this solution is obviously that the desing must be simulated in Python domain before it can be converted to
+VHDL.
+First clear is that the design must be simulated in Python domain before conversion is possible, this may be
+inconvenient.
+
+Also the simulation data must cover all the cases, for example consider the function with conditional local variable,
+as shown on :numref:`cond-main`. If the simulaton passes only True values to the function, value of variable 'b' will
+be unknown ad vice-versa. Of course such kinf of problem is detected in the conversion process. Also in hardware
+we generally have much less branches than in software also all of thes branches are likely to be important as each
+of them will **always** take up resources.
+
+.. code-block:: python
+    :caption: Type problems
+    :name: cond-main
+
+    def main(c):
+        if c:
+            a = 0
+        else:
+            b = False
+
+
+
+Conversion methodology
+~~~~~~~~~~~~~~~~~~~~~~
+
+After the type problem has been solved, next step is to convert the Python code into VHDL.
+
+Chapter :ref:`ch_vhdl` developed a way to write OOP VHDL, thanks to this, the conversion from Python to VHDL is
+much simplified. Mostly the converter needs to convert the syntax parts. Conversion progress requires no understanding
+of the source code nor big modifications.
+
+This task requires a way of parsing the input Python code, making modifications and then outputting VHDL compilant
+syntax.
+
+In general this step involves using an abstract syntax tree (AST). This reads in the source file and turns it into
+traversable tree stucture of all the operations done in the program.
+
+There are many tools in the Python ecosystem that allow this task, for example lib2to3 etc.
+
+Converter of this project uses the RedBaron :cite:`redbaron`. RedBaron is an Python library with an aim to
+significantly simply operations with source code parsing.
+
+RedBaron is a python library with intent of making the process of writing code that modify source code as easy and
+as simple as possible. That include writing custom
+refactoring, generic refactoring, tools, IDE or directly modifying you source code into IPython with a higher and
+more powerful abstraction than the advanced texts modification tools that you find in advanced text editors and IDE.
+:cite:`redbaron`
+
+
+
+RedBaron turns all the blocks in the code into special 'nodes'. Help function provides an example:
+
+Simple example of RedBaron operation is shown on :numref:`red-simple`. It uses a simple :code:`a = 5` assigment as
+the input and shows how RedBaron turns the code into special 'nodes'.
+
+.. code-block:: python
+    :caption: Radbaron output for :code:`a = 5`
+    :name: red-simple
+
+    >>> red = RedBaron('a = 5')
+    >>> red.help()
+    0 -----------------------------------------------------
+    AssignmentNode()
+      # identifiers: assign, assignment, assignment_, assignmentnode
+      operator=''
+      target ->
+        NameNode()
+          # identifiers: name, name_, namenode
+          value='a'
+      value ->
+        IntNode()
+          # identifiers: int, int_, intnode
+          value='5'
+
+It shows that the input code is turned into 'AssigmentNode' object, that has 3 parameters:
+
+    * Operator -
+    * Target - assignment target
+    * Value - value assigned to target
+
+
+The power of RedBaron is that, these objects can be very easly modified. For example, one could set
+:code:`red[0].value = '5 + 1'` and this would turn the overall code to :code:`a = 5 + 1`.
+RedBaron also provides methods to, for example 'find' can be used to find all the 'assignment' nodes in the code.
+
+
+Pyha handles the conversion to VHDL by overwriting the RedBaron nodes. For example for the 'AssignmentNode'
+Pyha inherits from the base node but changes the string output so that assignment operator '=' is changed to
+':=' and at the end of the expression ';' is added. So the output would be :code:`a := 5;`, that is VHDL compatible
+statement.
+
+For example in the above example main node is AssignmentNode, this could be modified to change the '=' into
+':=' and add ';' to the end of line. Resulting in a VHDL compatible statement :code:`a := 5;`.
+
+
+
+
+Basic conversions
+~~~~~~~~~~~~~~~~~
+
+Supporting VHDL variable assignment in Python code is trivial, only the VHDl assignment notation must be
+changed from :code:`:=` to :code:`=`.
+
+
+Converting functions
+~~~~~~~~~~~~~~~~~~~~
+
+First of all, all the convertable functions are assumed to be class functions, that means they have the first argument
+:code:`self`.
+
+Python is very liberal in syntax rules, for example functions and even classes can be defined inside functions.
+In this work we focus on functons that dont contain these advanced features.
+
+VHDL supports two style of functions:
+
+    - Functions - classical functions, that have input values and can return one value
+    - Procedures - these cannot return a value, but can have agument that is of type 'out', thus returing trough an output argument. Also it allows argument to be of type 'inout' that is perfect for class object.
+
+All the Python functions are to be converted to VHDL procedures as they provide more wider interface.
+
+Python functions can return multiple values and define local variables. In order to support multiple return,
+multiple output arguments are appended to the argument list with prefix :code:`ret_`. So for example first return
+would be assigned to :code:`ret_0` and the second one to :code:`ret_1`.
+
+Here is an simple Python function that contains most of the features required by conversion, these are:
+
+    - First argument self
+    - Input argument
+    - Local variables
+    - Multiple return values
+
+.. code-block:: python
+
+    def main(self, a):
+        b = a
+        return a, b
+
+
+
+.. code-block:: vhdl
+    :caption: VHDL example procedure
+    :name: vhdl-int-arr2
+    :linenos:
+
+    procedure main(self:inout self_t; a: integer; ret_0:out integer; ret_1:out integer) is
+        variable b: integer;
+    begin
+        b := a;
+        ret_0 := a;
+        ret_1 := b;
+        return;
+    end procedure;
+
+In VHDL local variables must be defined in a special region before the procedure body. Converter can handle these
+caese thanks to the previously discussed types stuff.
+
+The fact that Python functions can return into multiple variables requires and conversion on
+VHDL side:
+
+.. code-block:: python
+
+    ret0, ret1 = self.main(b)
+
+.. code-block:: vhdl
+
+    main(self, b, ret_0=>ret0, ret_1=>ret1);
+
+
 
 Conclusion
 ----------

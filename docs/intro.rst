@@ -132,8 +132,47 @@ first developing an feasible model in VHDL and then using Python to get around V
 Sell this!!!. Has good integration for model, is debuggable. Running simulations is extreamly
 easy. Good fixed point support. Modern software dev tools in hw.
 
+
+Since Pyha brings the development into Python domain, it opens this whole ecosystem for writing
+testing code.
+
+Python ships with many unit-test libraries, for example PyTest, that is the main one used for
+Pyha.
+
+As far as what goes for model writing, Python comes with extensive schinetific stuff. For example
+Scipy and Numpy. In addition all the GNURadio blocks have Python mappings.
+
 .. todo::
     Comparison to tools already in Python domain?
     Why do it?
     SELL
     Key feature is simplicity?
+
+Many tools on the market are capable of converting higher level language to VHDL.
+However, these tools only make use of the very basic dataflow semantics of VHDL language,
+resulting in complex conversion process and typically unreadable VHDL output.
+
+
+Using SystemVerilog instead of VHDL
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+SystemVerilog (SV) is the new standard for Verilog language, it adds significant amount of new features to the language
+:cite:`sysverilog`. Most of the added synthesizable features already existed in VHDL, making the synthesizable subset
+of these two languages almost equal. In that sense it is highly likely that ideas developed in this chapter could
+apply for both programming languages.
+
+.. todo:: Be careful when using opinions in scientific work.
+    It is fine that you clearly indicate that this is your opinion, but it is maybe safer to rephrase a bit. Or do you have references that also support your opinion?
+
+However, in my opinion, SV is a worse IR language compared to VHDL, because it is much more permissive.
+For example it allows out-of-bounds array indexing. This 'feature' is actually written into the
+language reference manual :cite:`sysverilog_gotcha`. VHDL would error out the simulation, possibly saving debugging time.
+
+While some communities have considered the verbosity and strictness of VHDL to be a downside, in my opinion it has always been an
+strength, and even more now when the idea is to use it as IR language.
+
+The only motivation for using SystemVerilog over VHDL is tool support. For example Yosys :cite:`yosys`, an open-source
+synthesis tool, supports only Verilog; however, to the best of my knowledge it does not yet support SystemVerilog features. There have
+been also some efforts in adding a VHDL frontend :cite:`vhdl_yosys`.
+
+.. todo:: What is the VHDL frontend status?

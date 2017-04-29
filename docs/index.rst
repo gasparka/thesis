@@ -32,7 +32,8 @@ Thesis!
 
     intro
     pyha
-    vhdl_extensions
+    conversion
+    conclusion
 
 
 
