@@ -116,4 +116,9 @@ that match the performance of GNURadio, so that flow-grapsh could be simply conv
 Structure
 ---------
 
+First chapter of this thesis gives an overview of the developed tool Pyha and how it can be used for hardware design.
+Follows the examples that show how Pyha can be used to relatively easly construct moving-average filter and by reusing
+it the DC-removal filter.
+Final chapter describes the one of the contribtutions of this thesis, the sequential VHDL OOP model and how Python
+is converted to it.
 

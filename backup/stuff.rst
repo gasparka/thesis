@@ -135,3 +135,8 @@ Negatives of pipelining is that the delay of the block is not constant in all co
 resource usage.
 
 Also algorithm becomes more complex and harder to understand.
+
+
+The only motivation for using SystemVerilog over VHDL is tool support. For example Yosys :cite:`yosys`, an open-source
+synthesis tool, supports only Verilog; however, to the best of my knowledge it does not yet support SystemVerilog features. There have
+been also some efforts in adding a VHDL frontend :cite:`vhdl_yosys`.

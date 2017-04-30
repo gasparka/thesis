@@ -116,7 +116,8 @@ software in order to archive this.
 
 .. todo:: reference blade and lime
 
-As an example synthesis target device is EP4CE40F23C8N, of the Cyclone IV family. This is the same FPGA that powers the latest
+Examples in this work use synthesis target device EP4CE40F23C8N, of the Cyclone IV family.
+This is the same FPGA that powers the latest
 LimeSDR chip and the BladeRF board.
 In general it is a low cost FPGA with following features :cite:`cycloneiv`:
 
@@ -698,7 +699,7 @@ FP types.
 
 
 
-:numref:`fix_sat_wrap` plots the simulation results.
+:numref:`fix_sat_wrap` plots the simulation results for input of random signal in [-0.5;0.5] range.
 Notice that the hardware simulations are bounded to [-1;1] range by the saturation logic, that is why the model
 simulation is different at some points.
 

@@ -51,7 +51,7 @@ def test_comb():
 class For(HW):
     def main(self, x):
         y = x
-        for i in range(4):
+        for i in range(4):  # iterate from 0 to 3
             y = y + i
 
         return y
@@ -67,7 +67,7 @@ def test_for():
     condition = [0, 1, 2, 3, 0, 1, 2]
 
     r = debug_assert_sim_match(dut, None, x,
-                               simulations=[SIM_MODEL, SIM_HW_MODEL, SIM_RTL, SIM_GATE],
+                               simulations=[SIM_MODEL, SIM_HW_MODEL, SIM_RTL],
                                dir_path='/home/gaspar/git/thesis/playground')
 
     plt.figure(figsize=(8, 2))
@@ -81,7 +81,7 @@ def test_for():
     plt.grid()
     plt.xlabel("Sample number")
     plt.ylabel("Value")
-    plt.savefig('img/add_sim.png', bbox_inches='tight')
+    # plt.savefig('img/add_sim.png', bbox_inches='tight')
     plt.show()
 
     print(r)
