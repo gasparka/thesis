@@ -16,6 +16,10 @@ Lastly we showed that Pyha is already usable to convert some mdeium complexity d
 FSK demodulator, that was used on Phantom 2 stuff..
 
 
+One of the contributions of this work is sequentila OOP VHDL model that is used to simply convert Pyha designs into
+VHDL.
+
+
 .. todo:: Moving VHDL programmers to this tool? problems?
 
 Summary

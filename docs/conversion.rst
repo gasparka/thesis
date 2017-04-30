@@ -18,6 +18,37 @@ Introduction
 
 First part of this chapter introduces the Sequential OOP VHDL IR.
 
+While other high level tools convert to very low-level VHDL, then Pyha takes and different approach by
+first developing an feasible model in VHDL and then using Python to get around VHDL ugly parts.
+
+Many tools on the market are capable of converting higher level language to VHDL.
+However, these tools only make use of the very basic dataflow semantics of VHDL language,
+resulting in complex conversion process and typically unreadable VHDL output.
+
+Using SystemVerilog instead of VHDL
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+SystemVerilog (SV) is the new standard for Verilog language, it adds significant amount of new features to the language
+:cite:`sysverilog`. Most of the added synthesizable features already existed in VHDL, making the synthesizable subset
+of these two languages almost equal. In that sense it is highly likely that ideas developed in this chapter could
+apply for both programming languages.
+
+.. todo:: Be careful when using opinions in scientific work.
+    It is fine that you clearly indicate that this is your opinion, but it is maybe safer to rephrase a bit. Or do you have references that also support your opinion?
+
+However, in my opinion, SV is a worse IR language compared to VHDL, because it is much more permissive.
+For example it allows out-of-bounds array indexing. This 'feature' is actually written into the
+language reference manual :cite:`sysverilog_gotcha`. VHDL would error out the simulation, possibly saving debugging time.
+
+While some communities have considered the verbosity and strictness of VHDL to be a downside, in my opinion it has always been an
+strength, and even more now when the idea is to use it as IR language.
+
+The only motivation for using SystemVerilog over VHDL is tool support. For example Yosys :cite:`yosys`, an open-source
+synthesis tool, supports only Verilog; however, to the best of my knowledge it does not yet support SystemVerilog features. There have
+been also some efforts in adding a VHDL frontend :cite:`vhdl_yosys`.
+
+.. todo:: What is the VHDL frontend status?
+
 
 Sequential, Object-oriented style for VHDL
 ------------------------------------------
@@ -243,7 +274,7 @@ All the class functionality is now in common namespace.
    :caption: Package template for OOP style VHDL
    :name: package-mac
 
-    package MAC is
+    package Class is
         type next_t is record
             ...
         end record;
@@ -253,19 +284,14 @@ All the class functionality is now in common namespace.
             nexts: next_t;
         end record;
 
-        procedure reset(self: inout self_t);
-        procedure update_registers(self: inout self_t);
-        procedure main(self:inout self_t);
-        -- other user defined functions
+        -- function prototypes
     end package;
 
-    package body MAC is
+    package body Class is
         procedure reset(self: inout self_t) is
             ...
-
         procedure update_registers(self: inout self_t) is
             ...
-
         procedure main(self:inout self_t) is
             ...
         -- other user defined functions
@@ -369,24 +395,16 @@ registers are clocked by different clocks. The reset signal is common for the wh
     Synthesis result with modified top-level process (Intel Quartus RTL viewer)
 
 
-Conversion methodology
-----------------------
+Converting Python to VHDL
+-------------------------
 
 Conversion process is based heavily on the results of last chapter, that developed OOP style for VHDL.
 This simplifies the conversion process in a way, that mostly no complex conversions are not needed.
 Basically the converter should only care about syntax conversion, that is Python syntax to VHDL.
 
-Thats why this can be called Python bindings.. everything you write in Python has a direct mapping to VHDL, most
-of the time mapping is just syntax difference.
-
 Still converting Python syntax to VHDL syntax poses some problems. First, there is a need to traverse the Python
 source code and convert it. Next problem is the types, while VHDL is strongly types language, Python is not, somehow the
 conversion progress should find out all the types.
-
-This chapter deals with these problems.
-
-This chapter aims to convert the Python based model into VHDL, with the goal of synthesis.
-
 
 Problem of types
 ~~~~~~~~~~~~~~~~
@@ -691,6 +709,13 @@ VHDL side:
 .. code-block:: vhdl
 
     main(self, b, ret_0=>ret0, ret_1=>ret1);
+
+
+Comparison to other methods
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Like HLS must do much work to deduce registers..
+Pyha can convert basically line by line, very simple.
 
 
 
