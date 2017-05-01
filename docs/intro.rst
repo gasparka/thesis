@@ -41,6 +41,7 @@ Open Source VHDL Verification Methodology (OSVVM) :cite:`osvvm` and VUnit (unit 
 While these improvements work on the verification side, the synthesisable parts of VHDL and SV has stayed the same
 for the past 20 years. Verification is big part on the other hand...
 
+Academia and industry
 High-level synthesis (HLS) aims to improve design productivity by automating the refinement from
 the algorithmic level to RTL :cite:`hls_overview`. In general the HLS world is dominated by the C type languages.
 Many HLS languages have been developed in both commercially and academically.
@@ -94,7 +95,8 @@ Lately the scientific world has started shifting from MATLAB to Python, even ful
 for numerical computing. In domain of communication systems, all the GNURadio blocks have Python mappings.
 
 In Python domain there already exist two projects that allow design of RTL in Python domain. The MyHDL is fully working
-based on the event-driven approach. It does not provide a lot of abstraction. Migen is more following the
+based on the event-driven approach. Function based design, similiar to Verilog language,
+it does not provide a lot of abstraction. Migen is more following the
 structured approach, the abstraction level is higher than of MyHDL, but it archieves this by using 'metaprogramming' in
 Python, that greatly affects the readability and bla of code. Neither the MyHDL nor Migen provide an support for
 fixed-point type, they are not DSP oriented.
@@ -121,6 +123,9 @@ Thanks to that, the OOP Python code can be simply mapped to OOP VHDL code. Resul
 code that may provide an bridge for people that already know VHDL.
 
 Limited to one clock domain?
+In some seneses the Python part could be considers as Python binding to VHDL OOP model.
+Convert to HLS langauge instead of VHDL, then the designer could choose to to either design for RTL or HLS, this is
+more as an futures perspective, this thesis works only with the RTL part.
 
 Structure
 ---------

@@ -15,97 +15,105 @@ VHDL conversion files and Quartus project for synthesis.
 
 .. todo:: organise examples to web and put link
 
-.. todo:: write not on how to read examples and simulation results in this chapter!
-
-
 Introduction
 ------------
 
-In this work, Pyha has been designed to follow the object-oriented design paradigm, while many of the other
-HLS languages work on 'function' based designs. Advantage of the object-oriented way is that the class functions
-can represent the combinatory logic while class variables represent state..ie registers. This is also more similiar
-to regular software programming.
+While the conventional HDL languages promote concurrent and entity oriented model, this is more confusing.
+In this thesis, Pyha has been designed as an sequential object-oriented language, that works directly on
+Python code. Using an sequential design flow is much easier to understand and is equally well synthesizable as shown
+by this thesis. Object-oriented design helps to better abstract the RTL details and ease design reuse.
 
-Designs in Pyha are fully sequential
+For illustration purposes, :numref:`pyha_basic` shows an example Pyha design. The ``main`` function has been
+chosen as a top level entry point, other functions can be used as pleased.
 
-KEY IDEA in Pyha is to only add the register behaviour to the
-
-Pyha proposes to use classes as a way of describing hardware. More specifically all the class variables
-are to be interpreted as hardware registers, this fits well as they are long term state elements.
-
-
-.. todo:: improve me
-
-.. basic design unit is a Python class,
-    that is derived from HW subclass (to inherit hardware related functionality).
-
-For illustration purposes, :numref:`pyha_adder` shows the Pyhe implementation of an adder circuit.
+.. note:: First few examples of this chapter use ``integer`` types in order to reduce complexity.
 
 .. code-block:: python
-    :caption: Simple adder, implemented in Pyha; ``main`` is the synthesizable function.
-    :name: pyha_adder
+    :caption: Simple combinatory design, implemented in Pyha
+    :name: pyha_basic
 
-    class Adder(HW):
-        def __init__(self, coef)
-            self.coef = coef
-
+    class Basic(HW):
         def main(self, x):
-            y = x + self.coef
-            return y
+            a = x + 1 + 3
+            b = a * 314
 
-The class structure in Pyha has been designed so that the ``__init__`` function shall define all
-the memory elements in the design, it may contain any Python code to evaluate reset values for registers; itself
-it is not converted to VHDL, only the created variables are interpreted as memory. Class may contain any other
-user defined functions, that are converted to VHDL; the ``main`` function is reserved for the top level entity.
+            if a == 9:
+                b = 0
 
-.. todo:: about model! ref blade rf absd? need this because simulations have model output
+            return a, b
 
-.. note:: All the examples in this chapter include the model implementation. In order to keep code examples smaller,
-    future listings omit the model code.
+One of the contributions of this thesis is sequential OOP VHDL model, that is used by Pyha for simple conversion
+to VHDL. Example of the VHDL conversion is shown on :numref:`pyha_basic_vhdl`, more details are given in chapter
+:numref:`ch_conversion`.
 
+.. code-block:: vhdl
+    :caption: :numref:`pyha_basic` converted to VHDL, by Pyha
+    :name: pyha_basic_vhdl
 
-Simulation and testing
-~~~~~~~~~~~~~~~~~~~~~~
+    procedure main(self:inout self_t; x: integer; ret_0:out integer; ret_1:out integer) is
+        variable a: integer;
+        variable b: integer;
+    begin
+        a := x + 1 + 3;
+        b := a * 314;
 
-One of the motivation in designing the Pyha tool has been the need to improve the verification and testing capabilities.
-Also verification against an model, consider GNURadio model for example.
+        if a = 9 then
+            b := 0;
+        end if;
 
-Pyha designs can be simulated in Python or VHDL domain. In addition, Pyha has integration to Intel Quartus software,
-it supports running GATE level simulations i.e. simulation of synthesized logic.
+        ret_0 := a;
+        ret_1 := b;
+    end procedure;
 
-Pyha provides functions to automatically run all the simulations on the set of input data. :numref:`pyha_adder_test`
-shows an example unit test for the 'adder' module.
+:numref:`basic_rtl` shows the synthesis result. The ``a`` output is formed by adding '1' and '3' to the ``x`` input. Next
+the ``a`` signal is compared to ``9``, if equal ``b`` is outputted as 0, otherwise ``b = a * 314``. That
+exactly complies with the Python and VHDL descriptions.
 
-.. code-block:: python
-    :caption: Unit test for the adder module
-    :name: pyha_adder_test
-
-    x =      [1, 2, 2, 3, 3, 1, 1]
-    expect = [2, 3, 3, 4, 4, 2, 2]
-
-    dut = Adder(coef=1)
-    assert_simulation(dut, expect, x)
-
-The ``assert_simulation(dut, expect, x)`` runs all the simulations (Model, Pyha, RTL and GATE)
-and asserts the results equal the ``expexct`` vector, defined in the unit test.
-
-In addition, ``simulations(dut, x)`` returns all the outputs of different simulations, this
-can be used to plot the results, as shown in :numref:`adder_sim`.
-
-
-.. todo:: remove the input signal from this plot!
-
-.. _adder_sim:
-.. figure:: ../examples/adder/img/add_sim.png
+.. _basic_rtl:
+.. figure:: ../examples/basic/img/basic_rtl.png
     :align: center
     :figclass: align-center
 
-    Testing the adder module, ``simulation(dut, expect, x)`` outputs, all equivalent
+    Synthesised RTL of :numref:`pyha_basic_vhdl` (Intel Quartus RTL viewer)
+
+One aspect of hardware design that Pyha aims to improve is testing. Conventional tools like VHDL require the
+construction of special testbenches that can be executed on simulators. Even the higer level tools often dont
+simplify this step, for example the C based tools HLS tools want testbench in C language, which is not an
+improvement from VHDL or Verilog.
+
+First of all, Pyha has been designed so that the synthesis output is behaviourally equivalent to the Python run
+output, this means that Pyha designs can use all the Python debugging tools.
+:numref:`add_multi_debug` shows a debugging session on the :numref:`pyha_basic` code, this can drastically help
+the development process.
+
+.. _py_debug:
+.. figure:: ../examples/basic/img/debug.png
+    :align: center
+    :figclass: align-center
+
+    Debugging using PyCharm (Python editor)
+
+Furthermore, unit testing is accelerated by providing ``simulate(dut, x)`` function, that runs the following
+simulations without any boilerplate code:
+
+    - Model: this can be any Python code that fits as an high level model;
+    - Pyha: like :numref:`pyha_basic`, Python domain simulation;
+    - RTL: converts the Pyha model to VHDL and uses the combinition of GHDL and Cocotb for simulation;
+    - GATE: synthesises the VHDL code, using Intel Quartus, and simulates the resulting gate-level netlist.
 
 
-More information about the simulation functions can be found in the APPENDIX.
+This kind of testing function enables test-driven development, where tests can be first defined for the model and
+fully reused for later RTL implementation.
+:numref:`pyha_adder_test` shows an example unit test for the ``Basic()`` module.
 
-.. todo:: Add simulation function definitins to appendix.
+.. code-block:: python
+    :caption: Unit test for the Basic module
+    :name: pyha_basic_test
+
+    x = [1, 2, 3, 4, 5, 6, 7, 8]
+    dut = Basic()
+    y = simulation(dut, x)
+    # assert something
 
 
 Synthesis
@@ -339,10 +347,22 @@ Designs with memory
 
 .. todo:: more general info about the state!
 
+In this work, Pyha has been designed to follow the object-oriented design paradigm, while many of the other
+HLS languages work on 'function' based designs. Advantage of the object-oriented way is that the class functions
+can represent the combinatory logic while class variables represent state..ie registers. This is also more similiar
+to regular software programming.
+
+Pyha proposes to use classes as a way of describing hardware. More specifically all the class variables
+are to be interpreted as hardware registers, this fits well as they are long term state elements.
+
 So far, all the designs presented have been stateless (without memory). Often algorithms need to store
 some value for later use, this indicates that the design must contain memory elements.
 
 This chapter gives an overview of memory based designs in Pyha.
+
+The class structure in Pyha has been designed so that the ``__init__`` function shall define all
+the memory elements in the design, it may contain any Python code to evaluate reset values for registers; itself
+it is not converted to VHDL, only the created variables are interpreted as memory.
 
 How is this done in Pyha?
 
@@ -650,7 +670,7 @@ type is given on APPENDIX.
     0.3125 [0:-4]
 
 The default FP type in Pyha is ``Sfix(left=0, right=-17)``, it represents numbers between [-1;1] with
-resolution of 0.000007629. This format is chosen because it fits into common FPGA DPS blocks
+resolution of 0.000007629 (``2**-17``). This format is chosen because it fits into common FPGA DPS blocks
 (18 bit signals :cite:`cycloneiv`)
 and it can represent normalized numbers.
 
@@ -762,7 +782,7 @@ Implementation in Pyha
 
 MA is implemented by using a sliding sum that is divided by the sliding window length.
 The sliding sum part has already been implemented in :numref:`ch_fp_sliding_adder`.
-The division can be implemented by a shift right operation if the divisor is power of two.
+The division can be implemented by a shift right operation, assuming that the divisor is power of two.
 
 In addition, division can be performed on each sample instead of on the sum, that is ``(a + b) / c = a/c + b/c``.
 Doing this guarantees that the ``sum`` variable is always in the [-1;1] range, thus the saturation logic can be removed.
@@ -776,15 +796,15 @@ Doing this guarantees that the ``sum`` variable is always in the [-1;1] range, t
         def __init__(self, window_len):
             self.window_pow = Const(int(np.log2(window_len)))
 
-            self.mem = [Sfix()] * window_len
+            self.shr = [Sfix()] * window_len
             self.sum = Sfix(0, 0, -17, overflow_style=fixed_wrap)
             self._delay = 1
 
         def main(self, x):
             div = x >> self.window_pow
 
-            self.next.mem = [div] + self.mem[:-1]
-            self.next.sum = self.sum + div - self.mem[-1]
+            self.next.shr = [div] + self.shr[:-1]
+            self.next.sum = self.sum + div - self.shr[-1]
             return self.sum
         ...
 

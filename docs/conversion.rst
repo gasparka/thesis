@@ -1,4 +1,4 @@
-.. _ch_vhdl:
+.. _ch_conversion:
 
 Conversion to VHDL
 ==================
