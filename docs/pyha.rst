@@ -116,36 +116,26 @@ fully reused for later RTL implementation.
     # assert something
 
 
-Designs with memory
--------------------
+Designs with registers
+----------------------
 
-.. todo:: more general info about the state!
+In hardware registers are used as an memory element and for pipelining. In general digital logic synthesis relies on
+timing synthesis that only works when analized logic is between registers.
 
-In this work, Pyha has been designed to follow the object-oriented design paradigm, while many of the other
-HLS languages work on 'function' based designs. Advantage of the object-oriented way is that the class functions
-can represent the combinatory logic while class variables represent state..ie registers. This is also more similiar
-to regular software programming.
+The way how registers are inferred is a fundamental difference between the RTL and HLS languages. Main complexity of
+HLS is about automatically inferring registers for memory elements or for pipelining. RTL languages on the other hand
+leave the task up to the designer.
+In this work, Pyha has been designed to follow the RTL language approach, because this comes free with conversion
+to VHDL. In future extensions can be considered.
 
-Pyha proposes to use classes as a way of describing hardware. More specifically all the class variables
-are to be interpreted as hardware registers, this fits well as they are long term state elements.
+In conventional programming, most commonly state is captured by using the class variables, which can keep the
+values between function calls. Inspired from this, all the class variables in Pyha are handled as registers, class
+functions can be interpreted as combinatory functions calculating the next state values for the registers.
 
-So far, all the designs presented have been stateless (without memory). Often algorithms need to store
-some value for later use, this indicates that the design must contain memory elements.
+Accumulator
+~~~~~~~~~~~
 
-This chapter gives an overview of memory based designs in Pyha.
-
-The class structure in Pyha has been designed so that the ``__init__`` function shall define all
-the memory elements in the design, it may contain any Python code to evaluate reset values for registers; itself
-it is not converted to VHDL, only the created variables are interpreted as memory.
-
-How is this done in Pyha?
-
-Accumulator and registers
-~~~~~~~~~~~~~~~~~~~~~~~~~
-
-Consider the design of an accumulator; it operates by sequentially adding up all the input values.
-:numref:`acc` shows the Pyha implementation, class scope variable is defined in the ``__init__`` function
-to store the accumulator value.
+Consider the design of an accumulator (:numref:`acc`); it operates by sequentially adding up all the input values.
 
 .. code-block:: python
     :caption: Accumulator implemented in Pyha
@@ -157,96 +147,48 @@ to store the accumulator value.
             self.acc = 0
 
         def main(self, x):
-            self.acc = self.acc + x
+            self.next.acc = self.acc + x
             return self.acc
 
-Trying to run this would result in a Pyha error, suggesting to change the line 6 to ``self.next.acc = ...``.
-After this, the code is runnable; reasons for this modification are explained shortly.
+The class structure in Pyha has been designed so that the ``__init__`` function shall define all
+the memory elements in the design, the function itself is not converted to VHDL, only the variables are extracted.
+For example
+``__init__`` function could be used to call ``scipy.signal.firwin()`` to design FIR filter coefficients, initial
+assignments to class variables are used as register initial/reset values.
 
-.. todo:: this is not new, same semantics used in MyHDL and Pong Chu.
+Note the ``self.next.acc = ...``, simulates the hardware behaviour of registers, that is delayed assignment.
+In general this is equivalent to the VHDL ``<=`` operator. Values are transfered from **next** to **current** just
+before the ``main`` call. In general Pyha abstracts the clock signal away by denoting that each call to ``main`` is
+a clock edge. Think that the ``main`` function is started with the **current** register values known and the objective of
+the ``main`` function is to find the **next** values for the registers.
 
-The synthesis results shown in the :numref:`acc_rtl` features an new element known as a register.
+The synthesis results shown in the :numref:`acc_rtl` shows the adder and register.
 
 .. _acc_rtl:
 .. figure:: ../examples/accumulator/img/acc_rtl.png
     :align: center
     :figclass: align-center
 
-    Synthesis result of :numref:`pyha_for_code` (Intel Quartus RTL viewer)
+    Synthesis result of :numref:`acc` (Intel Quartus RTL viewer)
 
 
-Register
-^^^^^^^^
-
-.. todo:: this section is not finished
-
-In software programming, class variables are the main method of saving the some information from function call to another.
-
-A register is a hardware memory component; it samples the input signal ``D`` on the edge of the  ``CLK`` signal. In
-that sense it acts like a buffer.
-
-One of the new signals in the :numref:`acc_rtl` is ``clk``, that is a clock signal that instructs the registers
-to update the saved value (``D``).
-
-In hardware a clock is a mean of synchronizing the registers, thus allowing accurate timing analsys that allows
-placing the components on the FPGA fabric in such way that all the analog transients happen **between** the clock
-edges, thus the registers are guaranteed to sample the clean and correct signals.
-
-Registers have one difference to software class variables i.e. the value assigned to them does not take
-effect immediately, but rather on the next clock edge.
-When the value is set at **this** clock edge, it will be taken on the **next** clock edge.
-
-Pyha tries to stay in the software world, so the clock signal can be abstracted away
-by thinking that it denotes the call to the 'main' function. This means that registers update their value on
-every call to ``main`` (just before the call).
-
-Think that the ``main`` function is started with the **current** register values known and the objective of
-the ``main`` function is to find the **next** values for the registers.
-
-
-.. todo:: This sample rate stuff is too bold statement, more expalnation
-Furthermore, in DSP systems one important aspect is sample rate. In hardware the maximum clock rate and sample rate are
-basically the same thing.
-In Digital signal processing applications we have sampling rate, that is basically equal to the clock rate. Think that
-for each input sample the 'main' function is called, that is for each sample the clock ticks.
-
-Note that the way how the hardware is designed determines the maximum clock rate it can run off. So if we do
-a bad job we may have to work with low sample rate designs. This is determined by the worst critical path.
-
-The Pyha way is to register all the outputs, that way i can be assured that all the inputs are already registered.
-
-The ``rst_n`` signal can be used to set initial states for registers, in Pyha the initial value is determined by the
-value assigned in ``__init__``, in this case it is 0.
-
-
-Testing
-^^^^^^^
-
-Simulation results in :numref:`acc_sim_delay` show that the **model** simulation differs
-from the rest of the simulations. It is visible that the hardware related simulations are **delayed by 1** sample.
-This is the side-effect of the hardware registers, each register on the signal path adds one sample delay.
+One inconvenience is that every register on signal path delays the output signal by 1 sample, this is also called
+pipeline delay or latency. This situation is shown on :numref:`acc_sim_delay` that shows the simulation results for the
+``Acc`` module. Note that the model is implemented without register semantics, thus has no pipeline delays. This can
+be seen from the :numref:`acc_sim_delay`, hardware related simulations are delayed by 1 compared to the software model.
 
 .. _acc_sim_delay:
 .. figure:: ../examples/accumulator/img/acc_sim_delay.png
     :align: center
     :figclass: align-center
 
-    Simulation of the accumulator (x is a random integer [-5;5])
+    Simulation of the ``Acc`` module, input is a random integer [-5;5]
 
-Pyha provides a :code:`self._delay` variable, that hardware classes can use to specify their delay.
-Simulation functions can read this variable and compensate the simulation data so that the delay is compensated, that
-eases the design of unit-tests.
 
-The simulation results match in output (:numref:`acc_sim`), after setting the :code:`self._delay = 1` in the ``__init__``
-function.
-
-.. _acc_sim:
-.. figure:: ../examples/accumulator/img/acc_sim.png
-    :align: center
-    :figclass: align-center
-
-    Simulation of the delay-compensated accumulator (x is a random integer [-5;5])
-
+Pyha reserves a :code:`self._delay` variable, that hardware classes can use to specify their delay.
+Simulation functions read this variable and compensate the simulation data so that the delay is compensated, so that
+the compensation does not have to be made in unit-tests. Setting the ``self._delay = 1` in the ``__init__`` function
+would shift the hardware simulations left by 1 sample, so that all the simulatiosn would be exactly equal.
 
 .. _ch_sliding_adder:
 
