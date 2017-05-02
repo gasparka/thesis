@@ -20,6 +20,12 @@ Many tools on the market are capable of converting higher level language to VHDL
 However, these tools only make use of the very basic dataflow semantics of VHDL language,
 resulting in complex conversion process and typically unreadable VHDL output.
 
+The design choices done in the process of Pyha design have focused on simplicity. The conversion process of
+Python code to VHDL is straight-forward as the synthesis tools are already capable of elaborating sequential VHDL code.
+This work contributes the object-oriented VHDL desing way that allows defining registers in sequential code.
+Thanks to that, the OOP Python code can be simply mapped to OOP VHDL code. Result is readable (keeps hirarchy) VHDL
+code that may provide an bridge for people that already know VHDL.
+
 
 Sequential, Object-oriented style for VHDL
 ------------------------------------------
@@ -513,14 +519,6 @@ like figuring out what variables need to be defined in VHDL code.
         ret_0 := y;
     end procedure;
 
-Comparison to other methods
-~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-Like HLS must do much work to deduce registers..
-Pyha can convert basically line by line, very simple.
-
-.. todo:: ??
-
 
 Summary
 -------
@@ -530,6 +528,11 @@ simpler conversion from Python to VHDL.
 Pyha converts directly to the VHDL model by using RedBaron based syntax conversions. Type information is reuqired
 trough the simulation before conversion.
 
+
+Like HLS must do much work to deduce registers..
+Pyha can convert basically line by line, very simple.
+
+.. todo:: ??
 
 .. bibliography:: bibliography.bib
     :style: unsrt

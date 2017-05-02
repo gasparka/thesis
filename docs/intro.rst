@@ -2,9 +2,6 @@ Introduction
 ============
 
 
-Abstract
---------
-
 Lately the digital designs made have raised in complexity.
 There are now many open-source tools that enable fast construction in software domain, for example
 GNURadio and Pothos. These tools provide users the simple way of connectin blocks togather and designing
@@ -19,117 +16,111 @@ languages. Best way to do is MATLAB but it is expensive.
 
 This thesis presents a new Python based hardware descripton language(HDL) called Pyha, that focuses on
 simplifying development and testing process of DSP systems. Pyha aims to raise the abstraction level by
-providing sequential and object-oriented design flow. Pyha is based on a OOP VHDL model that is also one
+providing sequential and object-oriented design model. Pyha is based on a OOP VHDL model that is also one
 contribution of this thesis. Simulatable in Python. Fixed point and semi-automatic conversion.
 
 One goal of this project is to make model based designs simpler, for this reason Pyha has been designed to provide
 simple unit-testing simulation functions that can work against model.
-
 
 Background
 ----------
 
 Main way to desing digital hardware today is still VHDL and SystemVerilog(SV). SV is aggressively promoted by
 the big EDA (Cadence, Mentor, Synopsys) along with Universal Verification Methodology (UVM).
-At 2003, Aart de Geus, Synopsys CEO, has stated that SystemVerilog will replace VHDL :numref:`vhdl_dead`.
+At 2003, Aart de Geus, Synopsys CEO, has stated that SystemVerilog will replace VHDL in 10 years :cite:`vhdl_dead`.
 
-Meanwhile the VHDL development is going on mostly in the open-source sphere where people are working on an VHDL-2017
-standard :cite:`vhdl_iee`. In addition, there is active work going on GHDL, that is open-source VHDL simulator.
-Lately more useful tools for VHDL has been realeased like
-Open Source VHDL Verification Methodology (OSVVM) :cite:`osvvm` and VUnit (unit testing in VHDL) :cite:`vunit`.
+Meanwhile the VHDL development is going on mostly in the open-source sphere where VHDL-2017
+standard :cite:`vhdl_iee` is in development. In addition, active work is going on with VHDL tools, for example
+open source VHDL simulator GHDL and unit-testing library VUnit:cite:`vunit`.
+Open Source VHDL Verification Methodology (OSVVM) :cite:`osvvm`.
 
-While these improvements work on the verification side, the synthesisable parts of VHDL and SV has stayed the same
-for the past 20 years. Verification is big part on the other hand...
+While these improvements work on the verification side, the synthesizable parts of VHDL and SV have stayed mostly
+the same for the past 20 years.
 
-Academia and industry
-High-level synthesis (HLS) aims to improve design productivity by automating the refinement from
-the algorithmic level to RTL :cite:`hls_overview`. In general the HLS world is dominated by the C type languages.
-Many HLS languages have been developed in both commercially and academically.
-For example LegUp :cite:`hls_legup` is C based HLS, being developed at the University of Toronto.
-From commercial systems, lately the
-Vivado HLS, developed by Xilinx, has been gaining some traction. As of 2015, it is included in the
-free design suite of Vivado (device limited).
-Problem with HLS tools is that they often need manual code transformations and guidlines for the compiler in order
-to archive reasonable performance :cite:`vivado_hls_case_study`. Another problem with HLS languages is that often
-they are promoted as simple C to RTL tools, but in reality to get reasonable results designer needs to understand the
-RTL level reasonably well.
-
-On the other front there are projects that raise the abstraction by improving the
-hardware description lannguages (HDL). For example, MyHDL turns
-Python into a hardware description and verification language,
+Many projects propose to raise the RTL design abstraction level by using higher level programming
+constructs. For example, MyHDL turns Python into a hardware description and verification language,
 providing hardware engineers with the power of the Python ecosystem :cite:`myhdlweb`.
-Chisel is an open-source hardware construction language developed at UC Berkeley that uses Scala
-programming language, they providing concepts including object orientation, functional programming, parameterized types,
-and type inference :cite:`chisel`.
+Recently Chisel :cite:`chisel` has been gaining some attention,
+it is an hardware construction language developed at UC Berkeley that uses Scala programming language,
+they providing concepts including object orientation, functional programming, parameterized types,
+and type inference.
+From purely functional languages, there is CλaSH, an haskell based HDL, developed at University of Twente,
+that support higher order functions :cite:`clash`.
+None of these languages have gained widespread acceptance. Why?
 
-DSP systems can be described in existing HLS and HDL languages, but currently the most popular ways is to use
-MATLAB/Simuling/HDLConverter flow :cite:`borph`.
-Using this design flow, users describe their designs in Simulink using blocks provided by Xilinx System Generator
+On the other front high-level syntehsis(HLS) tools aim to automate the refinement from the algorithmic level to RTL :cite:`hls_overview`.
+Lately the Vivado HLS, developed by Xilinx, has been gaining some traction. As of 2015, it is included in the
+free design suite of Vivado (device limited). It works with C, C++ or SystemC input.
+Problem with HLS tools is that they are often promoted as direct C to RTL tools but in reality
+often manual code transformations and guidlines are needed, in order
+to archive reasonable performance :cite:`vivado_hls_case_study`. The designer must already know how the RTL works in
+order to give these instructions. HLS tools are almost exclusevly based on C languages, another critisism has been
+that C is not that far from Verilog/VHDL.
+
+The DSP systems can be described in previously mentioned HLS or HDL languages,
+but the most productive way is to use MATLAB/Simuling/HDLConverter flow, which allows
+users to describe their designs in Simulink using HDL convertable blocks provided by MATLAB or Xilinx System Generator
 :cite:`borph`.
 
 
 Objective and scope
 -------------------
 
-The scope of this thesis is on DSP systems. As mentioned in the previous section, this domain is largly dominated
+The scope of this thesis is on DSP systems conversion. As mentioned in the previous section, this domain is largely dominated
 by MATLAB products. One goal of this thesis is to to provide an open-source alternative to this.
 
-There is no doubt that MATLAB based tools are powerful and get the job done. The problem with these kind of
-workflows is the cost. Succesful workflow requires many tools from the MATLAB portfolio, like MATLAB, Simulink, HDLCoder
-, HDLVerifier, DSPToolbox...etc. Price of this package can easly grow over tens of thousands euros. In addition,
-often the FPGA vendor tools are required :cite:`borph`, like Xilinx System Generator, that costs ~5000 EUR annually.
-Even if someone could afford these kind of tools, it is clear that most of the people have no such possibilities,
-thus this flow is completely unacceptable for open-source designs.
-Thus the designers must turn to alternative methods, for example
-in :cite:`blade_adsb` an open-source a ADS-B decoder is implemented in hardware. First they implemented
-the model in MATLAB for prototyping purposes. Next they converted the model into C and implemented it using fixed-point
-arithmetic. Lastly they converted the C model to VHDL.
+There is no doubt that MATLAB based workflow offers an highly productive path from DSP models to hardware. However
+these tools can easily cost over tens of thousands euros, in addition they often require FPGA vendor tools that can add
+additional annual cost :cite:`borph`. Using these tools is not a good way for reproducible
+research and is completely unusable for open-source designs.
+Thus the designers must turn to alternative methods, for example :cite:`blade_adsb` provides an hardware implementation of
+an ADS-B (automatic dependent surveillance – broadcast). First, they did the prototyping in the MATLAB environment, the
+working model was then translated to C in order for real-time testing and fixed-point implementation. Lastly the C
+model was manually converted to VHDL.
+In this work, Pyha has been designed in a way that all of this workflow could be done in the Python domain.
+Long term goal is to develop enough blocks that
+that match the performance of GNURadio, so that flow-graphs could be simply converted to FPGA designs.
 
-Pyha, developed in the process of this thesis project, aims to aims to bring all the development into the Python domain.
-Long term goal of this project is to develop enough blocks
-that match the performance of GNURadio, so that flow-grapsh could be simply converted to FPGA designs.
-
-Python is especially well suited for rapid prototyping and testing.
+Python is general purpose programming language that is especially well suited for rapid prototyping.
+Moreover, Python has also found its place in scientific projects and academia. Python offers most of what is
+familiar from MATLAB and lately in the world on data science and machine-learning, Python is the go to tool.
 Lately the scientific world has started shifting from MATLAB to Python, even full research groups are transitioning.
-:cite:`matlab_to_python`. Python is free, open-source and offers most of what MATLAB has, for example Numpy package
-for numerical computing. In domain of communication systems, all the GNURadio blocks have Python mappings.
+:cite:`matlab_to_python`. In domain of communication systems, all the GNURadio blocks have Python mappings.
+:numref:`pypl_py_vs_mat` shows the popularity comparison (based on Google searches) of Python, MATLAB and C. Python is
+the 2. popular language just behind Java with an rising trend.
 
-In Python domain there already exist two projects that allow design of RTL in Python domain. The MyHDL is fully working
-based on the event-driven approach. Function based design, similiar to Verilog language,
-it does not provide a lot of abstraction. Migen is more following the
-structured approach, the abstraction level is higher than of MyHDL, but it archieves this by using 'metaprogramming' in
-Python, that greatly affects the readability and bla of code. Neither the MyHDL nor Migen provide an support for
-fixed-point type, they are not DSP oriented.
+.. _pypl_py_vs_mat:
+.. figure:: /img/pypl_py_vs_mat.png
+    :align: center
+    :figclass: align-center
 
-In this work Pyha has been designed to add DSP related features to the Python conversion scope, this includes
-fixed-point type and semi-automatic conversion from floating point. In addition Pyha integrates the model to designs
-and test functions simplification. Pyha includes functions
-that help verification by automatically running all the simulations, asserting that model is equvalent to the
-synthesis result, tests defined for model can be reused for RTL, model based verificaiton.
-Pyha designs are also simulatable and debuggable in Python domain.
-.The design of Pyha also supports fully automatic conversion but currently this is left as a future work.
+    PYPL(PopularitY of Programming Language) :cite:`pypl`. Python 15.1%, C 6.9%, MATLAB 2.7%
 
-Pyha is a fully sequential language that works on purely Python code. However Pyha resides in the RTL
-level, allowing to define each and every register. In that sende Pyha is at somewhere between the HLS and HDL
-language. Pyha aims to raise the abstraction level by using the object-oriented style, so that the RTL details
-can be easily abstracted away.
-One major advantage of Pyha is that existing blocks can be connected together in purely Python way, the
-designer needs to know nothing about hardware design or underlying RTL implementation.
+MyHDL is following the event-driven approach which is a trait of the classical HDL's. It features an function based
+design that is very similar to Verilog processes. In general the synthesizable subset of MyHDL is very limited,
+it has been found that the tool is more useful for high-level modeling purposes :cite:`jan_sim`.
+Another package in the Python ecosystem is Migen, that replaces the event-driven paradigm with the notions of
+combinatorial and synchronous statements :cite:`migenweb`. Migen can be considered as meta-programming in Python so
+it is a bit complicated. Both Migen and MyHDL are more aimed at the control logic, neither implements the fixed-point
+data type, that is a standard for hardware DSP designs.
 
-The design choices done in the process of Pyha design have focused on simplicity. The conversion process of
-Python code to VHDL is straight-forward as the synthesis tools are already capable of elaborating sequential VHDL code.
-This work contributes the object-oriented VHDL desing way that allows defining registers in sequential code.
-Thanks to that, the OOP Python code can be simply mapped to OOP VHDL code. Result is readable (keeps hirarchy) VHDL
-code that may provide an bridge for people that already know VHDL.
+This thesis introduces Pyha, a new Python based HDL, that was developed during the masters thesis program.
+Pyha focuses clearly on the DSP systems by providing the fixed-point type and semi-automatic conversion from
+floating point. In addition, this work makes an effort to simplify the testing process of hardware systems, by
+providing one function that runs all the simulations.
+Pyha aims to raise the abstraction level by using sequential object-oriented style, major advantage of this
+is that existing blocks can be connected together in purely Pythonic way, the
+designer needs to know nothing about the underlying RTL implementation.
 
-Limited to one clock domain?
-In some seneses the Python part could be considers as Python binding to VHDL OOP model.
-Convert to HLS langauge instead of VHDL, then the designer could choose to to either design for RTL or HLS, this is
-more as an futures perspective, this thesis works only with the RTL part.
+Furthermore, this work introduces the sequential OOP VHDL model, that is developed to allow trivial conversion
+from Python to VHDL.
+Side contribution
 
 Structure
 ---------
 
+This thesis is divided into 3 chapters. In chapter :numref:`pyha_intro`, main concepts of Pyha are introduced.
+Following chapter shows
 First chapter of this thesis gives an overview of the developed tool Pyha and how it can be used for hardware design.
 Follows the examples that show how Pyha can be used to relatively easly construct moving-average filter and by reusing
 it the DC-removal filter.
