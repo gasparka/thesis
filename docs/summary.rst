@@ -55,3 +55,7 @@ In some seneses the Python part could be considers as Python binding to VHDL OOP
 Convert to HLS langauge instead of VHDL, then the designer could choose to to either design for RTL or HLS, this is
 more as an futures perspective, this thesis works only with the RTL part.
 
+Long term goal of the project is to develop enough blocks that are functionally equal to GNURadio blocks, so that
+flow-graphs could be converted to FPGA designs, thus providing an open-source alternative for Simulink
+based flows.
+

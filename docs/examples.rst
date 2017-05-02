@@ -215,4 +215,6 @@ the output of the filter starts countering the DC component until it is removed.
 Summary
 -------
 
-Tere
+Pyha aims to raise the abstraction level by using sequential object-oriented style, major advantage of this
+is that existing blocks can be connected together in purely Pythonic way, the
+designer needs to know nothing about the underlying RTL implementation.
