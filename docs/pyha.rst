@@ -116,8 +116,8 @@ fully reused for later RTL implementation.
     # assert something
 
 
-Designs with registers
-----------------------
+Sequential logic
+----------------
 
 In hardware registers are used as an memory element and for pipelining. In general digital logic synthesis relies on
 timing synthesis that only works when analized logic is between registers.

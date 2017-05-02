@@ -184,7 +184,13 @@ latex_elements = {
 
 latex_additional_files = [
     '/home/gaspar/git/thesis/tex/sphinx.sty',
-    '/home/gaspar/git/thesis/tex/sphinxmanual.cls'
+    '/home/gaspar/git/thesis/tex/sphinxmanual.cls',
+    '/home/gaspar/git/thesis/tex/abstract.inc',
+    '/home/gaspar/git/thesis/tex/abstract_est.inc',
+    '/home/gaspar/git/thesis/tex/decorig.inc',
+    '/home/gaspar/git/thesis/tex/front_est.inc',
+    '/home/gaspar/git/thesis/tex/front.inc',
+
 ]
 
 
