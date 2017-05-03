@@ -5,6 +5,13 @@ Conversion to VHDL
 
 This chapter shows how Pyha converts to VHDL.
 
+.. _conversion:
+.. figure:: img/conversion.png
+    :align: center
+    :figclass: align-center
+
+    Unexpected synthesis result of :numref:`vhdl_oop` (Intel Quartus RTL viewer)
+
 .. todo:: Pilt converterist
 
     * Simulatsioon tüüpide leidmiseks
