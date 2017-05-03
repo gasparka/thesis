@@ -8,7 +8,7 @@ It is true that tool vendors have stopped enchanting VHDL support, even so the d
 open-source sphere,
 where VHDL-2017 standard :cite:`vhdl_iee` is in the development. In addition, active development is going on open
 source simulator GHDL, Open Source VHDL Verification Methodology (OSVVM) :cite:`osvvm` and unit-testing library
-VUnit:cite:`vunit`.
+VUnit :cite:`vunit`.
 All the improvements the traditional languages receive aim to ease the verification task,
 the synthesizable parts of VHDL and SV have stayed mostly the same for the past 10 years.
 
@@ -53,7 +53,7 @@ DSP systems can be built by using the fixed-point type and semi-automatic conver
 In addition, this work makes an effort to simplify the testing process of hardware systems by
 providing better simulation interface for unit-testing.
 
-Basis of Pyha is the Python, a general purpose programming language that is especially well suited for
+Basis of Pyha is Python, a general purpose programming language that is especially well suited for
 rapid prototyping and modeling. Python has also found its place in scientific projects and academia by offering
 most of what is familiar from MATLAB, free of charge. Scientist are already shifting from MATLAB to Python in order
 to conduct research that is reproducible and accessible by everyone :cite:`matlab_to_python`.
@@ -66,15 +66,6 @@ Python is far ahead and the only one with positive trend.
     :figclass: align-center
 
     PYPL(PopularitY of Programming Language) :cite:`pypl`. Python 15.1%, C 6.9%, MATLAB 2.7%
-
-
-MyHDL is following the event-driven approach which is a trait of the classical HDL's. It features an function based
-design that is very similar to Verilog processes. In general the synthesizable subset of MyHDL is very limited,
-it has been found that the tool is more useful for high-level modeling purposes :cite:`jan_sim`.
-Another package in the Python ecosystem is Migen, that replaces the event-driven paradigm with the notions of
-combinatorial and synchronous statements :cite:`migenweb`. Migen can be considered as meta-programming in Python so
-it is a bit complicated. Both Migen and MyHDL are more aimed at the control logic, neither implements the fixed-point
-data type, that is a standard for hardware DSP designs.
 
 
 Furthermore, this work introduces the sequential OOP VHDL model, that is developed to allow simpler conversion

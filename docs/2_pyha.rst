@@ -195,11 +195,11 @@ would shift the hardware simulations left by 1 sample, so that all the simulatio
 Block processing and sliding adder
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-One very common task in DSP designs is to calculate results based on some number of input samples (block processing).
-Until now, the ``main`` function has worked with a single input sample,
-this can now be changed by keeping the history with registers.
+Common technique required to implement DSP systems is block processing i.e. calculating results on a block of
+input samples. Until now, the ``main`` function has worked with a single input sample, registers can be used to
+keep history of samples, so that block processing can be applied.
 
-Consider an algorithm that adds the last 4 input values. :numref:`block_adder` shows an implementation that keeps
+For an example, consider an algorithm that adds the last 4 input values (:numref:`block_adder`). :numref:`block_adder` shows an implementation that keeps
 track of the last 4 input values and sums them. Note that
 the design also uses the output register ``y``.
 
@@ -227,7 +227,7 @@ the design also uses the output register ``y``.
 The ``self.next.shr = [x] + self.shr[:-1]`` line is also known as a 'shift register', because on every call it
 shifts the list contents to the right and adds new ``x`` as the first element. Sometimes the same structure is used as a
 delay-chain, because the sample ``x`` takes 4 updates to travel from ``shr[0]`` to ``shr[3]``.
-This is a very common element in hardware DSP designs.
+This is a very common element in hardware designs.
 
 :numref:`block_adder_rtl` shows the RTL for this design, as expected the ``for`` has been unrolled, thus all the
 summing is done.

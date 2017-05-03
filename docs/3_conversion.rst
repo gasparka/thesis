@@ -531,6 +531,3 @@ trough the simulation before conversion.
 Like HLS must do much work to deduce registers..
 Pyha can convert basically line by line, very simple.
 
-
-.. bibliography:: bibliography.bib
-    :style: unsrt

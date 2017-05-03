@@ -1,5 +1,5 @@
-Design examples
-===============
+Case studies
+============
 
 Moving average filter
 ---------------------
@@ -212,9 +212,20 @@ the output of the filter starts countering the DC component until it is removed.
 
     Simulation of DC-removal filter in the time domain
 
-Summary
--------
+Comparison to other tools
+-------------------------
+
+MyHDL is following the event-driven approach which is a trait of the classical HDL's. It features an function based
+design that is very similar to Verilog processes. In general the synthesizable subset of MyHDL is very limited,
+it has been found that the tool is more useful for high-level modeling purposes :cite:`jan_sim`.
+Another package in the Python ecosystem is Migen, that replaces the event-driven paradigm with the notions of
+combinatorial and synchronous statements :cite:`migenweb`. Migen can be considered as meta-programming in Python so
+it is a bit complicated. Both Migen and MyHDL are more aimed at the control logic, neither implements the fixed-point
+data type, that is a standard for hardware DSP designs.
 
 Pyha aims to raise the abstraction level by using sequential object-oriented style, major advantage of this
 is that existing blocks can be connected together in purely Pythonic way, the
 designer needs to know nothing about the underlying RTL implementation.
+
+.. bibliography:: bibliography.bib
+    :style: unsrt
