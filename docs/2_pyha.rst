@@ -13,7 +13,7 @@ The second half introduce the fixed-point type and provides use-cases on designi
 All the examples presented in this chapter can be found online HERE, including all the Python sources, unit-tests,
 VHDL conversion files and Quartus project for synthesis.
 
-.. todo:: organise examples to web and put link
+.. todo:: organise examples to web and put link, INT usage!
 
 Introduction
 ------------
@@ -315,31 +315,32 @@ the ``window_len``. In addition, noteice how the ``shr`` is just a stack of regi
 Fixed-point designs
 -------------------
 
-Examples in the previous chapters have used only the ``integer`` type, in order to simplify the designs.
+DSP systems are commonly described in floating-point arithmetic, which are supported by all conventional programming
+languages. Floating-point arithmetic can also be used in RTL languages, but the problem is high resource usage
+:cite:`fixvsfp`.
+Alternative is to use fixed-point numbers, that work with integer arithmetic. Another benefit of fixed-point numbers
+is that they can map to FPGA DSP blocks, thus providing higher clocks speed and reduced resource use [#floatdsp]_.
 
-.. todo:: explain why float costs greatly?
+Common workflow is to experiment and write model using the floating-point arithmetic, then convert to fixed-point
+for hardware implementation. In this work Pyha has been designed to simplify the conversion and equivalence testing
+operations.
 
-DSP algorithms are mostly described using floating point numbers. As shown in previous sections, every operation
-in hardware takes resources and floating point calculations cost greatly. For that reason, fixed-point arithmetic
-is often used in hardware designs.
+.. [#floatdsp] Some high-end FPGAs also include floating-point DSP blocks :cite:`arria_dsp`
 
-Fixed-point arithmetic is in nature equal to integer arithmetic and thus can use the DSP blocks that
-come with many FPGAs (some high-end FPGAs have also floating point DSP blocks :cite:`arria_dsp`).
+Fixed-point support in Pyha
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Basics
-~~~~~~
+In this work, Pyha has been designed to support signed fixed-point type by providing the ``Sfix`` class.
+The implementation maps directly to the VHDL fixed-point library :cite:`vhdlfixed` [#fixvhdl]_,
+that is already known in the VHDL community and proven to be well synthesizable.
 
-Pyha defines ``Sfix`` for FP objects; it is a signed number.
-It works by defining bits designated for ``left`` and ``right``
-of the decimal point. For example ``Sfix(0.3424, left=0, right=-17)`` has 0 bits for integer part
-and 17 bits for the fractional part. :numref:`fp_basics` shows some examples.
-more information about the fixed point
-type is given on APPENDIX.
-
-.. todo:: Add more information about fixed point stuff to the appendix
+``Sfix`` class works by allocating bits to the ``left`` and ``right`` side of the decimal point. Bits to the
+``left`` determine the integer bounds, while the ``right`` bits determine the minimum resolution of the number.
+For example, ``Sfix(left=0, right=-17)`` represents a number between [-1;1] with resolution of 0.000007629 (``2**-17``).
+:numref:`fp_basics` shows a few examples on how reducing the ``right`` reduces the number precision.
 
 .. code-block:: python
-    :caption: Example of ``Sfix`` type, more bits give better results
+    :caption: Example of ``Sfix`` type, more bits give better accuracy
     :name: fp_basics
 
     >>> Sfix(0.3424, left=0, right=-17)
@@ -349,124 +350,86 @@ type is given on APPENDIX.
     >>> Sfix(0.3424, left=0, right=-4)
     0.3125 [0:-4]
 
-The default FP type in Pyha is ``Sfix(left=0, right=-17)``, it represents numbers between [-1;1] with
-resolution of 0.000007629 (``2**-17``). This format is chosen because it fits into common FPGA DPS blocks
-(18 bit signals :cite:`cycloneiv`)
-and it can represent normalized numbers.
+The default and recommended fixed-point type in Pyha has been chosen to be ``Sfix(left=0, right=-17)``, because it
+can represent normalized numbers and fits into FPGA DSP blocks :cite:`cycloneiv` :cite:`fixvsfp`. Keeping block inputs
+and outputs in the normalized range can simplify the overall design process.
 
-The general recommendation is to keep all the inputs and outputs of the block in the default type.
+.. [#fixvhdl] https://github.com/FPHDL/fphdl.
 
 .. _ch_fp_sliding_adder:
 
-Fixed-point sliding adder
-~~~~~~~~~~~~~~~~~~~~~~~~~
+Converting sliding adder to fixed-point
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Consider converting the sliding window adder, described in :numref:`ch_sliding_adder`, to FP implementation. This
-requires changes only in the ``__init__`` function (:numref:`fp_sliding_adder`).
+Consider converting the sliding window adder (developed in :numref:`ch_sliding_adder`)
+to fixed-point implementation. This requires
+changes only in the ``__init__`` function (:numref:`fp_sliding_adder`).
 
 .. code-block:: python
-    :caption: Fixed-point sliding adder
+    :caption: Fixed-point sliding adder, the rest of the code is identical to one in :numref:`ch_sliding_adder`
     :name: fp_sliding_adder
 
     def __init__(self, window_size):
-        self.shr = [Sfix()] * window_size
-        self.sum = Sfix(left=0)
-    ...
+        self.shr = [Sfix()] * window_size # lazy type
+        self.sum = Sfix(left=0)           # always resize left to 0
 
-The first line sets ``self.shr`` to store ``Sfix()`` elements. Notice that it does not define the
-fixed-point bounds, meaning it will store 'whatever' is assigned to it. The final bounds are determined during simulation.
+The first line sets ``self.shr`` to store ``Sfix()`` elements, this is a lazy statement as it does not specify the
+fixed-point bounds i.e. it will take bounds from the first assignment to the ``self.shr`` variable.
+The ``Sfix(left=0)`` forces ``left`` to 0 bits, while the fractional part is determined by the first assign.
+One problem with the VHDL fixed-point library is that the designer is constantly forced to resize the value to
+desired format, in this work Pyha has been designed to automate this step i.e. every assign to fixed-point variable
+is resized to the initial format, the bounds may be taken from the assigned value if initial value is lazy.
 
-.. todo:: lazy stuff needs more explanation
-
-The ``self.sum`` register uses another lazy statement of ``Sfix(left=0)``, meaning that the integer bits
-are forced to 0 bits on every assign to this register. The fractional part is left determined by simulation.
-The rest of the code is identical to the one described in :numref:`ch_sliding_adder`.
-
-
-Synthesis results are shown in :numref:`rtl_sfix_saturate`. In general, the RTL diagram looks similar to the one at
-:numref:`ch_sliding_adder`. First noticeable change is that the signals are now 18 bits wide due to the
-default FP type. The second addition is the saturation logic, which prevents the wraparound behaviour by
-forcing the maximum or negative value when they are out of fixed point format. Saturation logic is by default enabled for
-FP types.
-
+Synthesis results :numref:`rtl_sfix_saturate` show that inputs and outputs are now 18-bits wide,
+this is due the use of default fixed-point type.
+Another big addition is the saturation logic, which prevents the wraparound behaviour by saturating the value instead.
+Wraparound related bugs can be very hard to find, thus it is suggested to keep saturation logic enabled when the
+overflows are possible.
 
 .. _rtl_sfix_saturate:
 .. figure:: ../examples/block_adder/img/rtl_sfix_saturate.png
     :align: center
     :figclass: align-center
 
-    RTL of fixed-point sliding adder (Intel Quartus RTL viewer)
+    RTL of fixed-point sliding adder, default fixed-point type (Intel Quartus RTL viewer)
 
+The ``simulate`` function in Pyha has been designed to automatically convert floating-point inputs to
+fixed-point, same goes for outputs. This way the unit-test can be kept simple, :numref:`fp_test` gives an example.
 
+.. code-block:: python
+    :caption: Pyha enables testing of fixed-point design with floating-point numbers
+    :name: fp_test
 
-:numref:`fix_sat_wrap` plots the simulation results for input of random signal in [-0.5;0.5] range.
-Notice that the hardware simulations are bounded to [-1;1] range by the saturation logic, that is why the model
-simulation is different at some points.
+    dut = OptimalSlidingAddFix(window_len=4)
+    x = np.random.uniform(-0.5, 0.5, 64) # random signal in [-0.5, 0.5] range
+    y = simulate(dut, x)                 # all outputs are floats
+    # assert or plot results
+
+The simulation results shown on :numref:`fix_sat_wrap`, show that the hardware related simulations differ from the
+model. This is because model is implemented in floating-point arithmetic while hardware typing is limited to
+[-1;1] range. Notice that the mismatch starts when the value rises over ``1.0``.
 
 .. _fix_sat_wrap:
 .. figure:: ../examples/block_adder/img/sim_fix.png
     :align: center
     :figclass: align-center
 
-    Simulation results of FP sliding sum
+    Simulation results of FP sliding sum, input is random signal in [-0.5; 0.5] range
 
-Simulation functions can automatically convert 'floating-point' inputs to default FP type. In same manner,
-FP outputs are converted to floating point numbers. That way, the designer does not have to deal with FP numbers
-in unit-testing code. An example is given in :numref:`fp_test`.
-
-.. code-block:: python
-    :caption: Test fixed-point design with floating-point numbers
-    :name: fp_test
-
-    dut = OptimalSlidingAddFix(window_len=4)
-    x = np.random.uniform(-0.5, 0.5, 64)
-    y = simulate(dut, x)
-    # plotting code ...
-
+.. write about semi and automatic fix conversion?
 
 Summary
 -------
 
-This chapter has demonstrated that in Pyha traditional software language features can be used
-to infer hardware components and their outputs are equivalent.
-One must still keep in mind how the code converts to hardware, for example that the loops will be unrolled.
-A major difference between hardware and software is that in hardware, every arithmetical operator takes up resources.
-
-Class variables can be used to add memory to the design. In Pyha, class variables must be assigned to
-``self.next`` as this mimics the **delayed** nature of registers. The general rule is to always register the outputs of
-Pyha designs.
-
+This chapter has demonstrated the major features of Pyha and the motivation behind them. It was shown that Pyha
+is an sequential object-oriented programming language based on Python. It falls to the category of behavioral languages,
+meaning that the output of Python program is equal to the output of generated hardware. Pyha provides ``simulate``
+functions to automatically and without any boilerplate code run model and hardware related simulations, this helps the
+design of unit-tests. In addition, Pyha designs are fully debuggable in Python ecosystem.
 DSP systems can be implemented by using the fixed-point type. Pyha has ‘semi-automatic conversion’ from
 floating point to fixed point numbers. Verifying against floating point model helps the design process.
 
-Reusing Pyha designs is easy thanks to the object-oriented style that also works well for design abstraction.
-
-Pyha provides the ``simulate`` function that can automatically run Model, Pyha, RTL and GATE level simulations. In
-addition, ``assert_simulate`` can be used for fast design of unit-tests. These functions can automatically handle
-fixed point conversion, so that tests do not have to include fixed point semantics. Pyha designs are debuggable
-in the Python domain.
-
-In Pyha all class variables are interpreted as hardware registers. The ``__init__`` function may contain any Python code
-to evaluate reset values for registers.
-
-The key difference between software and hardware approaches is that hardware registers have **delayed assignment**,
-they must be assigned to ``self.next``.
-
-The delay introduced by the registers may drastically change the algorithm,
-that is why it is important to always have a model and unit tests, before starting hardware implementation.
-The model delay can be specified by ``self._delay`` attribute, this helps the simulation functions to compensate for the delay.
-
-Registers are also used to shorten the critical path of chained logic elements, thus allowing higher clock rate. It is encouraged
-to register all the outputs of Pyha designs.
-
-In Pyha, DSP systems can be implemented by using the fixed-point type.
-The combination of 'lazy' bounds and default Sfix type provide simplified conversion from floating point to fixed point.
-In that sense it could be called 'semi-automatic conversion'.
-
-Simulation functions can automatically perform the floating to fixed point conversion, this enables writing
-unit-tests using floating point numbers.
-
-Comparing the FP implementation to the floating-point model can greatly simplify the final design process.
-
+..  Class variables can be used to define registers. In Pyha, class variables must be assigned to
+    ``self.next`` as this mimics the **delayed** nature of registers.
 
 

@@ -152,3 +152,7 @@ Note that the class sets ``self._delay=1`` to compensate for the register delay.
     :figclass: align-center
 
     Simulation results for ``OptimalSlideAdd(window_len=4)``
+
+
+..  Class variables can be used to define registers. In Pyha, class variables must be assigned to
+    ``self.next`` as this mimics the **delayed** nature of registers.
