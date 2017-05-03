@@ -54,10 +54,9 @@ In addition, this work makes an effort to simplify the testing process of hardwa
 providing better simulation interface for unit-testing.
 
 Basis of Pyha is the Python, a general purpose programming language that is especially well suited for
-rapid prototyping and modeling. Python has also found its place in scientific projects and academia, by offering
-most of what is familiar from MATLAB, free of charge.
-The scientific world has already started shifting from MATLAB to Python,
-even full research groups are transitioning :cite:`matlab_to_python`.
+rapid prototyping and modeling. Python has also found its place in scientific projects and academia by offering
+most of what is familiar from MATLAB, free of charge. Scientist are already shifting from MATLAB to Python in order
+to conduct research that is reproducible and accessible by everyone :cite:`matlab_to_python`.
 :numref:`pypl_py_vs_mat` shows the popularity comparison (based on Google searches) of Python, MATLAB and C.
 Python is far ahead and the only one with positive trend.
 
@@ -85,11 +84,10 @@ Side contribution
 Structure
 ---------
 
-This thesis is divided into 3 chapters. In chapter :numref:`pyha_intro`, main concepts of Pyha are introduced.
+This thesis is divided into 3 chapters. In chapter 1, main concepts of Pyha are introduced.
 Following chapter shows
 First chapter of this thesis gives an overview of the developed tool Pyha and how it can be used for hardware design.
 Follows the examples that show how Pyha can be used to relatively easly construct moving-average filter and by reusing
 it the DC-removal filter.
 Final chapter describes the one of the contribtutions of this thesis, the sequential VHDL OOP model and how Python
 is converted to it.
-

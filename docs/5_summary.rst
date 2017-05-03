@@ -17,7 +17,7 @@ simple conversion of Pyha to VHDL. One of the advantages of this work compared t
 of how it works.
 
 .. Lastly we showed that Pyha is already usable to convert some mdeium complexity designs, like
-FSK demodulator, that was used on Phantom 2 stuff..
+    FSK demodulator, that was used on Phantom 2 stuff..
 
 Future perspectives are to implement more DSP blocks, especially by using GNURadio blocks as models. That may
 enable developing an work-flow where GNURadio designs can easily be converted to FPGA.
@@ -25,7 +25,7 @@ In addition, the Pyha system could be improved to add automatic fixed point conv
 clock domains.
 
 .. Integration to bus structures is another item in the wish-list. Streaming blocks already exist in very basic form.
-Ideally AvalonMM like buses should be supported, with automatic HAL generation, that would allow design of reconfigurable FIR filters for example.
+    Ideally AvalonMM like buses should be supported, with automatic HAL generation, that would allow design of reconfigurable FIR filters for example.
 
 
 

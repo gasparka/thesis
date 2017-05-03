@@ -110,7 +110,7 @@ This two variable method has been used before, for example Pong P. Chu, author o
 suggests to use this style in defining sequential logic in VHDL :cite:`chu_vhdl`. The same semantics are also used in
 MyHDL signal objects :cite:`jan_myhdl_signals`.
 
-Adapting this style for the OOP data model is shown in :numref:`mac-next-data`.
+Adapting this style for the OOP data model is shown in :numref:`mac_next`.
 The new data model extends the structure to include the 'nexts' object,
 that can used to assign **next** value for registers, for example :code:`self.nexts.acc := 0`.
 
@@ -283,15 +283,15 @@ Examples
 ~~~~~~~~
 
 Creating a new class that connects two MAC instances in series is simple, first we need to create two
-MAC packages called MAC_0 and MAC_1 and add them to the data model (:numref:`mac-series-data`).
+MAC packages called MAC_0 and MAC_1 and add them to the data model (:numref:`mac_series`).
 The next step is to call MAC_0 operation on the input and then pass the output
-trough MAC_1, whose output is the final output (:numref:`mac-series-main`).
+trough MAC_1, whose output is the final output.
 
 .. todo:: why MAC_0 and MAC_1?
 
 .. code-block:: vhdl
     :caption: Series MACs in OOP-style VHDL
-    :name: mac-series-data
+    :name: mac_series
 
     type self_t is record
         mac0: MAC_0.self_t; -- define 2 MACs as part of data model
@@ -382,8 +382,7 @@ The Python to VHDL conversion process relies heavily on the results of last chap
 sequential OOP Python code easily map to VHDL. Even so, converting Python syntax to VHDL poses some problems.
 
 The biggest challenge in conversion from Python to VHDL is types, namely Python does not have them, while VHDL has.
-Conversion process must find all the types for Python variables, the process of this is described in
-:numref:`pyvhdl_types`.
+Conversion process must find all the types for Python variables, the process of this is described in.
 
 After the types are all known, the design can be converted from Python to VHDL syntax. This requires some way
 of traversing the Python source code and applying VHDL rated transforms.
@@ -532,7 +531,6 @@ trough the simulation before conversion.
 Like HLS must do much work to deduce registers..
 Pyha can convert basically line by line, very simple.
 
-.. todo:: ??
 
 .. bibliography:: bibliography.bib
     :style: unsrt
