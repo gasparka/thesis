@@ -199,38 +199,36 @@ Common technique required to implement DSP systems is block processing i.e. calc
 input samples. Until now, the ``main`` function has worked with a single input sample, registers can be used to
 keep history of samples, so that block processing can be applied.
 
-For an example, consider an algorithm that adds the last 4 input values (:numref:`block_adder`). :numref:`block_adder` shows an implementation that keeps
-track of the last 4 input values and sums them. Note that
-the design also uses the output register ``y``.
+For an example, consider an algorithm that outputs the sum of last 4 input values.
+:numref:`block_adder` shows the Pyha implementation, it works by keeping history of 4 last input samples and
+summing them for output.
 
 .. code-block:: python
-    :caption: Sliding adder algorithm
+    :caption: Sliding adder algorithm, implemented in Pyha
     :name: block_adder
 
     class SlidingAdder(HW):
         def __init__(self):
-            self.shr = [0, 0, 0, 0] # list of registers
-            self.y = 0
+            self.shr = [0, 0, 0, 0] # define list of registers
+            self.y = 0              # output register
 
         def main(self, x):
             # add new 'x' to list, throw away last element
             self.next.shr = [x] + self.shr[:-1]
 
-            # add all element in the list
+            # add all elements in 'shr'
             sum = 0
-            for a in self.shr:
-                sum = sum + a
+            for x in self.shr:
+                sum = sum + x
 
+            # register the output
             self.next.y = sum
             return self.y
 
-The ``self.next.shr = [x] + self.shr[:-1]`` line is also known as a 'shift register', because on every call it
+The ``self.next.shr = [x] + self.shr[:-1]`` implements an 'shift register', because on every call it
 shifts the list contents to the right and adds new ``x`` as the first element. Sometimes the same structure is used as a
 delay-chain, because the sample ``x`` takes 4 updates to travel from ``shr[0]`` to ``shr[3]``.
-This is a very common element in hardware designs.
-
-:numref:`block_adder_rtl` shows the RTL for this design, as expected the ``for`` has been unrolled, thus all the
-summing is done.
+This is a very common element in hardware designs. :numref:`block_adder_rtl` shows the synthesis results.
 
 .. _block_adder_rtl:
 .. figure:: ../examples/block_adder/img/rtl.png
@@ -239,15 +237,12 @@ summing is done.
 
     Synthesis result of :numref:`block_adder` (Intel Quartus RTL viewer)
 
-
-Optimizing the design
-^^^^^^^^^^^^^^^^^^^^^
-
 This design can be made generic by changing the ``__init__`` function to take the window length as a parameter
-(:numref:`block_adder_generic`).
+(:numref:`block_adder_generic`), so that ``SlidingAdder(window_len=4)`` would add 4 last elements, while
+``SlidingAdder(window_len=6)`` would add 6.
 
 .. code-block:: python
-    :caption: Generic sliding adder
+    :caption: Generic sliding adder, ``window_len`` controls the ``shr`` list length
     :name: block_adder_generic
 
     class SlidingAdder(HW):
@@ -255,23 +250,18 @@ This design can be made generic by changing the ``__init__`` function to take th
             self.shr = [0] * window_len
         ...
 
-
-The problem with this design is that it starts using more resources as the ``window_len`` gets larger as every
-stage requires a separate adder. Another problem is that the critical path gets longer, decreasing the
-clock rate. For example, the design with ``window_len=4`` synthesises to maximum clock of
-170 MHz, while ``window_len=6`` to only 120 MHz.
-
-.. todo:: MHz on what FPGA?
+This design has a few issues when the ``window_len`` gets higher (:numref:`rtl_6_critical`).
+First, every stage requires and separate adder
+so high ``window_len`` value implies high resource cost, this also forms an long critical path that decreases the
+maximum clock rate of the design.
 
 .. _rtl_6_critical:
 .. figure:: ../examples/block_adder/img/rtl_6_critical.png
     :align: center
     :figclass: align-center
 
-    RTL of ``window_len=6``, the red line shows the critical path (Intel Quartus RTL viewer)
+    Synthesis result of ````SlidingAdder(window_len=6)````, the red line shows the critical path (Intel Quartus RTL viewer)
 
-
-In that sense, it can be considered a poor design, as it is hard to reuse.
 Conveniently, the algorithm can be optimized to use only 2 adders, no matter the window length.
 :numref:`slider_optim` shows that instead of summing all the elements, the overlapping part of
 the previous calculation can be used to significantly optimize the algorithm.
@@ -284,51 +274,42 @@ the previous calculation can be used to significantly optimize the algorithm.
     y[5] =        x[5] + x[6] + x[7] + x[8] + x[9] + x[10]
     y[6] =               x[6] + x[7] + x[8] + x[9] + x[10] + x[11]
 
-    # reusing overlapping parts implementation
+    # optimized way to calculate by reusing previous results (recursive)
     y[5] = y[4] + x[10] - x[4]
     y[6] = y[5] + x[11] - x[5]
 
-:numref:`optimal_adder` gives the implementation of the optimal sliding adder; it features a new register ``sum`,
-that keeps
-track of the previous output. Note that the ``shr`` stayed the same, but is now rather used as a delay-chain.
+:numref:`optimal_adder` gives the implementation of the optimal sliding adder; it features a new register ``sum``,
+that keeps track of the previous output. The ``shr`` now serves the purpose of delay-chain.
 
 .. code-block:: python
-    :caption: Optimal sliding adder
+    :caption: Optimal sliding adder, implemented in Pyha
     :name: optimal_adder
 
     class OptimalSlideAdd(HW):
         def __init__(self, window_len):
             self.shr = [0] * window_len
-            self.sum = 0
+            self.sum = 0 # register to remember the 'last' sum
 
             self._delay = 1
 
         def main(self, x):
             self.next.shr = [x] + self.shr[:-1]
 
+            # add new 'x' to sample and subtract the delayed 'x'
             self.next.sum = self.sum + x - self.shr[-1]
             return self.sum
         ...
 
 
-:numref:`rtl_optimal_int_critical` shows the synthesis result; as expected, the critical path is along 2 adders.
+:numref:`rtl_optimal_int_critical` shows the synthesis result. Now the critical path is 2 adders, no matter
+the ``window_len``. In addition, noteice how the ``shr`` is just a stack of registers to delay the input signal.
 
 .. _rtl_optimal_int_critical:
 .. figure:: ../examples/block_adder/img/rtl_optimal_int_critical.png
     :align: center
     :figclass: align-center
 
-    Synthesis result of :numref:`block_adder`, ``window_len=4`` (Intel Quartus RTL viewer)
-
-Simulations results (:numref:`block_adder_sim`) show that the hardware desing behaves exactly as the software model.
-Note that the class has ``self._delay=1`` to compensate for the register delay.
-
-.. _block_adder_sim:
-.. figure:: ../examples/block_adder/img/sim.png
-    :align: center
-    :figclass: align-center
-
-    Simulation results for ``OptimalSlideAdd(window_len=4)``
+    Synthesis result of ``OptimalSlideAdd(window_len=4)`` (Intel Quartus RTL viewer)
 
 
 Fixed-point designs

@@ -223,6 +223,9 @@ combinatorial and synchronous statements :cite:`migenweb`. Migen can be consider
 it is a bit complicated. Both Migen and MyHDL are more aimed at the control logic, neither implements the fixed-point
 data type, that is a standard for hardware DSP designs.
 
+Overall i would say that both MyHDL and Migen are awesome tools, in the future merging of Pyha to either MyHDL or Migen
+can defiantly be considered.
+
 Pyha aims to raise the abstraction level by using sequential object-oriented style, major advantage of this
 is that existing blocks can be connected together in purely Pythonic way, the
 designer needs to know nothing about the underlying RTL implementation.

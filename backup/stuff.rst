@@ -140,3 +140,15 @@ Also algorithm becomes more complex and harder to understand.
 The only motivation for using SystemVerilog over VHDL is tool support. For example Yosys :cite:`yosys`, an open-source
 synthesis tool, supports only Verilog; however, to the best of my knowledge it does not yet support SystemVerilog features. There have
 been also some efforts in adding a VHDL frontend :cite:`vhdl_yosys`.
+
+
+
+Simulations results (:numref:`block_adder_sim`) show that the hardware design behaves exactly as the software model.
+Note that the class sets ``self._delay=1`` to compensate for the register delay.
+
+.. _block_adder_sim:
+.. figure:: ../examples/block_adder/img/sim.png
+    :align: center
+    :figclass: align-center
+
+    Simulation results for ``OptimalSlideAdd(window_len=4)``
