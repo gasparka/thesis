@@ -230,5 +230,11 @@ Pyha aims to raise the abstraction level by using sequential object-oriented sty
 is that existing blocks can be connected together in purely Pythonic way, the
 designer needs to know nothing about the underlying RTL implementation.
 
+The design choices done in the process of Pyha design have focused on simplicity. The conversion process of
+Python code to VHDL is straight-forward as the synthesis tools are already capable of elaborating sequential VHDL code.
+This work contributes the object-oriented VHDL desing way that allows defining registers in sequential code.
+Thanks to that, the OOP Python code can be simply mapped to OOP VHDL code. Result is readable (keeps hirarchy) VHDL
+code that may provide an bridge for people that already know VHDL.
+
 .. bibliography:: bibliography.bib
     :style: unsrt

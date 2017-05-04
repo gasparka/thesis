@@ -156,3 +156,66 @@ Note that the class sets ``self._delay=1`` to compensate for the register delay.
 
 ..  Class variables can be used to define registers. In Pyha, class variables must be assigned to
     ``self.next`` as this mimics the **delayed** nature of registers.
+
+Creating instances
+~~~~~~~~~~~~~~~~~~
+
+The general approach of creating instances is to define new variables of the 'self_t' type, :numref:`vhdl-instance`
+gives an example of this.
+
+.. code-block:: vhdl
+    :caption: Class instances by defining records, in OOP-style VHDL
+    :name: vhdl-instance
+
+    variable mac0: MAC.self_t;
+    variable mac1: MAC.self_t;
+
+The next step is to initialize the variables, this can be done at the variable definition, for example:
+:code:`variable mac0: self_t := (mul=>0, acc=>0, coef=>123, nexts=>(mul=>0, acc=>0, coef=>123));`
+
+The problem with this method is that all data-model must be initialized (including 'nexts'),
+this will get unmaintainable very quickly, imagine having an instance that contains another instance or
+even array of instances. In some cases it may also be required to run some calculations in order to determine
+the initial values.
+
+Traditional programming languages solve this problem by defining class constructor,
+executing automatically for new objects.
+
+In the sense of hardware, this operation can be called 'reset' function. :numref:`mac-vhdl-reset` is a reset function for
+the MAC circuit. It sets the initial values for the data model and can also be used when reset signal is asserted.
+
+.. code-block:: vhdl
+    :caption: Reset function for MAC, in OOP-style VHDL
+    :name: mac-vhdl-reset
+
+    procedure reset(self: inout self_t) is
+    begin
+        self.nexts.coef := 123;
+        self.nexts.mul := 0;
+        self.nexts.sum := 0;
+        update_registers(self);
+    end procedure;
+
+But now the problem is that we need to create a new reset function for each instance.
+
+This can be solved by using VHDL 'generic packages' and 'package instantiation declaration' semantics :cite:`vhdl-lrm`.
+Package in VHDL just groups common declarations to one namespace.
+
+In case of the MAC class, the 'coef' reset value could be set as package generic. Then each new package
+initialization could define new reset value for it (:numref:`vhdl-package-init`).
+
+.. code-block:: vhdl
+    :caption: Initialize new package MAC_0, with 'coef' 123
+    :name: vhdl-package-init
+
+    package MAC_0 is new MAC
+       generic map (COEF => 123);
+
+Unfortunately, these advanced language features are not supported by most of the synthesis tools.
+A workaround is to either use explicit record initialization (as at the start of this chapter)
+or manually make new package for each instance.
+
+Both of these solutions require unnecessary workload.
+
+The Python to VHDL converter (developed in the next chapter), uses the later option, it is not a problem as everything
+is automated.
