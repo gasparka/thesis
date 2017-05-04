@@ -311,6 +311,7 @@ the ``window_len``. In addition, noteice how the ``shr`` is just a stack of regi
 
     Synthesis result of ``OptimalSlideAdd(window_len=4)`` (Intel Quartus RTL viewer)
 
+.. _ch_fixed:
 
 Fixed-point designs
 -------------------

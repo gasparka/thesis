@@ -323,33 +323,23 @@ Converting Python to VHDL
 
 The conversion process requires no major transformations or 'understanding' of the source code, this is made possible
 by the OOP VHDL model, that allows easy mapping of Python constructs to VHDL. Even so, the conversion process poses
-some challanges like type inference and syntax conversion.
-
+some challenges like type inference and syntax conversion.
 
 .. _pyvhdl_types:
 
-Finding the types
-~~~~~~~~~~~~~~~~~
+Type inference
+~~~~~~~~~~~~~~
 
-Python is dynamically typed language, meaning that types come into play only when the code is running. On the
-other hand VHDL is statically typed, all the types must be written in soruce code.
-
-The advantage of the Python way is that it is easier to program, no need to define variables and ponder about the types.
-Downsides are that there may be unexpected bugs when some variable changes type. In some cases dynamic typing may also
-reduce code readability.
-
-In sense of conversion, dynamic typing poses a major problem, somehow the missing type info should be recovered for the
-VHDL code. Most straightforward way to solve this is to try finding the variables value from code, for example
-``a = 5``, clearly type of ``a`` is integer. Problem with this method is that is much more
-complex than it initially appears. For example :code:`a = b`. To find the type of 'a' converter would need to lookup type
-of 'b', these kind of sutffs can get really complex.
-
-Alternative, and what Pyha is using, is to run the Python code so all the variables get some value, the value can
-be inspected programmically and type inferred.
-For example, consider the class on :numref:`types_problem`.
+One of the biggest difference between Python and VHDL is the typing system.
+Python uses dynamic typing i.e. types are determined during code execution, while VHDL is statically typed.
+This poses a major problem for conversion, as the missing type info in Python sources must be somehow inferred in order
+to produce VHDL code.
+Naive way to tackle this problem is to try inferring the types directly from code, for example clearly the type of
+'``a = 5``' is integer. However typically the task is more complex, consider :numref:`types_problem` as an example,
+no types can be inferred from this code.
 
 .. code-block:: python
-    :caption: Example Python class, what are the types?
+    :caption: What are the types of ``self.coef``, ``a`` and ``local_var``?
     :name: types_problem
 
     class SimpleClass(HW):
@@ -359,31 +349,28 @@ For example, consider the class on :numref:`types_problem`.
         def main(self, a):
             local_var = a
 
-:numref:`class-vars` show example for getting the type of class variable. It initializes the class with argument ``5``,
-that is assigned to the 'coef' variable. Then ``type()`` can be used to query the variable type. On the example
-result is ``int``, so this can be converted to VHDL ``integer`` type.
+Alternative is to follow the definition of dynamic typing and execute the code, after what the value can be inspected
+and type inferred. :numref:`class-vars` shows this method applied on the class variable,
+the Python function``type()`` can be used to query the variable type.
 
 .. code-block:: python
-    :caption: Using ``type()`` to get type name
+    :caption: Solving the problem for class variables
     :name: class-vars
 
-    >>> dut = SimpleClass(5)
+    >>> dut = SimpleClass(coef=5)
     >>> dut.coef
     5
     >>> type(dut.coef)
     <class 'int'>
 
-Pyha deduces registers initial values in same way, only the first assigned value is considered.
-
-This easily solves the problem for class values
-Local variables, like ``local_var`` and argument ``a`` on :numref:`class-vars` are harder to infer as Python provides
-no way of accessing function locals.
-Luckly this problem has been encountered before in :cite:`py_locals_decorator`, which modifies the Python
-profiling interface to save function locals.
-Pyha uses this approach to keep track of the local values.
+This solves the problem for class values. The same method cannot be applied for the local variables of functions,
+because these only exist in the stack.
+This problem has been encountered before in :cite:`py_locals_decorator`, which proposes to modify the Python
+profiling interface in order to keep track of function local variables. Pyha has applied this method, usage example
+is shown on :numref:`class-locals`.
 
 .. code-block:: python
-    :caption: Function locals variable type
+    :caption: Solving the problem for local variables
     :name: class-locals
 
     >>> dut.main.locals # locals are unknown before call
@@ -394,16 +381,12 @@ Pyha uses this approach to keep track of the local values.
     >>> type(dut.main.locals['local_var'])
     <class 'int'>
 
+In sum, this method requires the execution of the Python code before types can be inferred. Main advantage of this
+is very low complexity. In addition this allows the usage of 'lazy' fixed point types as shown in :numref:`ch_fixed`.
+This method can also be used to to keep track of all the values a variable takes, this can enable automatic conversion
+from floating-point to fixed-point.
 
-Advantage of this method is low complexity, another perk is that this way could be used to keep track of
-all the variable values, in future this can enable the automatic conversion from floating point to fixed point.
-In addition, this way allows the 'lazy' coding, for example where fixed-point gains the bound limit only during the
-execution of the design.
-
-Downside is that each function in the design must be executed before conversion is possible.
-Also the conversion result may depend on the data types that are inputed to the functions, but this can
-also be an advantage.
-
+The execution part needed for conversion is automated in the ``simulate`` functions provided by Pyha.
 
 Syntax conversion
 ~~~~~~~~~~~~~~~~~
@@ -472,3 +455,8 @@ trough the simulation before conversion.
 Like HLS must do much work to deduce registers..
 Pyha can convert basically line by line, very simple.
 
+Disadvantage of this method is that code must be executed for conversion, however this is much negated by the
+``simulate`` functions provided by Pyha; that first runs the Python simulation (thus executing the code) and uses
+the data for conversion automatically.
+
+The execution part needed for conversion is automated in the ``simulate`` functions provided by Pyha.
