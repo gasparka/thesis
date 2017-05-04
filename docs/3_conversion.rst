@@ -385,32 +385,30 @@ In sum, this method requires the execution of the Python code before types can b
 is very low complexity. In addition this allows the usage of 'lazy' fixed point types as shown in :numref:`ch_fixed`.
 This method can also be used to to keep track of all the values a variable takes, this can enable automatic conversion
 from floating-point to fixed-point.
-
-The execution part needed for conversion is automated in the ``simulate`` functions provided by Pyha.
+The code execution needed for conversion is automated in the ``simulate`` functions by running the Python domain
+simulation.
 
 Syntax conversion
 ~~~~~~~~~~~~~~~~~
 
-The syntax of Python and VHDL is surprisingly similar. VHDL is just much more verbose, requires types and Python
-has indention oriented blocks.
+.. The syntax of Python and VHDL is surprisingly similar. VHDL is just much more verbose, requires types and Python
+    has indention oriented blocks.
 
-Python provides some tools that simplify the traversing of source files, like abstract syntax tree (AST) module and
-lib2to3. These tools work by parsing the Python file into a tree structure, that can be then traversed and modified.
-This method can works but is complex.
+Python provides tools that simplify the traversing of source files, like abstract syntax tree (AST) module,
+that works by parsing the Python file into a tree structure, which can then be modified. Using AST for syntax conversion
+is known to work but it has very low abstraction level, thus most of the time resulting in complex conversion process.
+RedBaron :cite:`redbaron` is a recent high-level AST tool, that aims to simplify operations with Python source code,
+unlike AST it also keeps the code formatting and comments.
 
-Lately new project has emerged called RedBaron :cite:`redbaron`,
-that aims to simplify operations with Python source code. It features rich tools for searching and modifing the
-source code. Unlike AST it also keeps all the formatting in the code, including comments.
-RedBaron parses the source code into rich objects, for example the ``a = 5`` would result in a ``AssignmentNode``
-object that has an ``__str__`` function that instruct how these kind of objects are written out.
-
-Pyha overwrites the ``__str__`` method to instead of ``=`` print ``:=`` and also add ``;`` to the end of statement.
-Resulting in a VHDL compatible statement :code:`a := 5;`. Beauty of this is that this simple modification
-actually turns **all** the Python style assignments to VHDL style.
+RedBaron parses the source code into rich objects, for example the '``a = 5``' would result in an ``AssignmentNode``.
+Nodes can be overwritten to change some part of the behaviour. For example, the ``AssignmentNode`` can be modified to
+change ``=`` to ``:=`` and add ``;`` to the end of statement.
+Resulting in a VHDL compatible statement '``a := 5;``'. This simple modification turns **all** the assignments
+in the code to VHDL style assignments.
 
 :numref:`syn_py` shows a more complex Python code that is converted to VHDL (:numref:`syn_vhdl`), by Pyha.
 Most of the transforms are obtained by the same method described above. Some of the transforms are a bit more complex,
-like figuring out what variables need to be defined in VHDL code.
+like return statement to output argument conversion.
 
 .. code-block:: python
     :caption: Python function to be converted to VHDL

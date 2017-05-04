@@ -37,6 +37,8 @@ vendor :cite:`borph`.
 Problem statement
 -----------------
 
+.. matlab hind https://www.bdti.com/InsideDSP/2012/09/05/MathWorks
+
 There is no doubt that MATLAB based workflow offers an highly productive path from DSP models to hardware. However
 these tools can easily cost over tens of thousands euros, often FPGA vendor tools are required that add
 additional annual cost :cite:`borph`. Using these tools is not suitable for reproducible
