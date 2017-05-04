@@ -321,17 +321,11 @@ registers are clocked by different clocks. The reset signal is common for the wh
 Converting Python to VHDL
 -------------------------
 
-The Python to VHDL conversion process relies heavily on the results of last chapter, that allows
-sequential OOP Python code easily map to VHDL. Even so, converting Python syntax to VHDL poses some problems.
+The conversion process requires no major transformations or 'understanding' of the source code, this is made possible
+by the OOP VHDL model, that allows easy mapping of Python constructs to VHDL. Even so, the conversion process poses
+some challanges like type inference and syntax conversion.
 
-The biggest challenge in conversion from Python to VHDL is types, namely Python does not have them, while VHDL has.
-Conversion process must find all the types for Python variables, the process of this is described in.
 
-After the types are all known, the design can be converted from Python to VHDL syntax. This requires some way
-of traversing the Python source code and applying VHDL rated transforms.
-
-Conversion progress requires no understanding
-of the source code nor big modifications.
 .. _pyvhdl_types:
 
 Finding the types
@@ -381,18 +375,18 @@ result is ``int``, so this can be converted to VHDL ``integer`` type.
 
 Pyha deduces registers initial values in same way, only the first assigned value is considered.
 
-Local variables, like ``local_var`` and argument ``a`` on :numref:`class-vars` are harder to deduce as Python provides
-no way of accessing function locals scope. Note that locals exsist only in the stack, thus after the function call
-they are lost forever.
-Luckly this problem has been encountered before in :cite:`py_locals_decorator`, which 'hacks' the Python
-profiling interface in order to save the locals for each function.
+This easily solves the problem for class values
+Local variables, like ``local_var`` and argument ``a`` on :numref:`class-vars` are harder to infer as Python provides
+no way of accessing function locals.
+Luckly this problem has been encountered before in :cite:`py_locals_decorator`, which modifies the Python
+profiling interface to save function locals.
 Pyha uses this approach to keep track of the local values.
 
 .. code-block:: python
     :caption: Function locals variable type
     :name: class-locals
 
-    >>> dut.main.locals # before any call, locals are unknown
+    >>> dut.main.locals # locals are unknown before call
     {}
     >>> dut.main(1) # call function
     >>> dut.main.locals # locals can be extracted
@@ -419,7 +413,7 @@ has indention oriented blocks.
 
 Python provides some tools that simplify the traversing of source files, like abstract syntax tree (AST) module and
 lib2to3. These tools work by parsing the Python file into a tree structure, that can be then traversed and modified.
-For example the MyHDL conversion is based on this. This method works but is quite complex and requires alot of code.
+This method can works but is complex.
 
 Lately new project has emerged called RedBaron :cite:`redbaron`,
 that aims to simplify operations with Python source code. It features rich tools for searching and modifing the
@@ -447,7 +441,7 @@ like figuring out what variables need to be defined in VHDL code.
         return y
 
 .. code-block:: vhdl
-    :caption: Conversion of :numref:`syn_py` assuming ``integer`` types
+    :caption: Conversion of :numref:`syn_py`, assuming ``integer`` types
     :name: syn_vhdl
 
     procedure main(self:inout self_t; x: integer; ret_0:out integer) is
