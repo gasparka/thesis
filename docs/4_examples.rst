@@ -1,10 +1,12 @@
 Case studies
 ============
 
+This chapter demonstrates that the Pyha is already usable for real designs. And shows that designs are easily reusable.
+First designs an moving average filter and later reuses this for linear-phase DC removal filter.
+Last chapter also compares the developed tool to other available toolsets.
+
 Moving average filter
 ---------------------
-
-.. todo:: rephrase as this is copy paste!
 
 The moving average (MA) is the most common filter in DSP, mainly because it is the easiest digital
 filter to understand and use.  In spite of its simplicity, the moving average filter is
@@ -13,7 +15,7 @@ premier filter for time domain encoded signals :cite:`dspbook`.
 
 :numref:`moving_average_noise` shows that MA is a good algorithm for noise reduction.
 Increasing the window length reduces more noise but also increases the complexity and delay of
-the system (MA is a special case of FIR filter, same delay semantics apply).
+the system (MA is a special case of FIR filter :cite:`dspbook`).
 
 .. _moving_average_noise:
 .. figure:: ../examples/moving_average/img/moving_average_noise.png

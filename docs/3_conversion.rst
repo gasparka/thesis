@@ -442,11 +442,10 @@ Summary
 
 This chapter has shown that Pyha achieves synthesizability by converting the Python code to VHDL.
 The sequential object-oriented VHDL model is one of the contributions of this thesis, it has been developed to provide
-simpler conversion from Python to VHDL.
-Python converts directly to the VHDL model by using RedBaron based syntax conversions. Type information is acquired
-trough the simulation before. Pyha provides ``simulate`` functions that automate the simulation and
-conversion parts.
-In general the conversion method of Pyha is relatively simple and producing well formatted and readable VHDL
-output, same method could be used to convert Pyha into other languages like SystemVerilog or C.
+simpler conversion from Python to VHDL, enabling almost direct conversion from Python the VHDL by using RedBaron
+based syntax transformations. Type information is acquired trough the simulation.
+Pyha provides ``simulate`` functions that automate the simulation and conversion parts.
 
-
+The conversion process is one of the advantages of Pyha, compared to other similar tools. The process has low
+complexity and produces well formatted and readable VHDL. In addition, syntax conversion could be easily extended to
+support other conversion targets like SytemVerilog or C.
