@@ -46,6 +46,9 @@
   \input{abstract.inc}
   \input{abstract_est.inc}
 
+  %\makeglossaries
+  %\printglossaries
+
    	
   \setcounter{footnote}{0}%
   \let\thanks\relax\let\maketitle\relax
@@ -65,6 +68,7 @@
   \if@openright\cleardoublepage\else\clearpage\fi
   \pagenumbering{arabic}%
   \ifdefined\fancyhf\pagestyle{normal}\fi
+       \listoffigures
 }
 
 % This is needed to get the width of the section # area wide enough in the
