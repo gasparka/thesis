@@ -18,7 +18,7 @@
     {Gaspar Karm, IVEM153410}\\[2,3 cm]
     \begin{huge}
 
-    \textsc{\textbf{Pyha\\[2,3 cm]}}
+    \textsc{\textbf{Pyha - \\ Sequential and Object-Oriented Hardware Description Language based on Python\\[2,3 cm]}}
     \end{huge}
     {Master's Thesis}\\[1,5 cm]
     \end{center}
@@ -35,12 +35,6 @@
     %\end{flushright}
 
 
-    \blank{7.3 cm}{}\\[0cm]
-    \blank{7.3 cm}{}\\[0cm]
-    \blank{7.3 cm}{}\\[0cm]
-    \blank{7.3 cm}{}\\[0cm]
-    \blank{7.3 cm}{}\\[0cm]
-    \blank{7.3 cm}{}\\[0cm]
     \blank{7.3 cm}{}\\[0cm]
     \blank{7.3 cm}{}\\[0cm]
     \blank{7.3 cm}{Tallinn 2017}\\[0cm]
