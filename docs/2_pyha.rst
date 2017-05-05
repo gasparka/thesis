@@ -2,14 +2,8 @@ Hardware design with Pyha
 =========================
 
 This chapter introduces the main contribution of this thesis, Pyha - a tool to design digital hardware in Python.
-
-Pyha proposes to program hardware in the same way as software; much of this chapter is focused on showing
-differences between hardware and software constructs.
-
-The fist half of the chapter demonstrates how basic hardware constructs can be defined, using Pyha.
-
-The second half introduce the fixed-point type and provides use-cases on designing with Pyha.
-
+The fist half of the chapter demonstrates how basic hardware constructs can be defined, using Pyha. Follows the
+introduction to fixed-point type.
 All the examples presented in this chapter can be found online HERE, including all the Python sources, unit-tests,
 VHDL conversion files and Quartus project for synthesis.
 
@@ -18,10 +12,10 @@ VHDL conversion files and Quartus project for synthesis.
 Introduction
 ------------
 
-While the conventional HDL languages promote concurrent and entity oriented model, this is more confusing.
-In this thesis, Pyha has been designed as an sequential object-oriented language, that works directly on
-Python code. Using an sequential design flow is much easier to understand and is equally well synthesizable as shown
-by this thesis. Object-oriented design helps to better abstract the RTL details and ease design reuse.
+Conventional HDL languages promote concurrent and entity oriented models which can be confusing.
+In this thesis, Pyha has been designed as a sequential object-oriented language, that works directly on
+Python code. Using a sequential design flow is much easier to understand and is equally well synthesizable as shown
+in this thesis. Object-oriented design helps to better abstract the RTL details and ease design reuse.
 
 For illustration purposes, :numref:`pyha_basic` shows an example Pyha design. The ``main`` function has been
 chosen as a top level entry point, other functions can be used as pleased.
@@ -42,12 +36,12 @@ chosen as a top level entry point, other functions can be used as pleased.
 
             return a, b
 
-One of the contributions of this thesis is sequential OOP VHDL model, that is used by Pyha for simple conversion
-to VHDL. Example of the VHDL conversion is shown on :numref:`pyha_basic_vhdl`, more details are given in chapter
+One of the contributions of this thesis is sequential OOP VHDL model which is used to simplify conversion from Pyha to VHDL.
+Example of the VHDL conversion is shown on :numref:`pyha_basic_vhdl`, more details are given in
 :numref:`ch_conversion`.
 
 .. code-block:: vhdl
-    :caption: :numref:`pyha_basic` converted to VHDL, by Pyha
+    :caption: :numref:`pyha_basic` converted to VHDL, by Pyha conversion routines
     :name: pyha_basic_vhdl
 
     procedure main(self:inout self_t; x: integer; ret_0:out integer; ret_1:out integer) is
@@ -76,14 +70,15 @@ exactly complies with the Python and VHDL descriptions.
 
     Synthesised RTL of :numref:`pyha_basic_vhdl` (Intel Quartus RTL viewer)
 
-One aspect of hardware design that Pyha aims to improve is testing. Conventional tools like VHDL require the
-construction of special testbenches that can be executed on simulators. Even the higer level tools often dont
-simplify this step, for example the C based tools HLS tools want testbench in C language, which is not an
-improvement from VHDL or Verilog.
+One aspect of hardware design that Pyha aims to improve is testing. Conventional testing flow require the
+construction of special testbenches that can be executed using simulators.
 
-First of all, Pyha has been designed so that the synthesis output is behaviourally equivalent to the Python run
+.. Even the higher level tools dont simplify this step, for example the C based tools HLS tools want testbench in C language, which is not an
+    improvement from VHDL or Verilog.
+
+Pyha has been designed so that the synthesis output is behaviourally equivalent to the Python run
 output, this means that Pyha designs can use all the Python debugging tools.
-:numref:`add_multi_debug` shows a debugging session on the :numref:`pyha_basic` code, this can drastically help
+:numref:`py_debug` shows a debugging session on the :numref:`pyha_basic` code, this can drastically help
 the development process.
 
 .. _py_debug:
@@ -104,7 +99,9 @@ simulations without any boilerplate code:
 
 This kind of testing function enables test-driven development, where tests can be first defined for the model and
 fully reused for later RTL implementation.
-:numref:`pyha_adder_test` shows an example unit test for the ``Basic()`` module.
+:numref:`pyha_basic_test` shows an example unit test for the ``Basic()`` module. Python ``assert`` statements can be used
+for unit test development. Pyha also provides ``assert_simulate(dut, expected, x)`` function that automatically compares
+the output list to the ``expected`` list.
 
 .. code-block:: python
     :caption: Unit test for the Basic module
@@ -112,30 +109,26 @@ fully reused for later RTL implementation.
 
     x = [1, 2, 3, 4, 5, 6, 7, 8]
     dut = Basic()
-    y = simulation(dut, x)
+    y = simulation(dut, x) # y contains result of all simulations
     # assert something
 
 
 Sequential logic
 ----------------
 
-In hardware registers are used as an memory element and for pipelining. In general digital logic synthesis relies on
-timing synthesis that only works when analized logic is between registers.
+The way how registers are inferred is a fundamental difference between the HDL and HLS languages.
+HDL languages leave the task to the designer, while HLS languages automate the process.
+In this work, Pyha has been designed to follow the HDL language approach, because this simplifies the conversion
+to VHDL. Extensions can be considered in future editions.
 
-The way how registers are inferred is a fundamental difference between the RTL and HLS languages. Main complexity of
-HLS is about automatically inferring registers for memory elements or for pipelining. RTL languages on the other hand
-leave the task up to the designer.
-In this work, Pyha has been designed to follow the RTL language approach, because this comes free with conversion
-to VHDL. In future extensions can be considered.
-
-In conventional programming, most commonly state is captured by using the class variables, which can keep the
-values between function calls. Inspired from this, all the class variables in Pyha are handled as registers, class
-functions can be interpreted as combinatory functions calculating the next state values for the registers.
+In conventional programming, state is usually captured by using class variables which can retain values between function calls.
+Inspired from this, all the class variables in Pyha are handled as registers.
 
 Accumulator
 ~~~~~~~~~~~
 
-Consider the design of an accumulator (:numref:`acc`); it operates by sequentially adding up all the input values.
+Consider the design of an accumulator (:numref:`acc`); it operates by sequentially adding up
+all the input values of every successive function call.
 
 .. code-block:: python
     :caption: Accumulator implemented in Pyha
@@ -154,15 +147,15 @@ The class structure in Pyha has been designed so that the ``__init__`` function 
 the memory elements in the design, the function itself is not converted to VHDL, only the variables are extracted.
 For example
 ``__init__`` function could be used to call ``scipy.signal.firwin()`` to design FIR filter coefficients, initial
-assignments to class variables are used as register initial/reset values.
+assignments to class variables are used for register initial/reset values.
 
 Note the ``self.next.acc = ...``, simulates the hardware behaviour of registers, that is delayed assignment.
-In general this is equivalent to the VHDL ``<=`` operator. Values are transfered from **next** to **current** just
+In general this is equivalent to the VHDL ``<=`` operator. Values are transferred from **next** to **current** just
 before the ``main`` call. In general Pyha abstracts the clock signal away by denoting that each call to ``main`` is
 a clock edge. Think that the ``main`` function is started with the **current** register values known and the objective of
 the ``main`` function is to find the **next** values for the registers.
 
-The synthesis results shown in the :numref:`acc_rtl` shows the adder and register.
+The synthesis results displayed in the :numref:`acc_rtl` shows the adder and register.
 
 .. _acc_rtl:
 .. figure:: ../examples/accumulator/img/acc_rtl.png
@@ -175,7 +168,8 @@ The synthesis results shown in the :numref:`acc_rtl` shows the adder and registe
 One inconvenience is that every register on signal path delays the output signal by 1 sample, this is also called
 pipeline delay or latency. This situation is shown on :numref:`acc_sim_delay` that shows the simulation results for the
 ``Acc`` module. Note that the model is implemented without register semantics, thus has no pipeline delays. This can
-be seen from the :numref:`acc_sim_delay`, hardware related simulations are delayed by 1 compared to the software model.
+be seen from the :numref:`acc_sim_delay`, hardware related simulations are delayed by 1 sample,
+compared to the software model.
 
 .. _acc_sim_delay:
 .. figure:: ../examples/accumulator/img/acc_sim_delay.png
@@ -186,9 +180,9 @@ be seen from the :numref:`acc_sim_delay`, hardware related simulations are delay
 
 
 Pyha reserves a :code:`self._delay` variable, that hardware classes can use to specify their delay.
-Simulation functions read this variable and compensate the simulation data so that the delay is compensated, so that
-the compensation does not have to be made in unit-tests. Setting the ``self._delay = 1` in the ``__init__`` function
-would shift the hardware simulations left by 1 sample, so that all the simulatiosn would be exactly equal.
+Simulation functions read this variable to compensate the simulation outputs.
+Setting the ``self._delay = 1` in the ``__init__`` function
+would shift the hardware simulations left by 1 sample, so that all the simulation would be exactly equal.
 
 .. _ch_sliding_adder:
 
@@ -251,9 +245,8 @@ This design can be made generic by changing the ``__init__`` function to take th
         ...
 
 This design has a few issues when the ``window_len`` gets higher (:numref:`rtl_6_critical`).
-First, every stage requires and separate adder
-so high ``window_len`` value implies high resource cost, this also forms an long critical path that decreases the
-maximum clock rate of the design.
+First, every stage requires a separate adder increasing the resource cost,
+this also forms an long critical path which in turn decreases the maximum clock rate of the design.
 
 .. _rtl_6_critical:
 .. figure:: ../examples/block_adder/img/rtl_6_critical.png
@@ -336,7 +329,7 @@ The implementation maps directly to the VHDL fixed-point library :cite:`vhdlfixe
 that is already known in the VHDL community and proven to be well synthesizable.
 
 ``Sfix`` class works by allocating bits to the ``left`` and ``right`` side of the decimal point. Bits to the
-``left`` determine the integer bounds, while the ``right`` bits determine the minimum resolution of the number.
+``left`` determine the integer bounds (sign bit is implicit), while the ``right`` bits determine the minimum resolution of the number.
 For example, ``Sfix(left=0, right=-17)`` represents a number between [-1;1] with resolution of 0.000007629 (``2**-17``).
 :numref:`fp_basics` shows a few examples on how reducing the ``right`` reduces the number precision.
 
@@ -427,10 +420,9 @@ is an sequential object-oriented programming language based on Python. It falls 
 meaning that the output of Python program is equal to the output of generated hardware. Pyha provides ``simulate``
 functions to automatically and without any boilerplate code run model and hardware related simulations, this helps the
 design of unit-tests. In addition, Pyha designs are fully debuggable in Python ecosystem.
+Class variables are used to define registers, this has been inspired by traditional programming languages.
 DSP systems can be implemented by using the fixed-point type. Pyha has ‘semi-automatic conversion’ from
 floating point to fixed point numbers. Verifying against floating point model helps the design process.
 
-..  Class variables can be used to define registers. In Pyha, class variables must be assigned to
-    ``self.next`` as this mimics the **delayed** nature of registers.
 
 

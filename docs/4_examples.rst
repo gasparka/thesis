@@ -289,7 +289,7 @@ Future perspectives
 ~~~~~~~~~~~~~~~~~~~
 
 Long term goal of the project is to develop enough blocks that are functionally equal to GNURadio blocks, so that
-flow-graphs could be converted to FPGA designs, thus providing an open-source alternative for Simulink
+flow-graphs could be converted to FPGA designs, thus providing an open source alternative for Simulink
 based flows.
 
 

@@ -3,7 +3,7 @@ Abstract
 
 
 Lately the digital designs made have raised in complexity.
-There are now many open-source tools that enable fast construction in software domain, for example
+There are now many open source tools that enable fast construction in software domain, for example
 GNURadio and Pothos. These tools provide users the simple way of connectin blocks togather and designing
 complex systems in this way. Downside of the software approach is that designs are slow to execute, for example
 the Wify core that cannot repsond to ACK packets in real life. There are works in progress on GPU accelerators but

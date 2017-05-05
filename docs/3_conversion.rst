@@ -8,15 +8,17 @@ Synthesis
     resulting in complex conversion process and typically unreadable VHDL output.
 
 Majority of the hardware related tools end up converting to either VHDL or SystemVerilog, because these are supported
-by the synthesis tools. Most often the higher level language is converted to very low level VHDL/SV code, resulting
+by the synthesis tools. Most often the higher level language is converted to very low level
+VHDL/ :abbr:`SystemVerilog (SV)` code, resulting
 in a confusing conversion process and unreadable code.
 
 This thesis tests an alternative path by contributing the sequential synthesizable object-oriented (OOP) programming model for VHDL.
 The main motivation is to use it as an conversion target for higher level languages. Major advantages are
 that the conversion process is simple, output VHDL readable and structured.
 
-VHDL has been chosen over SystemVerilog(SV) because it is a strict language and forbids many mistakes during compile time.
-SV on the other hand is much more permissive, for example allowing out-of-bounds array indexing :cite:`sysverilog_gotcha`.
+VHDL has been chosen over :abbr:`SystemVerilog (SV)` because it is a strict language and forbids many mistakes during compile time.
+:abbr:`SystemVerilog (SV)` on the other hand is much more permissive, for example allowing out-of-bounds array indexing
+:cite:`sysverilog_gotcha`.
 In future both could be supported.
 
 .. _conversion:
@@ -48,11 +50,11 @@ allows fully sequential designs, easier reuse and removes the one clock domain l
 
 The basic idea behind OOP is to strictly define functions that can perform actions on some group of data.
 This idea fits well with hardware design, as 'data' can be thought as registers and combinatory logic as functions that
-perform operations on the data. VHDL has no direct support for OOP,
-but the OOP style can be still used by grouping data in record (same as C struct)
-and passing it as a parameter to functions. This is essentially the same way how C programmers do it.
+perform operations on the data.
+VHDL has no direct support for OOP but it can still be used by grouping data in record (same as C struct)
+and passing it as parameter to functions. This is essentially the same way how C programmers do it.
 
-:numref:`vhdl_oop` demonstrates pipelined multiply-accumulate(MAC), written in OOP VHDL. Recall that all the items
+:numref:`vhdl_oop` demonstrates pipelined multiply-accumulate (MAC), written in OOP VHDL. Recall that all the items
 in the ``self_t`` record are expected to synthesise as registers.
 
 
