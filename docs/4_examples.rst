@@ -8,23 +8,22 @@ Last chapter also compares the developed tool to other available toolsets.
 Moving average filter
 ---------------------
 
-The moving average (MA) is the most common filter in DSP, mainly because it is the easiest digital
-filter to understand and use.  In spite of its simplicity, the moving average filter is
-optimal for a common task: reducing random noise while retaining a sharp step response.  This makes it the
-premier filter for time domain encoded signals :cite:`dspbook`.
+The moving average (MA) is the easiest digital filter to understand and use.
+It is optimal filter for for reducing random noise while retaining a sharp step response :cite:`dspbook`. In
+communication systems, MA is widely used as an matched filter for rectangular pulses.
+:numref:`moving_average_noise` shows an example of applying MA filter to reduce noise on harmonic signal.
+Higher window length (averaged over more elements) reduces more noise but also increases the complexity and delay of
+the filter (MA is a special case of FIR filter :cite:`dspbook`).
 
-:numref:`moving_average_noise` shows that MA is a good algorithm for noise reduction.
-Increasing the window length reduces more noise but also increases the complexity and delay of
-the system (MA is a special case of FIR filter :cite:`dspbook`).
 
 .. _moving_average_noise:
 .. figure:: ../examples/moving_average/img/moving_average_noise.png
     :align: center
     :figclass: align-center
 
-    MA algorithm in removing noise
+    Moving average filter applied on noisy signal
 
-Good noise reduction performance can be explained by the frequency response of MA (:numref:`mavg_freqz`),
+Good noise reduction performance can be explained by the frequency response of the MA filter (:numref:`mavg_freqz`),
 showing that it is a low-pass filter. Passband width and stopband attenuation are controlled by the
 window length.
 
@@ -33,15 +32,15 @@ window length.
     :align: center
     :figclass: align-center
 
-    Frequency response of MA filter
+    Frequency response of moving average filter
 
+MA filter is implemented by sliding sum, that is divided by the sliding window length. The division can be
+carried out by a shift operation if divisor is power of two.
+In addition, division can be performed on each sample instead of on the sum, that is ``(a + b) / c = a/c + b/c``. This
+guarantees that the ``sum`` is always in the [-1;1] range and no saturation logic is needed.
 
-MA is implemented by using a sliding sum that is divided by the sliding window length.
-The sliding sum part has already been implemented in :numref:`ch_fp_sliding_adder`.
-The division can be implemented by a shift right operation, assuming that the divisor is power of two.
-
-In addition, division can be performed on each sample instead of on the sum, that is ``(a + b) / c = a/c + b/c``.
-Doing this guarantees that the ``sum`` variable is always in the [-1;1] range, thus the saturation logic can be removed.
+:numref:`mavg-pyha` shows the MA filter implementation in Pyha. It is based on the sliding sum, that was implemented
+in :numref:`ch_fp_sliding_adder`. Minor modifications are commented in the code.
 
 .. code-block:: python
     :caption: MA implementation in Pyha
@@ -50,27 +49,21 @@ Doing this guarantees that the ``sum`` variable is always in the [-1;1] range, t
 
     class MovingAverage(HW):
         def __init__(self, window_len):
+            # calculate power of 2 value of 'window_len', used for division
             self.window_pow = Const(int(np.log2(window_len)))
 
-            self.shr = [Sfix()] * window_len
+            # 'overflow_style' turns the saturation off
             self.sum = Sfix(0, 0, -17, overflow_style=fixed_wrap)
+            self.shr = [Sfix()] * window_len
             self._delay = 1
 
         def main(self, x):
+            # divide by shifting
             div = x >> self.window_pow
 
             self.next.shr = [div] + self.shr[:-1]
             self.next.sum = self.sum + div - self.shr[-1]
             return self.sum
-        ...
-
-The code in :numref:`mavg-pyha` makes only few changes to the sliding sum:
-
-    * On line 3, ``self.window_pow`` stores the bit shift count (to support generic ``window_len``)
-    * On line 6, type of ``sum`` is changed so that saturation is turned off
-    * On line 10, shift operator performs the division
-
-
 
 :numref:`mavg_rtl` shows the synthesized result of this work; as expected it looks very similar to the
 sliding sum RTL schematics. In general, shift operators are hard to notice on the RTL schematics because they are implemented
@@ -85,20 +78,17 @@ by routing semantics.
 
 
 
-MA is an optimal solution for performing matched filtering of rectangular pulses :cite:`dspbook`.
-This is important for communication systems. :numref:`mavg_matched` shows an example of
-and digital signal, that is corrupted with noise. MA with window length equal to samples per symbol can recover the
-signal from the noise.
+:numref:`mavg_matched` shows simulation results of MA filter used for matched filtering.
+The plot on (a) shows digital input signal that is corrupted by noise.
+Plot (b) shows that the MA with window length equal to samples per symbol can recover (optimal result) the
+signal from the noise. Next the signal could be sampled to recover bit values (0.5=1, -0.5=0).
 
 .. _mavg_matched:
 .. figure:: ../examples/moving_average/img/moving_average_matched.png
     :align: center
     :figclass: align-center
 
-    Moving average as matched filter
-
-The 'model' deviates from rest of the simulations because the input signal violates the [-1;1] bounds and hardware
-simulations are forced to saturate the values.
+    Moving average as matched filter. (b) noisy input signal, (a) averaged by 16, Pyha simulations
 
 
 Linear-phase DC removal Filter

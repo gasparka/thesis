@@ -44,7 +44,7 @@ def test_convert():
 def test_match_filtering():
     from pyha.common.util import hex_to_bool_list, bools_to_bitstr, hex_to_bitstr
     sps = 16
-    noise_amp = 0.8
+    noise_amp = 1.0
     bits = hex_to_bool_list('a12345')
     nrz = [[1] * sps if x else [-1] * sps for x in bits]
     nrz = np.array(nrz).flatten()
@@ -52,7 +52,7 @@ def test_match_filtering():
     # noise
     sig = nrz + np.random.uniform(-noise_amp, noise_amp, len(nrz))
 
-    # sig *= 0.5
+    sig *= 0.5
 
     dut = MovingAverage(window_len=16)
     r = debug_assert_sim_match(dut, None, sig,
@@ -62,11 +62,11 @@ def test_match_filtering():
     fig, axes = plt.subplots(2, 1, sharex=True, sharey=True, figsize=(8, 4))
     # add a big axes, hide frame
     fig.add_subplot(111, frameon=False)
-    axes[0].plot(sig, label='x')
+    axes[0].plot(sig, label='Noisy input')
+    axes[0].plot(nrz*0.5, label='Pure input')
     axes[0].legend(loc='upper right')
     axes[0].set_title('(a) Digital signal, 16 samples per symbol')
     axes[0].grid()
-
 
 
     axes[1].plot(r[0], label='y: Model')
