@@ -12,6 +12,9 @@ can be used to initiate objects.
 Another benefit is that classes can abstract away the implementation details, in that sense Pyha can become a
 high-level synthesis (HLS) language.
 
+Lastly we showed that Pyha is already usable to convert some mdeium complexity designs, like
+    FSK demodulator, that was used on Phantom 2 stuff..
+
 Moving average filter
 ---------------------
 
@@ -201,8 +204,24 @@ the output of the filter starts countering the DC component until it is removed.
     Simulation of DC-removal filter in the time domain
 
 
-Comparison to other tools
--------------------------
+Comparison and limitations
+--------------------------
+
+At this point all the majord features of Pyha has been introduced so it is suitable to compare this solution to other
+languages.
+
+.. warning:: this section very very in progress
+
+vs VHDL/SystemVerilog
+~~~~~~~~~~~~~~~~~~~~~
+
+Naturally, as Pyha converts to VHDL, everything in doable in Pyha can be also done in VHDL.
+However Pyha can be considered as an higher level abstraction for VHDL language, simplifying many tasks.
+In addtion the simulations processes are greatly improved.
+
+
+vs other Python based tools
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 MyHDL is following the event-driven approach which is a trait of the classical HDL's. It features an function based
 design that is very similar to Verilog processes. In general the synthesizable subset of MyHDL is very limited,
@@ -215,15 +234,66 @@ data type, that is a standard for hardware DSP designs.
 Overall i would say that both MyHDL and Migen are awesome tools, in the future merging of Pyha to either MyHDL or Migen
 can defiantly be considered.
 
+
+vs MATLAB/SIMULINK
+~~~~~~~~~~~~~~~~~~
+
+Pyha is already comparing well against MATLAB to HDL based workflow. MATLAB also requires the user to handle
+the register assignments like Pyha, but provides a much counterintuitive method for this. Reuse in MATLAB is
+complicated as the designs are function based.
+
+
+SIMULINk flow is based on connecting togather already exsisting blocks.
+In current state, Pyha cannot compare directly to the SIMULINK based design flows because there is no graphical
+user interface. However as shown in this chapter, exsisting Pyha blocks can be connected togather in purely Pythonic
+way, thus the designer needs no knowledge aout the underlying RTL implementation. In the future GUI could be easily
+made. GNURADIO example?
+
 Pyha aims to raise the abstraction level by using sequential object-oriented style, major advantage of this
 is that existing blocks can be connected together in purely Pythonic way, the
 designer needs to know nothing about the underlying RTL implementation.
+
+vs HLS
+~~~~~~
+
+In some seneses the Python part could be considers as Python binding to VHDL OOP model.
+Convert to HLS langauge instead of VHDL, then the designer could choose to to either design for RTL or HLS, this is
+more as an futures perspective, this thesis works only with the RTL part.
 
 The design choices done in the process of Pyha design have focused on simplicity. The conversion process of
 Python code to VHDL is straight-forward as the synthesis tools are already capable of elaborating sequential VHDL code.
 This work contributes the object-oriented VHDL desing way that allows defining registers in sequential code.
 Thanks to that, the OOP Python code can be simply mapped to OOP VHDL code. Result is readable (keeps hirarchy) VHDL
 code that may provide an bridge for people that already know VHDL.
+
+Limitations
+~~~~~~~~~~~
+
+.. https://github.com/petspats/pyha/graphs/contributors
+
+Pyha has been developed during the period of last year by me, side project,
+so it is clear it has some limitations and that it cannot
+compare to the library support of other tools that have exsisted for years and are developed by bigger community.
+
+One of the limitation emerging from the Python domain simulation is the support of support of one clock domain.
+In general since Pyha has been applied to SDR applications this has not been a problem as all the processing happens
+in baseband and generally no sample rate conversions are required.
+In addition Pyha lacks the support for interfaces like AXI or Avalon.
+Also most of the tools support converting to Verilog and VHDL, while Pyha only supports VHDL.
+
+Integration to bus structures is another item in the wish-list. Streaming blocks already exist in very basic form.
+Ideally AvalonMM like buses should be supported, with automatic HAL generation, that would allow design of reconfigurable FIR filters for example.
+
+
+Future perspectives
+~~~~~~~~~~~~~~~~~~~
+
+Long term goal of the project is to develop enough blocks that are functionally equal to GNURadio blocks, so that
+flow-graphs could be converted to FPGA designs, thus providing an open-source alternative for Simulink
+based flows.
+
+
+
 
 .. bibliography:: bibliography.bib
     :style: unsrt
