@@ -48,8 +48,8 @@ def test_quad4_len32():
 
 
 def test_plot():
-    x = np.sin(2 * np.pi * np.linspace(0, 10, 512)) * 0.5
-    x += 0.25
+    x = np.sin(10 * np.pi * np.linspace(0, 10, 512)) * 0.5
+    x += 0.5
     dut = DCRemoval(64)
 
     r = debug_assert_sim_match(dut, None, x,
@@ -59,7 +59,7 @@ def test_plot():
 
 
     plt.figure(figsize=(8, 1.5))
-    plt.plot(x, label='x')
+    # plt.plot(x, label='x')
     plt.plot(r[0], label='y: Model')
     plt.plot(r[1], label='y: Pyha')
     plt.plot(r[2], label='y: RTL')

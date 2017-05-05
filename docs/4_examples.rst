@@ -1,9 +1,16 @@
 Case studies
 ============
 
-This chapter demonstrates that the Pyha is already usable for real designs. And shows that designs are easily reusable.
+This chapter demonstrates that Pyha is already usable for real designs.
 First designs an moving average filter and later reuses this for linear-phase DC removal filter.
 Last chapter also compares the developed tool to other available toolsets.
+
+.. todo:: fix
+
+Pyha is based on the object-oriented design practices, this greatly simplifies the design reuse as the classes
+can be used to initiate objects.
+Another benefit is that classes can abstract away the implementation details, in that sense Pyha can become a
+high-level synthesis (HLS) language.
 
 Moving average filter
 ---------------------
@@ -94,23 +101,14 @@ signal from the noise. Next the signal could be sampled to recover bit values (0
 Linear-phase DC removal Filter
 ------------------------------
 
-Pyha has been designed in the way that it can represent RTL designs exactly as the user defines, however thanks
-to the object-oriented nature all these low level details can be abstracted away and then Pyha turns into HLS
-language. To increase productivity, abstraction is needed.
-
-Pyha is based on the object-oriented design practices, this greatly simplifies the design reuse as the classes
-can be used to initiate objects.
-Another benefit is that classes can abstract away the implementation details, in that sense Pyha can become a
-high-level synthesis (HLS) language.
-
-This chapter gives an example on how to reuse the moving average filter for ...
+This design demonstrates how the object-oriented nature of Pyha can be used for simple design reuse by chaining
+multiple MA filters to implement linear-phase DC removal filter.
 
 Direct conversion (homodyne or zero-IF) receivers have become very popular recently especially in the realm of
 software defined radio. There are many benefits to direct conversion receivers,
 but there are also some serious drawbacks, the largest being DC offset and IQ imbalances :cite:`bladerfdoc`.
-
-DC offset looks like a peak near the 0Hz on the frequency response.
-In the time domain, it manifests as a constant component on the harmonic signal.
+DC offset looks like a peak near the 0 Hz on the frequency response. In time domain it manifests as a constant
+component on the harmonic signal.
 
 In :cite:`dcremoval_lyons`, Rick Lyons investigates the use of moving average algorithm as a DC removal
 circuit. This works by subtracting the MA output from the input signal. The problem of this approach is the
@@ -130,7 +128,6 @@ signal. Second, the MA's output is subtracted from the input signal, thus giving
 DC component. :numref:`dc_removal` shows the Pyha implementation.
 
 
-
 .. code-block:: python
     :caption: DC-Removal implementation
     :name: dc_removal
@@ -145,18 +142,18 @@ DC component. :numref:`dc_removal` shows the Pyha implementation.
 
         def main(self, x):
             # run input signal over all the MA's
-            tmp = x
+            dc = x
             for mav in self.mavg:
-                tmp = mav.main(tmp)
+                dc = mav.main(dc)
 
             # dc-free signal
-            self.next.y = x - tmp
+            self.next.y = x - dc
             return self.y
         ...
 
 
 This implementation is not exactly following that of :cite:`dcremoval_lyons`. They suggest to delay-match the
-step 1 and 2 of the algorithm, but since we can assume the DC component to be more or less stable, this can be
+step 1 and 2 of the algorithm, but since the DC component is more more or less stable, this can be
 omitted.
 
 :numref:`dc_rtl_annotated` shows that the synthesis generated 4 MA filters that are connected in series,
@@ -171,9 +168,8 @@ output of this is subtracted from the input.
 
 
 In a real application, one would want to use this component with larger ``window_len``. Here 4 was chosen to keep
-the RTL simple. For example, using ``window_len=64`` gives much better cutoff frequency (:numref:`dc_comp`);
-FIR filter with the same performance would require hundreds of taps :cite:`dcremoval_lyons`. Another benefit is that
-this filter delays the signal by only 1 sample.
+the synthesis result simple. For example, using ``window_len=64`` gives much better cutoff frequency (:numref:`dc_comp`);
+FIR filter with the same performance would require hundreds of taps :cite:`dcremoval_lyons`.
 
 .. _dc_comp:
 .. figure:: ../examples/dc_removal/img/dc_comp.png
@@ -194,7 +190,7 @@ This implementation is also very light on the FPGA resource usage (:numref:`reso
     Embedded Multiplier 9-bit elements	0 / 232 ( 0 % )
 
 
-:numref:`dc_sim` shows the situation where the input signal is corrupted with a DC component (+0.25),
+:numref:`dc_sim` shows the simulation results for input signal with DC component of +0.5,
 the output of the filter starts countering the DC component until it is removed.
 
 .. _dc_sim:
@@ -203,6 +199,7 @@ the output of the filter starts countering the DC component until it is removed.
     :figclass: align-center
 
     Simulation of DC-removal filter in the time domain
+
 
 Comparison to other tools
 -------------------------
