@@ -20,7 +20,7 @@ in this thesis. Object-oriented design helps to better abstract the RTL details 
 For illustration purposes, :numref:`pyha_basic` shows an example Pyha design. The ``main`` function has been
 chosen as a top level entry point, other functions can be used as pleased.
 
-.. note:: First few examples of this chapter use ``integer`` types in order to reduce complexity.
+.. note:: The first few examples of this chapter use ``integer`` types in order to reduce complexity.
 
 .. code-block:: python
     :caption: Simple combinatory design, implemented in Pyha
@@ -37,7 +37,7 @@ chosen as a top level entry point, other functions can be used as pleased.
             return a, b
 
 One of the contributions of this thesis is sequential OOP VHDL model which is used to simplify conversion from Pyha to VHDL.
-Example of the VHDL conversion is shown on :numref:`pyha_basic_vhdl`, more details are given in
+The example of the VHDL conversion is shown in :numref:`pyha_basic_vhdl`, more details are given in
 :numref:`ch_conversion`.
 
 .. code-block:: vhdl
@@ -60,7 +60,7 @@ Example of the VHDL conversion is shown on :numref:`pyha_basic_vhdl`, more detai
     end procedure;
 
 :numref:`basic_rtl` shows the synthesis result. The ``a`` output is formed by adding '1' and '3' to the ``x`` input. Next
-the ``a`` signal is compared to ``9``, if equal ``b`` is outputted as 0, otherwise ``b = a * 314``. That
+the ``a`` signal is compared to ``9``; if equal, ``b`` is outputted as 0, otherwise ``b = a * 314``. That
 exactly complies with the Python and VHDL descriptions.
 
 .. _basic_rtl:
@@ -124,8 +124,8 @@ to VHDL. Extensions can be considered in future editions.
 In conventional programming, state is usually captured by using class variables which can retain values between function calls.
 Inspired from this, all the class variables in Pyha are handled as registers.
 
-Accumulator
-~~~~~~~~~~~
+Accumulator example
+~~~~~~~~~~~~~~~~~~~
 
 Consider the design of an accumulator (:numref:`acc`); it operates by sequentially adding up
 all the input values of every successive function call.
@@ -150,8 +150,8 @@ For example
 assignments to class variables are used for register initial/reset values.
 
 Note the ``self.next.acc = ...``, simulates the hardware behaviour of registers, that is delayed assignment.
-In general this is equivalent to the VHDL ``<=`` operator. Values are transferred from **next** to **current** just
-before the ``main`` call. In general Pyha abstracts the clock signal away by denoting that each call to ``main`` is
+In general, this is equivalent to the VHDL ``<=`` operator. Values are transferred from **next** to **current** just
+before the ``main`` call. Pyha abstracts the clock signal away by denoting that each call to ``main`` is
 a clock edge. Think that the ``main`` function is started with the **current** register values known and the objective of
 the ``main`` function is to find the **next** values for the registers.
 
@@ -165,10 +165,10 @@ The synthesis results displayed in the :numref:`acc_rtl` shows the adder and reg
     Synthesis result of :numref:`acc` (Intel Quartus RTL viewer)
 
 
-One inconvenience is that every register on signal path delays the output signal by 1 sample, this is also called
-pipeline delay or latency. This situation is shown on :numref:`acc_sim_delay` that shows the simulation results for the
+One inconvenience is that every register on the signal path delays the output signal by 1 sample, this is also called
+pipeline delay or latency. This situation is shown in :numref:`acc_sim_delay` for the simulation results of the
 ``Acc`` module. Note that the model is implemented without register semantics, thus has no pipeline delays. This can
-be seen from the :numref:`acc_sim_delay`, hardware related simulations are delayed by 1 sample,
+be seen from :numref:`acc_sim_delay`, where hardware related simulations are delayed by 1 sample as
 compared to the software model.
 
 .. _acc_sim_delay:
@@ -189,11 +189,11 @@ would shift the hardware simulations left by 1 sample, so that all the simulatio
 Block processing and sliding adder
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Common technique required to implement DSP systems is block processing i.e. calculating results on a block of
+A common technique required to implement DSP systems is block processing, i.e. calculating results on a block of
 input samples. Until now, the ``main`` function has worked with a single input sample, registers can be used to
 keep history of samples, so that block processing can be applied.
 
-For an example, consider an algorithm that outputs the sum of last 4 input values.
+For example, consider an algorithm that outputs the sum of last 4 input values.
 :numref:`block_adder` shows the Pyha implementation, it works by keeping history of 4 last input samples and
 summing them for output.
 
@@ -244,9 +244,9 @@ This design can be made generic by changing the ``__init__`` function to take th
             self.shr = [0] * window_len
         ...
 
-This design has a few issues when the ``window_len`` gets higher (:numref:`rtl_6_critical`).
-First, every stage requires a separate adder increasing the resource cost,
-this also forms an long critical path which in turn decreases the maximum clock rate of the design.
+This design has a few issues when the ``window_len`` is increased (:numref:`rtl_6_critical`).
+First, every stage requires a separate adder which increases the resource cost,
+this also forms a long critical path which in turn decreases the maximum clock rate of the design.
 
 .. _rtl_6_critical:
 .. figure:: ../examples/block_adder/img/rtl_6_critical.png
@@ -295,7 +295,7 @@ that keeps track of the previous output. The ``shr`` now serves the purpose of d
 
 
 :numref:`rtl_optimal_int_critical` shows the synthesis result. Now the critical path is 2 adders, no matter
-the ``window_len``. In addition, noteice how the ``shr`` is just a stack of registers to delay the input signal.
+the ``window_len``. In addition, notice how the ``shr`` is just a stack of registers to delay the input signal.
 
 .. _rtl_optimal_int_critical:
 .. figure:: ../examples/block_adder/img/rtl_optimal_int_critical.png
@@ -312,10 +312,10 @@ Fixed-point designs
 DSP systems are commonly described in floating-point arithmetic, which are supported by all conventional programming
 languages. Floating-point arithmetic can also be used in RTL languages, but the problem is high resource usage
 :cite:`fixvsfp`.
-Alternative is to use fixed-point numbers, that work with integer arithmetic. Another benefit of fixed-point numbers
+The alternative is to use fixed-point numbers, that work with integer arithmetic. Another benefit of fixed-point numbers
 is that they can map to FPGA DSP blocks, thus providing higher clocks speed and reduced resource use [#floatdsp]_.
 
-Common workflow is to experiment and write model using the floating-point arithmetic, then convert to fixed-point
+The common workflow is to experiment and write model using the floating-point arithmetic, then convert to fixed-point
 for hardware implementation. In this work Pyha has been designed to simplify the conversion and equivalence testing
 operations.
 
@@ -356,11 +356,11 @@ Converting sliding adder to fixed-point
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Consider converting the sliding window adder (developed in :numref:`ch_sliding_adder`)
-to fixed-point implementation. This requires
+to a fixed-point implementation. This requires
 changes only in the ``__init__`` function (:numref:`fp_sliding_adder`).
 
 .. code-block:: python
-    :caption: Fixed-point sliding adder, the rest of the code is identical to one in :numref:`ch_sliding_adder`
+    :caption: Fixed-point sliding adder, the rest of the code is identical to the one in :numref:`ch_sliding_adder`
     :name: fp_sliding_adder
 
     def __init__(self, window_size):
@@ -374,9 +374,9 @@ One problem with the VHDL fixed-point library is that the designer is constantly
 desired format, in this work Pyha has been designed to automate this step i.e. every assign to fixed-point variable
 is resized to the initial format, the bounds may be taken from the assigned value if initial value is lazy.
 
-Synthesis results :numref:`rtl_sfix_saturate` show that inputs and outputs are now 18-bits wide,
+Synthesis results in :numref:`rtl_sfix_saturate` show that inputs and outputs are now 18-bits wide,
 this is due the use of default fixed-point type.
-Another big addition is the saturation logic, which prevents the wraparound behaviour by saturating the value instead.
+Another main addition is the saturation logic, which prevents the wraparound behaviour by saturating the value instead.
 Wraparound related bugs can be very hard to find, thus it is suggested to keep saturation logic enabled when the
 overflows are possible.
 
@@ -388,7 +388,7 @@ overflows are possible.
     RTL of fixed-point sliding adder, default fixed-point type (Intel Quartus RTL viewer)
 
 The ``simulate`` function in Pyha has been designed to automatically convert floating-point inputs to
-fixed-point, same goes for outputs. This way the unit-test can be kept simple, :numref:`fp_test` gives an example.
+fixed-point, the same goes for outputs. This way the unit-test can be kept simple, :numref:`fp_test` gives an example.
 
 .. code-block:: python
     :caption: Pyha enables testing of fixed-point design with floating-point numbers
@@ -399,8 +399,8 @@ fixed-point, same goes for outputs. This way the unit-test can be kept simple, :
     y = simulate(dut, x)                 # all outputs are floats
     # assert or plot results
 
-The simulation results shown on :numref:`fix_sat_wrap`, show that the hardware related simulations differ from the
-model. This is because model is implemented in floating-point arithmetic while hardware typing is limited to
+The simulation results shown in :numref:`fix_sat_wrap`, show that the hardware related simulations differ from the
+model. This is because the model is implemented in floating-point arithmetic while hardware typing is limited to
 [-1;1] range. Notice that the mismatch starts when the value rises over ``1.0``.
 
 .. _fix_sat_wrap:
@@ -415,9 +415,9 @@ model. This is because model is implemented in floating-point arithmetic while h
 Summary
 -------
 
-This chapter has demonstrated the major features of Pyha and the motivation behind them. It was shown that Pyha
-is an sequential object-oriented programming language based on Python. It falls to the category of behavioral languages,
-meaning that the output of Python program is equal to the output of generated hardware. Pyha provides ``simulate``
+This chapter has demonstrated the major features of the proposed Pyha language and the motivation behind them. It was shown that Pyha
+is an sequential object-oriented programming language based on Python. It falls in the category of behavioral languages,
+meaning that the output of Python program is equivalent to the output of the generated hardware. Pyha provides ``simulate``
 functions to automatically and without any boilerplate code run model and hardware related simulations, this helps the
 design of unit-tests. In addition, Pyha designs are fully debuggable in Python ecosystem.
 Class variables are used to define registers, this has been inspired by traditional programming languages.

@@ -7,9 +7,9 @@ Thesis!
 
     1_intro
     2_pyha
-    3_conversion
+    3_synthesis
     4_examples
-    5_summary
+    5_conclusion
 
 
 

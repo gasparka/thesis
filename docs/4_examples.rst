@@ -31,10 +31,10 @@ the filter (MA is a special case of FIR filter :cite:`dspbook`).
     :align: center
     :figclass: align-center
 
-    Moving average filter applied on noisy signal
+    Moving average filter applied on noisy signal, coded in :numref:`mavg-pyha`
 
 Good noise reduction performance can be explained by the frequency response of the MA filter (:numref:`mavg_freqz`),
-showing that it is a low-pass filter. Passband width and stopband attenuation are controlled by the
+showing that it is a low-pass filter. The passband width and stopband attenuation are controlled by the
 window length.
 
 .. _mavg_freqz:
@@ -42,10 +42,10 @@ window length.
     :align: center
     :figclass: align-center
 
-    Frequency response of moving average filter
+    Frequency response of the moving average filter, illustrated in :numref:`moving_average_noise` and coded in :numref:`mavg-pyha`
 
 MA filter is implemented by sliding sum, that is divided by the sliding window length. The division can be
-carried out by a shift operation if divisor is power of two.
+carried out by a shift operation if divisor is a power of two.
 In addition, division can be performed on each sample instead of on the sum, that is ``(a + b) / c = a/c + b/c``. This
 guarantees that the ``sum`` is always in the [-1;1] range and no saturation logic is needed.
 
@@ -89,8 +89,8 @@ by routing semantics.
 
 
 :numref:`mavg_matched` shows simulation results of MA filter used for matched filtering.
-The plot on (a) shows digital input signal that is corrupted by noise.
-Plot (b) shows that the MA with window length equal to samples per symbol can recover (optimal result) the
+The plot in (a) shows digital input signal that is corrupted by noise.
+Plot (b) shows that the MA with a window length equal to the number of samples per symbol can recover (optimal result) the
 signal from the noise. Next the signal could be sampled to recover bit values (0.5=1, -0.5=0).
 
 .. _mavg_matched:
@@ -104,7 +104,7 @@ signal from the noise. Next the signal could be sampled to recover bit values (0
 Linear-phase DC removal Filter
 ------------------------------
 
-This design demonstrates how the object-oriented nature of Pyha can be used for simple design reuse by chaining
+This section demonstrates how the object-oriented nature of Pyha can be used for simple design reuse by chaining
 multiple MA filters to implement linear-phase DC removal filter.
 
 Direct conversion (homodyne or zero-IF) receivers have become very popular recently especially in the realm of
@@ -132,7 +132,7 @@ DC component. :numref:`dc_removal` shows the Pyha implementation.
 
 
 .. code-block:: python
-    :caption: DC-Removal implementation
+    :caption: DC-Removal implementation in Pyha
     :name: dc_removal
 
     class DCRemoval(HW):
@@ -170,7 +170,7 @@ output of this is subtracted from the input.
     Synthesis result of ``DCRemoval(window_len=4)`` (Intel Quartus RTL viewer)
 
 
-In a real application, one would want to use this component with larger ``window_len``. Here 4 was chosen to keep
+In a real application, one would want to use this component with a larger ``window_len``. Here 4 was chosen to keep
 the synthesis result simple. For example, using ``window_len=64`` gives much better cutoff frequency (:numref:`dc_comp`);
 FIR filter with the same performance would require hundreds of taps :cite:`dcremoval_lyons`.
 
@@ -185,7 +185,7 @@ FIR filter with the same performance would require hundreds of taps :cite:`dcrem
 This implementation is also very light on the FPGA resource usage (:numref:`resource_usage`).
 
 .. code-block:: text
-    :caption: Cyclone IV FPGA resource usage for ``DCRemoval(window_len=64)``
+    :caption: Cyclone IV FPGA resource usage for ``DCRemoval(window_len=64)``, (Intel Quartus synthesis report)
     :name: resource_usage
 
     Total logic elements                242 / 39,600 ( < 1 % )
@@ -228,11 +228,11 @@ design that is very similar to Verilog processes. In general the synthesizable s
 it has been found that the tool is more useful for high-level modeling purposes :cite:`jan_sim`.
 Another package in the Python ecosystem is Migen, that replaces the event-driven paradigm with the notions of
 combinatorial and synchronous statements :cite:`migenweb`. Migen can be considered as meta-programming in Python so
-it is a bit complicated. Both Migen and MyHDL are more aimed at the control logic, neither implements the fixed-point
+it is a bit complicated to use in practice by non-specialists. Both Migen and MyHDL are more aimed at the control logic, neither implements the fixed-point
 data type, that is a standard for hardware DSP designs.
 
-Overall i would say that both MyHDL and Migen are awesome tools, in the future merging of Pyha to either MyHDL or Migen
-can defiantly be considered.
+Overall it can be saidthat both MyHDL and Migen are useful tools for their own purposes.
+In the future merging of Pyha to either MyHDL or Migen can be considered.
 
 
 vs MATLAB/SIMULINK
@@ -263,8 +263,8 @@ more as an futures perspective, this thesis works only with the RTL part.
 The design choices done in the process of Pyha design have focused on simplicity. The conversion process of
 Python code to VHDL is straight-forward as the synthesis tools are already capable of elaborating sequential VHDL code.
 This work contributes the object-oriented VHDL desing way that allows defining registers in sequential code.
-Thanks to that, the OOP Python code can be simply mapped to OOP VHDL code. Result is readable (keeps hirarchy) VHDL
-code that may provide an bridge for people that already know VHDL.
+Thanks to that, the OOP Python code can be simply mapped to OOP VHDL code.The result is human-readable (keeps hierarchy)
+VHDL code that may provide an bridge for people that already know VHDL.
 
 Limitations
 ~~~~~~~~~~~
@@ -278,7 +278,7 @@ compare to the library support of other tools that have exsisted for years and a
 One of the limitation emerging from the Python domain simulation is the support of support of one clock domain.
 In general since Pyha has been applied to SDR applications this has not been a problem as all the processing happens
 in baseband and generally no sample rate conversions are required.
-In addition Pyha lacks the support for interfaces like AXI or Avalon.
+In addition, Pyha lacks the support for interfaces like AXI or Avalon.
 Also most of the tools support converting to Verilog and VHDL, while Pyha only supports VHDL.
 
 Integration to bus structures is another item in the wish-list. Streaming blocks already exist in very basic form.

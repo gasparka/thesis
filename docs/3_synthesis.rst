@@ -7,19 +7,19 @@ Synthesis
     However, these tools only make use of the very basic dataflow semantics of VHDL language,
     resulting in complex conversion process and typically unreadable VHDL output.
 
-Majority of the hardware related tools end up converting to either VHDL or SystemVerilog, because these are supported
+The majority of the hardware related tools end up converting to either VHDL or SystemVerilog, because these are supported
 by the synthesis tools. Most often the higher level language is converted to very low level
 VHDL/ :abbr:`SystemVerilog (SV)` code, resulting
-in a confusing conversion process and unreadable code.
+in a confusing conversion process and unreadable code for a human.
 
 This thesis tests an alternative path by contributing the sequential synthesizable object-oriented (OOP) programming model for VHDL.
-The main motivation is to use it as an conversion target for higher level languages. Major advantages are
-that the conversion process is simple, output VHDL readable and structured.
+The main motivation is to use it as a conversion target for higher level languages. Major advantages are
+that the conversion process is simple and the output VHDL is readable and structured.
 
 VHDL has been chosen over :abbr:`SystemVerilog (SV)` because it is a strict language and forbids many mistakes during compile time.
 :abbr:`SystemVerilog (SV)` on the other hand is much more permissive, for example allowing out-of-bounds array indexing
 :cite:`sysverilog_gotcha`.
-In future both could be supported.
+In the future both could be supported.
 
 .. _conversion:
 .. figure:: img/conversion.png
@@ -49,7 +49,7 @@ This thesis contributes to the 'two process' model by adding an object-oriented 
 allows fully sequential designs, easier reuse and removes the one clock domain limitation.
 
 The basic idea behind OOP is to strictly define functions that can perform actions on some group of data.
-This idea fits well with hardware design, as 'data' can be thought as registers and combinatory logic as functions that
+This idea fits well with hardware design, as 'data' can be thought of as registers, and combinatory logic as functions that
 perform operations on the data.
 VHDL has no direct support for OOP but it can still be used by grouping data in record (same as C struct)
 and passing it as parameter to functions. This is essentially the same way how C programmers do it.
@@ -92,21 +92,21 @@ critical path.
 Defining registers with variables
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Previous section made a mistake of expecting the registers to work in the same way
+The previous section made a mistake of expecting the registers to work in the same way
 as 'class variables' in traditional programming languages. Actually registers are delayed elements, so to say
 they take the next value.
 VHDL defines a special 'signal assignment' operator for this kind of delayed assignment, that can be used on
 VHDL signal objects like like :code:`a <= b`. These objects are hard to map to higher level languages and have
-limited usage in VHDL structured code constructs. Cannot map to record.
+limited usage in VHDL structured code constructs.
 
 Conveniently, the signal assignment can be mimicked with two variables,
 to represent the **next** and **current** values.
-Signal assignment operator sets the value of **next** variable. On the next simulation delta, all the
+The signal assignment operator sets the value of **next** variable. On the next simulation delta, all the
 signals are updated i.e. **next** written to **current**. This way of writing sequential logic has been
 suggested by Pong P. Chu in his VHDL book :cite:`chu_vhdl` and is also used in MyHDL signal objects
 :cite:`jan_myhdl_signals`.
 
-Adapting this style for the MAC example is shown in :numref:`mac_next`, the data model now includes the
+Adapting this style for the MAC example is shown in :numref:`mac_next`; the data model now includes the
 ``nexts`` member, that should be used to write register values.
 
 .. code-block:: vhdl
@@ -135,7 +135,7 @@ Adapting this style for the MAC example is shown in :numref:`mac_next`, the data
     end procedure;
 
 VHDL signal assignment automatically updates the signal values, now with the variables method, this has to be
-done manually. :numref:`mac-next-update` defines new function
+done manually. :numref:`mac-next-update` defines the new function
 'update_registers', taking care of this task.
 
 .. code-block:: vhdl
@@ -149,7 +149,7 @@ done manually. :numref:`mac-next-update` defines new function
         self.coef:= self.nexts.coef;
     end procedure;
 
-.. note:: Function 'update_registers' is called on clock raising edge. While the 'main' is called as combinatory function.
+.. note:: Function 'update_registers' is called on clock raising edge, while the 'main' is called as a combinatory function.
 
 Synthesising the revised code shows that the pipelined MAC has been implemented (:numref:`mac_rtl_end`)..
 
@@ -164,7 +164,7 @@ Synthesising the revised code shows that the pipelined MAC has been implemented 
 The OOP model
 ~~~~~~~~~~~~~
 
-The OOP model, developed in this thesis, consists of following elements:
+The OOP model, developed in this thesis, consists of the following elements:
 
     - Record for 'next',
     - Record for 'self',
@@ -256,7 +256,7 @@ In ``main``,
     end procedure;
 
 
-Synthesis result shows that two MACs are connected in series :numref:`mac_reuse_stack`.
+The synthesis result shows that two MACs are connected in series, see :numref:`mac_reuse_stack`.
 
 .. _mac_reuse_stack:
 .. figure:: img/mac_reuse_stack.png
@@ -265,7 +265,7 @@ Synthesis result shows that two MACs are connected in series :numref:`mac_reuse_
 
     Synthesis result of the new class (Intel Quartus RTL viewer)
 
-Connecting two MAC's instead in parallel can be done with simple modification to ``main`` function
+Connecting two MACs instead in parallel can be done with a simple modification to ``main`` function
 to return both outputs (:numref:`mac-parallel`).
 
 .. code-block:: vhdl
@@ -288,8 +288,8 @@ Two MAC's are synthesized in parallel, as shown in :numref:`mac_reuse_parallel`.
     Synthesis result of :numref:`mac-parallel` (Intel Quartus RTL viewer)
 
 Multiple clock domains can be easily supported by updating registers at different clock edges.
-By reusing the parallel MAC's example, consider that MAC_0 and MAC_1  are specified to work in different clock domain.
-For this only the top level process must be modified (:numref:`mac-parallel-clocks`), rest of the code stays the same.
+By reusing the parallel MACs example, consider that MAC_0 and MAC_1 are specified to work in different clock domains.
+For this, only the top level process must be modified (:numref:`mac-parallel-clocks`), the rest of the code remains the same.
 
 .. code-block:: vhdl
     :caption: Top-level for multiple clocks, in OOP-style VHDL
@@ -307,7 +307,7 @@ For this only the top level process must be modified (:numref:`mac-parallel-cloc
         end if;
     end if;
 
-Synthesis result (:numref:`mac_parallel_two_clocks`) show that
+Synthesis results (:numref:`mac_parallel_two_clocks`) show that
 registers are clocked by different clocks. The reset signal is common for the whole design.
 
 .. _mac_parallel_two_clocks:
@@ -323,8 +323,8 @@ registers are clocked by different clocks. The reset signal is common for the wh
 Converting Python to VHDL
 -------------------------
 
-The conversion process requires no major transformations or 'understanding' of the source code, this is made possible
-by the OOP VHDL model, that allows easy mapping of Python constructs to VHDL. Even so, the conversion process poses
+The conversion process requires no major transformations or 'understanding' of the source code; this is made possible
+by the OOP VHDL model that allows easy mapping of Python constructs to VHDL. Even so, the conversion process poses
 some challenges like type inference and syntax conversion.
 
 .. _pyvhdl_types:
@@ -332,12 +332,12 @@ some challenges like type inference and syntax conversion.
 Type inference
 ~~~~~~~~~~~~~~
 
-One of the biggest difference between Python and VHDL is the typing system.
+One of the significant differences between Python and VHDL is the typing system.
 Python uses dynamic typing i.e. types are determined during code execution, while VHDL is statically typed.
-This poses a major problem for conversion, as the missing type info in Python sources must be somehow inferred in order
+This poses a major problem for conversion, as the missing type information in Python sources must be somehow inferred in order
 to produce VHDL code.
-Naive way to tackle this problem is to try inferring the types directly from code, for example clearly the type of
-'``a = 5``' is integer. However typically the task is more complex, consider :numref:`types_problem` as an example,
+A naive way to tackle this problem is to try inferring the types directly from code, for example clearly the type of
+'``a = 5``' is integer. However, typically the task is more complex; consider :numref:`types_problem` as an example,
 no types can be inferred from this code.
 
 .. code-block:: python
@@ -351,7 +351,7 @@ no types can be inferred from this code.
         def main(self, a):
             local_var = a
 
-Alternative is to follow the definition of dynamic typing and execute the code, after what the value can be inspected
+An alternative is to follow the definition of dynamic typing and execute the code, after what the value can be inspected
 and type inferred. :numref:`class-vars` shows this method applied on the class variable,
 the Python function``type()`` can be used to query the variable type.
 
@@ -368,8 +368,8 @@ the Python function``type()`` can be used to query the variable type.
 This solves the problem for class values. The same method cannot be applied for the local variables of functions,
 because these only exist in the stack.
 This problem has been encountered before in :cite:`py_locals_decorator`, which proposes to modify the Python
-profiling interface in order to keep track of function local variables. Pyha has applied this method, usage example
-is shown on :numref:`class-locals`.
+profiling interface in order to keep track of function local variables. It has been decided to apply this method in
+Pyha; an example is shown in :numref:`class-locals`.
 
 .. code-block:: python
     :caption: Solving the problem for local variables
@@ -383,9 +383,9 @@ is shown on :numref:`class-locals`.
     >>> type(dut.main.locals['local_var'])
     <class 'int'>
 
-In sum, this method requires the execution of the Python code before types can be inferred. Main advantage of this
-is very low complexity. In addition this allows the usage of 'lazy' fixed point types as shown in :numref:`ch_fixed`.
-This method can also be used to to keep track of all the values a variable takes, this can enable automatic conversion
+In sum, this method requires the execution of the Python code before types can be inferred. The main advantage of this
+is very low complexity. In addition, this allows the usage of 'lazy' fixed point types as shown in :numref:`ch_fixed`.
+This method can also be used to keep track of all the values a variable takes, this can enable automatic conversion
 from floating-point to fixed-point.
 The code execution needed for conversion is automated in the ``simulate`` functions by running the Python domain
 simulation.
@@ -399,10 +399,10 @@ Syntax conversion
 Python provides tools that simplify the traversing of source files, like abstract syntax tree (AST) module,
 that works by parsing the Python file into a tree structure, which can then be modified. Using AST for syntax conversion
 is known to work but it has very low abstraction level, thus most of the time resulting in complex conversion process.
-RedBaron :cite:`redbaron` is a recent high-level AST tool, that aims to simplify operations with Python source code,
-unlike AST it also keeps the code formatting and comments.
+RedBaron :cite:`redbaron` is a recent high-level AST tool, that aims to simplify operations with Python source code;
+unlike AST, it also keeps the code formatting and comments.
 
-RedBaron parses the source code into rich objects, for example the '``a = 5``' would result in an ``AssignmentNode``.
+RedBaron parses the source code into rich objects, for example '``a = 5``' would result in an ``AssignmentNode``.
 Nodes can be overwritten to change some part of the behaviour. For example, the ``AssignmentNode`` can be modified to
 change ``=`` to ``:=`` and add ``;`` to the end of statement.
 Resulting in a VHDL compatible statement '``a := 5;``'. This simple modification turns **all** the assignments
