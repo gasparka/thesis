@@ -1,3 +1,5 @@
+.. _4_examples:
+
 Case studies
 ============
 
@@ -204,8 +206,8 @@ the output of the filter starts countering the DC component until it is removed.
     Simulation of DC-removal filter in the time domain
 
 
-Comparison and limitations
---------------------------
+Comparison to similar tools
+---------------------------
 
 
 .. warning:: this section very very in progress
@@ -250,7 +252,6 @@ In the future merging of Pyha to either MyHDL or Migen can be considered.
 
 .. matlab hind https://www.bdti.com/InsideDSP/2012/09/05/MathWorks
 
-
 One of the main motivations of this work was to provide an open source alternative for the MATLAB based DSP to
 HDL flows. In general the solution compares well against MATLAB to HDL based workflow, both of them work on
 sequential code but require the user to define registers. However the way develiped by Pyha is much better,
@@ -272,36 +273,6 @@ algorithm must be fitted to suite the hardware approach :cite:`2015arXiv15090003
 However the main reason why these tools are popular is that they enable software developers to enter the
 hardware world more easily appeal. This is also the case for Pyha, as it uses pure Python classes and functions,
 only difference is how the class variables are used for registers.
-
-Limitations
-~~~~~~~~~~~
-
-.. https://github.com/petspats/pyha/graphs/contributors
-
-Pyha has been developed during the period of last year by me, side project,
-so it is clear it has some limitations and that it cannot
-compare to the library support of other tools that have exsisted for years and are developed by bigger community.
-
-One of the limitation emerging from the Python domain simulation is the support of support of one clock domain.
-In general since Pyha has been applied to SDR applications this has not been a problem as all the processing happens
-in baseband and generally no sample rate conversions are required.
-In addition, Pyha lacks the support for interfaces like AXI or Avalon.
-Also most of the tools support converting to Verilog and VHDL, while Pyha only supports VHDL.
-
-Integration to bus structures is another item in the wish-list. Streaming blocks already exist in very basic form.
-Ideally AvalonMM like buses should be supported, with automatic HAL generation, that would allow design of reconfigurable FIR filters for example.
-
-
-Future perspectives
-~~~~~~~~~~~~~~~~~~~
-
-Long term goal of the project is to develop enough blocks that are functionally equal to GNURadio blocks, so that
-flow-graphs could be converted to FPGA designs, thus providing an open source alternative for Simulink
-based flows.
-
-Convert to HLS langauge instead of VHDL, then the designer could choose to to either design for RTL or HLS, this is
-more as an futures perspective, this thesis works only with the RTL part.
-
 
 
 .. bibliography:: bibliography.bib

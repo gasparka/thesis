@@ -1,3 +1,5 @@
+.. _2_pyha:
+
 Hardware design with Pyha
 =========================
 
@@ -38,7 +40,7 @@ chosen as a top level entry point, other functions can be used as pleased.
 
 One of the contributions of this thesis is sequential OOP VHDL model which is used to simplify conversion from Pyha to VHDL.
 The example of the VHDL conversion is shown in :numref:`pyha_basic_vhdl`, more details are given in
-:numref:`ch_conversion`.
+:numref:`3_synthesis`.
 
 .. code-block:: vhdl
     :caption: :numref:`pyha_basic` converted to VHDL, by Pyha conversion routines

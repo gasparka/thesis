@@ -1,8 +1,8 @@
 Introduction
 ============
 
-The most connonly used tools today for designing digital hardware are VHDL and :abbr:`SystemVerilog (SV)`.
-:abbr:`SystemVerilog (SV)` is aggressively promoted by
+The most commonly used tools today for designing digital hardware are VHDL and :abbr:`SV (SystemVerilog)`.
+:abbr:`SV (SystemVerilog)` is aggressively promoted by
 the big :abbr:`electronic design automation (EDA)` companies (Cadence, Mentor, Synopsys)
 along with :abbr:`Universal Verification Methodology (UVM)`.
 In 2003, Aart de Geus, Synopsys CEO, stated that :abbr:`SystemVerilog (SV)`
@@ -13,7 +13,6 @@ source simulator GHDL :cite:`ghdl`, Open Source VHDL Verification Methodology (O
 VUnit :cite:`vunit`.
 All of these advancements aim to ease the verification aspects while the synthesis part
 has mostly stayed the same for the past 10 years.
-
 
 Numerous projects exist that propose to use higher level :abbr:`hardware description language (HDL)`,
 in order to raise the abstraction level.
@@ -54,7 +53,7 @@ Lastly, the C model was manually converted to VHDL.
 
 Given the limitations and drawbacks of existing solutions,
 this thesis proposes Pyha, a new Python based hardware description language aimed at simplifying DSP hardware
-development in an open-source manner and providing an alternative for the MATLAB based design flow.
+development in an open-source manner.
 Pyha raises the RTL design abstraction level by enabling sequential and object-oriented style, one of the contributions
 of this thesis is extension of this style to VHDL language, making the conversion process of Pyha unique.
 DSP systems can be built by using the fixed-point type and semi-automatic conversion from floating point.
@@ -78,19 +77,9 @@ Python is far ahead and the only one with positive trend, that should soon push 
 Structure of the thesis
 -----------------------
 
-.. todo:: not done
-
-After gaining the context and problem statement in the current chapter, chapter 2 presents this and that. Next,
-chapter 3 persents ,,. Chapter 4 describes this and that. Chapter 5 concludes this thesis and suggest ideas
-for future work.
-
-This thesis is divided into 3 chapters. In chapter 1, main concepts of Pyha are introduced.
-Following chapter shows
-First chapter of this thesis gives an overview of the developed tool Pyha and how it can be used for hardware design.
-Follows the examples that show how Pyha can be used to relatively easly construct moving-average filter and by reusing
-it the DC-removal filter.
-Final chapter describes the one of the contribtutions of this thesis, the sequential VHDL OOP model and how Python
-is converted to it.
-
-The related work is introduced and discussed throughout this thesis,
-thus no specific literature review chapter has been included
+After gaining the context and problem statement in the current chapter, :numref:`2_pyha` presents the proposed hardware
+description language Pyha. Next, :numref:`3_synthesis` develops the object-oriented VHDL model and deals with the
+problem of converting Python to VHDL. :numref:`4_examples` shows how Pyha can be used to implement medium complexity
+DSP systems and gives an comparison to existing tools. :numref:`5_conclusion` concludes this thesis and suggest ideas
+for future work. The related work is introduced and discussed throughout this thesis,
+thus no specific literature review chapter has been included.

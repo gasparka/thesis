@@ -1,46 +1,58 @@
+.. _5_conclusion:
+
 Conclusion
 ==========
 
-.. todo:: recall the problem first!
+The task of implementing digital signal processing (DSP) on hardware is often carried out by using high level tools
+such as MATLAB, which offers good productivity. The problem is that such tools can be costly, thus not available
+for everyone and open-source designs. Other high-level C based tools may not be suitable for modeling.
+Given the limitations and drawbacks of existing solutions,
+this thesis proposes Pyha, a new Python based hardware description language aimed at simplifying DSP hardware
+development in an open-source manner.
 
-This work proposed a new Python based HDL language called Pyha. That is a sequential object-oriented HDL language.
-Overview of Pyha features have been given and
-shown that the tool is suitable to use with model based DSP systems. It was also demonstrated that Pyha supports
+Overview of main features of Pyha features have been given and shown that the proposes tool is usable for
+describing hardware components. It was also demonstrated that Pyha supports
 fixed point types and semi-automatic conversion from floating point types.
 Pyha also provides good support for unit test and designs are debuggable.
 
-Two case studies were presented. Firstly the moving average filter that was implemented in RTL level. Second example
-demonstrated that blocks written in Pyha can be reused in pure Python way, developed linear phase DC removal filter
-by reusing the implementation of moving average filter. Synthesisability has been demonstrated on a Cyclone IV
-device.
-
-Another contribution of this thesis is the sequential object-oriented VHDL model. This was developed to enable
-simple conversion of Pyha to VHDL. One of the advantages of this work compared to other tools is the simplicity
-of how it works.
-
-In this work Pyha has been designed to add DSP related features to the Python conversion scope; this includes
-fixed-point type and semi-automatic conversion from floating point. In addition, Pyha integrates the model to designs
-and test functions simplification. Pyha includes functions
-that help verification by automatically running all the simulations, asserting that model is equivalent to the
-synthesis result, tests defined for model can be reused for RTL, model based verification.
-Pyha designs are also simulatable and debuggable in Python domain.
-The design of Pyha also supports fully automatic conversion but currently this is left as a future work.
-
-Pyha is a fully sequential language that works on purely Python code. However Pyha resides in the RTL
-level, allowing to define each and every register. In that sense Pyha is at somewhere between a HLS and a HDL
-language. Pyha aims to raise the abstraction level by using the object-oriented style, so that the RTL details
-can be easily abstracted away.
+Two use cases presented in :numref:`4_examples` show that the developed solution is already usable on solving
+real life problems. Firstly the moving average filter was implemented and demonstrated as a matched filter.
+The second example showed how the object-oriented nature of Pyha can be used for simple design reuse,
+developed linear phase DC removal filter by reusing the moving average filter.
+Synthesisability was demonstrated on a Cyclone IV device.
 One major advantage of Pyha is that existing blocks can be connected together in purely Python way, the
 designer needs to know nothing about hardware design or underlying RTL implementation.
 
-Future perspectives are to implement more DSP blocks, especially by using GNURadio blocks as models. That may
-enable developing a work-flow where GNURadio designs can easily be converted to FPGA.
-In addition, the Pyha system could be improved to add automatic fixed point conversion and support for multiple
-clock domains.
+The comparison to other similiar tools show that Pyha is comparing well. It may be usable for software programmers
+to enter the field of hardware design more simply.
 
-The design choices done in the process of Pyha design have focused on simplicity. The conversion process of
-Python code to VHDL is straight-forward as the synthesis tools are already capable of elaborating sequential VHDL code.
+Contributions
+~~~~~~~~~~~~~
+
+.. this section is inspired by thesis_C_Baaij.pdf
+
 This work contributes the object-oriented VHDL design way that allows defining registers in sequential code.
-Thanks to that, the OOP Python code can be simply mapped to OOP VHDL code. Result is readable (keeps hierarchy) VHDL
-code that may provide an bridge for people that already know VHDL.
+
+The main contributions of this thesis are:
+
+    - Sequential object-oriented VHDL model -
+    - New Python based object-oriented HDL tool -
+
+Future work
+~~~~~~~~~~~
+
+The technical part of Pyha has been developed in the period of last year by one person, thus not everything
+has been fully finished. For example the automatic conversion from floating-point to fixed-point, while the
+conversion process is designed to allow for this. In addition currently the scope of Python modules are on
+single clock systems, which is not a huge constraint on DSP systems.
+
+One of the most interesting enchantments would be to extend the conversion process to convert the Python code
+into a HLS language instead (such as VivadoHLS). then the designer could choose to to either design for RTL or HLS.
+
+Long term work is to implement more DSP blocks, so that in the future there
+could be possible GUI based connect stuff program.
+
+Integration to bus structures is another item in the wish-list. Streaming blocks already exist in very basic form.
+Ideally AvalonMM like buses should be supported, with automatic HAL generation, that would allow design of reconfigurable FIR filters for example.
+
 

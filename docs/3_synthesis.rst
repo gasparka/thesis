@@ -1,4 +1,4 @@
-.. _ch_conversion:
+.. _3_synthesis:
 
 Synthesis
 =========
