@@ -135,7 +135,6 @@ all the input values of every successive function call.
 .. code-block:: python
     :caption: Accumulator implemented in Pyha
     :name: acc
-    :linenos:
 
     class Acc(HW):
         def __init__(self):

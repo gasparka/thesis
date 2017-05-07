@@ -48,7 +48,6 @@ in :numref:`ch_fp_sliding_adder`. Minor modifications are commented in the code.
 .. code-block:: python
     :caption: MA implementation in Pyha
     :name: mavg-pyha
-    :linenos:
 
     class MovingAverage(HW):
         def __init__(self, window_len):
@@ -225,7 +224,7 @@ conversion process is suitable for future implementation of fully automatic conv
 
 The C based high level synthesis tools try to turn the behaviour model directly to the RTL level i.e. they automatically infer the register placements and concurrency.
 However, there are studies that suggest that the productivity gain of these tools is equivalent to
-the advanced HDL languages like MyHDL or Chisel :cite:`emp_hls` :cite:`felton_no_hls`. This is because more often the C algorithm must be modified (and annotated) to suite the hardware :cite:`2015arXiv150900036Q` :cite:`vivado_hls_case_study`. However, these tools ara gaining popularity, mainly because they appeal to designers coming from software development. This is also the case for Pyha, as it uses pure Python classes and functions. In general the Python based flow provides much higher abstraction than 'C', also Python is better suited for modeling purposes.
+the advanced HDL languages like MyHDL or Chisel :cite:`emp_hls` :cite:`felton_no_hls`. This is because more often the C algorithm must be modified (and annotated) to suite the hardware :cite:`2015arXiv150900036Q` :cite:`vivado_hls_case_study`. On the other hand there are also studies that find the HLS tools to be the only way forward :cite:`Meeus2012`, the truth is probably somewhere between. These tools ara mainly gaining popularity, because they appeal to designers coming from software development. This is also the case for Pyha, as it uses pure Python classes and functions. In general the Python based flow provides much higher abstraction than 'C', also Python is better suited for modeling purposes.
 
 
 .. bibliography:: bibliography.bib

@@ -30,8 +30,7 @@ Lately the Vivado HLS, developed by Xilinx, has been gaining popularity. As of 2
 free design suite of Vivado (device limited).
 The problem with HLS tools is that they are often promoted as direct C to RTL tools but in reality
 often manual code transformations and guidelines are needed, in order
-to archive reasonable performance :cite:`vivado_hls_case_study`. The designer must already know how the RTL works in
-order to give these instructions.
+to archive reasonable performance :cite:`vivado_hls_case_study`.
 
 The :abbr:`DSP (digital signal processing)` systems can be described in previously mentioned HLS or HDL languages,
 but the most productive way is to use MATLAB/Simulink/HDLConverter flow, which allows
@@ -40,8 +39,6 @@ vendor :cite:`borph`.
 
 Problem statement
 -----------------
-
-.. matlab hind https://www.bdti.com/InsideDSP/2012/09/05/MathWorks
 
 There is no doubt that MATLAB based workflow offers a highly productive path from DSP models to hardware. However,
 these tools can easily cost over tens of thousands of euros and often FPGA vendor tools are required, which adds
@@ -52,8 +49,6 @@ hardware implementation of an ADS-B (automatic dependent surveillance – broadc
 in the MATLAB environment, the working model was then translated to C for real-time testing and fixed-point modeling.
 Lastly, the C model was manually converted to VHDL.
 
-.. todo:: siia paneks lause miks C ei sobi ja MyHDL jama
-
 Given the limitations and drawbacks of existing solutions,
 this thesis proposes Pyha, a new Python based hardware description language aimed at simplifying DSP hardware
 development in an open-source manner.
@@ -62,14 +57,12 @@ DSP systems can be built by using the fixed-point type and semi-automatic conver
 In addition, this work makes an effort to simplify the testing process of hardware systems by
 providing better simulation interface for unit-testing.
 
-.. todo:: improve contributions
-
 The basis of Pyha is Python, a general purpose programming language that is especially well suited for
 rapid prototyping and modeling. Python has also found its place in scientific projects and academia by offering
 most of what is familiar from MATLAB, free of charge. Scientists are already shifting from MATLAB to Python in order
 to conduct research that is reproducible and accessible by everyone :cite:`matlab_to_python`.
 :numref:`pypl_py_vs_mat` shows the popularity comparison (based on Google searches) of Python, MATLAB and C.
-Python is far ahead and the only one with positive trend, that should soon push Python past Java to position 1.
+The positive trend of Python should soon push it past Java to the most popular programming language.
 
 .. _pypl_py_vs_mat:
 .. figure:: /img/pypl_py_vs_mat.png

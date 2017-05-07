@@ -1,24 +1,12 @@
 Abstract
 ========
 
+The task of implementing digital signal processing systems on hardware is often carried out by using high-level tools, such as MATLAB to HDL converter.  However, these tools can easily cost over tens of thousands of euros, making them unusable for reproducible research and open source designs. Other high-level tools are mostly based on 'C', which is not suitable for modeling and prototyping purposes.
+Given the limitations and drawbacks of existing solutions,
+this thesis proposes Pyha, a new Python based hardware description language aimed at simplifying DSP hardware
+development in an open-source manner. Pyha raises the abstraction level by suggesting the object-oriented programming model and provides fixed-point type support.
+In addition, this work makes an effort to simplify the testing process of hardware systems by
+providing better simulation interface for unit-testing and debugging capabilities in Python domain.
 
-Lately the digital designs made have raised in complexity.
-There are now many open source tools that enable fast construction in software domain, for example
-GNURadio and Pothos. These tools provide users the simple way of connectin blocks togather and designing
-complex systems in this way. Downside of the software approach is that designs are slow to execute, for example
-the Wify core that cannot repsond to ACK packets in real life. There are works in progress on GPU accelerators but
-and RFNoC, but these are not suitable for embedded design.
-liiga spetsiifiline?
-
-In FPGA implementation is hard even though there exsists model.
-Implementaton the DSP blocks for FPGAs is not easy as the design progess still makes use of old Verilog and VHDL
-languages. Best way to do is MATLAB but it is expensive.
-
-This thesis presents a new Python based hardware descripton language(HDL) called Pyha, that focuses on
-simplifying development and testing process of DSP systems. Pyha aims to raise the abstraction level by
-providing sequential and object-oriented design model. Pyha is based on a OOP VHDL model that is also one
-contribution of this thesis. Simulatable in Python. Fixed point and semi-automatic conversion.
-
-One goal of this project is to make model based designs simpler, for this reason Pyha has been designed to provide
-simple unit-testing simulation functions that can work against model.
+Digitaalse signaalitööstuse süsteemide riistvara loomiseks kasutatakse enamasti kõrketasemelisi tööriistasi, nagu näiteks 'MATLAB HDL Coder'. Need tööriistad pakuvad küll kõrget produktiivsust aga võivad maksta kümneid tuhandeid eurosid, mille tõttu pole need lahendused kasutatavad reprodutseeritava teadustöö ning avatud lähetkoodiga projekktide jaoks. Enamus alternatiivseid lahendusi põhineb 'C' keelel, mis ei sobi modellerimiseks ega prototüüpimiseks. Vastavalt alternatiivse lahenduste puudustele, pakub see lõputöö välja Python programmeerimiskeelel põhineva riistvarakirjelduskeele, nimega Pyha, mille eesmärk on lihtsustada digitaalsete süsteemide arendamist, lahendus põhineb avatud lähtekoodil. Pyha põnineb objektorienteeritud programmeerimisel ning toetab püsikomaarve. Lisaks on lihtsustatud riistvara testimimine, tänu lihtsustatud simulatsioonide jooksutamise liidesele, võimalik on Pythoni domeenis programmi silumine.
 
