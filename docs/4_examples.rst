@@ -209,42 +209,34 @@ the output of the filter starts countering the DC component until it is removed.
 Comparison to similar tools
 ---------------------------
 
-
 .. warning:: this section very very in progress
 
-At this point all the major features of Pyha has been introduced so it is suitable to compare this solution to other
-languages.
+At this point all the major features of Pyha has been introduced and it can be compared to similar tools.
 
+Main feature of the developed tool is that it works on pure Python
 Main advancements Pyha brings to the HDL table are:
 
     - Python domain
-    - Fully sequntial and object-oriented design
+    - Fully sequential and object-oriented design
     - Strong fixed-point support and semi-automatic conversion
     - Simpler simulation functions
     - Design reuse
     - Simpler to use and understand
 
-Main difference to the traditiiona languages like VHDL and SytemVerilog are that they are event-based, meaning that those languages
-A larger number of concurrent VHDL statements and
-small processes connected through signals are used to implemenet the desired functionality :cite:`structvhdl_gaisler`.
-Tha advantage of this method is that it exactly models how hardware work but this kind of programing is hard to
-understand and implement. Thus the fully sequential way proposed in this thesis is much more familiar and productive
-way of programming, that results in a same outcome. This thesis has also shown that structured programming can be
-done in VHDL by proposing the OOP VHDL model, Python abstracts away the complexity.
-However Pyha can be considered as an higher level abstraction for VHDL language, simplifying many tasks.
-In addtion the simulations processes are greatly improved.
-Advantage of the Python domain is that it opens up usage for all the good Python packages like Numpy and Scipy.
-Often the testing of VHDL modules requires the import of some third party data, now it can be doen in Python all.
+Traditional HDL languages like VHDL and SV work on large number of concurrent statements and processes,
+connected trough signals. This is also known as event-based system, when some signal changes it may trigger the
+execution of processes. The reasoning behind this model is of course that it models how hardware works. However,
+the major downside is implementation and readability complexity.
+The sequentially executed programming style, proposed in this thesis, is much more familiar and productive,
+that also results in a same outcome. In addition, clearly writing in Python is simpler then in VHDL or SV.
+In addition the simulations processes are greatly improved.
 
-In Python domain there already exsist a package that can enable hardware design, called MyHDL. This tool
-uses mostly the same approach as the VHDL/Verilog.
-MyHDL is following the event-driven approach which is a trait of the classical HDLs. It features an function based
-design that is very similar to Verilog processes. In general the synthesizable subset of MyHDL is very limited,
-it has been found that the tool is more useful for high-level modeling purposes :cite:`jan_sim`.
-MyHDL are more aimed at the control logic, neither implements the fixed-point
-data type, that is a standard for hardware DSP designs.
-Overall it can be said that both MyHDL and Migen are useful tools for their own purposes.
-In the future merging of Pyha to either MyHDL or Migen can be considered.
+MyHDL is a hardware description language that also bases on Python, but works in the same event-driven way as
+VHDL/SV. The convertible subset of MyHDL is limited to function based designs. Pyha supports object-oriented design method,
+that much easier to understand and simplifies design reuse.
+In general the synthesizable subset of MyHDL is very limited,
+it has been found that the tool is more useful for high-level modeling purposes :cite:`jan_sim`. MyHDL also does not
+implement fixed-point type support, thus it is not oriented on DSP designs.
 
 .. Another package in the Python ecosystem is Migen, that replaces the event-driven paradigm with the notions of
     combinatorial and synchronous statements :cite:`migenweb`. Migen can be considered as meta-programming in Python so
@@ -252,26 +244,21 @@ In the future merging of Pyha to either MyHDL or Migen can be considered.
 
 .. matlab hind https://www.bdti.com/InsideDSP/2012/09/05/MathWorks
 
-One of the main motivations of this work was to provide an open source alternative for the MATLAB based DSP to
-HDL flows. In general the solution compares well against MATLAB to HDL based workflow, both of them work on
-sequential code but require the user to define registers. However the way develiped by Pyha is much better,
-MATLAB requires the use of persistend variables. In addition, Pyha offers object-oreinted design while the MATLAB
-code must work on simple functions, this is significant advantage as it eases the design reuse.
-The SIMULINK flow is based on connecting togather already existing blocks.
-As shown in this chapter, exsisting Pyha blocks can be connected togather in easy and purely Pythonic
-way, thus the designer needs no knowledge aout the underlying RTL implementation. In the future GUI could be easily
-made.
-Another point is that MATLAB offers floating-point to fixed point conversion
-(for additional 10000$ :cite:`matlab_price`). Pyha offers
-semi-automatic conversion by working lazy types. In addition Pyha conversion process is suitable for future implementation
-of fully automatic conversion.
+The MATLAB based DSP to HDL tools work on similar abstraction levels as Pyha i.e. sequential code but require user
+input on the usage of registers. Pyha support object-oriented designs while MATLAB is function based like MyHDL.
+In general working with registers and reusing the design is much simplified in Pyha.
+The SIMULINK flow is based mostly on connecting together already existing blocks.
+As shown in this chapter, Pyha blocks can be connected easy and in purely Pythonic way.
+MATLAB also offers an floating-point to fixed point conversion tool (for additional 10000$ :cite:`matlab_price`).
+Pyha matches this with semi-automatic conversion by supporting lazy vector bounds, the
+conversion process is suitable for future implementation of fully automatic conversion.
 
 The high level synthesis tools in general are C based that try to turn the behaviour model directly to the RTL level.
 However, there have been many studies that suggest the productivity gain of these tools is lower or equivalent to
 the HDL languages like MyHDL or Chisel :cite:`emp_hls` :cite:`felton_no_hls`. This is because more often the C
 algorithm must be fitted to suite the hardware approach :cite:`2015arXiv150900036Q` :cite:`vivado_hls_case_study`.
-However the main reason why these tools are popular is that they enable software developers to enter the
-hardware world more easily appeal. This is also the case for Pyha, as it uses pure Python classes and functions,
+However, the main reason why these tools are popular is that they enable software developers to enter the
+hardware world more easily. This is also the case for Pyha, as it uses pure Python classes and functions,
 only difference is how the class variables are used for registers.
 
 
