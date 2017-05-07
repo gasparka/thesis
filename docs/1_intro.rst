@@ -3,9 +3,9 @@ Introduction
 
 The most commonly used tools today for designing digital hardware are VHDL and :abbr:`SV (SystemVerilog)`.
 :abbr:`SV (SystemVerilog)` is aggressively promoted by
-the big :abbr:`electronic design automation (EDA)` companies (Cadence, Mentor, Synopsys)
-along with :abbr:`Universal Verification Methodology (UVM)`.
-In 2003, Aart de Geus, Synopsys CEO, stated that :abbr:`SystemVerilog (SV)`
+the big :abbr:`EDA (electronic design automation)` companies (Cadence, Mentor, Synopsys)
+along with :abbr:`UVM (Universal Verification Methodology)`.
+In 2003, Aart de Geus, Synopsys CEO, stated that :abbr:`SV (SystemVerilog)`
 will replace VHDL in 10 years :cite:`vhdl_dead`.
 It is true that tool vendors have stopped improving VHDL support, but advancements are being made in the
 open source community e.g. VHDL-2017 standard :cite:`vhdl_iee`. In addition, active development is done for the open
@@ -14,17 +14,18 @@ VUnit :cite:`vunit`.
 All of these advancements aim to ease the verification aspects while the synthesis part
 has mostly stayed the same for the past 10 years.
 
-Numerous projects exist that propose to use higher level :abbr:`hardware description language (HDL)`,
+Numerous projects exist that propose to use higher level :abbr:`HDL (hardware description language)`,
 in order to raise the abstraction level.
 For example, MyHDL turns Python into a hardware description and verification language :cite:`myhdlweb`,
 or CλaSH :cite:`clash`, purely Haskell based functional language developed at University of Twente.
 Recently Chisel :cite:`chisel` has been gaining some popularity,
 it is an hardware construction language developed at UC Berkeley that uses Scala programming language,
 providing functional and object-oriented features.
+
 .. Still none of these tools have seen widespread adaption.
 
-On the other front, :abbr:`high-level synthesis (HLS)` tools aim to automate the refinement from the algorithmic level to
-:abbr:`register-transfer level (RTL)` :cite:`hls_overview`.
+On the other front, :abbr:`HLS (high-level synthesis)` tools aim to automate the refinement from the algorithmic level to
+:abbr:`RTL (register-transfer level)` :cite:`hls_overview`.
 Lately the Vivado HLS, developed by Xilinx, has been gaining popularity. As of 2015, it is included in the
 free design suite of Vivado (device limited).
 The problem with HLS tools is that they are often promoted as direct C to RTL tools but in reality
@@ -32,7 +33,7 @@ often manual code transformations and guidelines are needed, in order
 to archive reasonable performance :cite:`vivado_hls_case_study`. The designer must already know how the RTL works in
 order to give these instructions.
 
-The :abbr:`digital signal processing (DSP)` systems can be described in previously mentioned HLS or HDL languages,
+The :abbr:`DSP (digital signal processing)` systems can be described in previously mentioned HLS or HDL languages,
 but the most productive way is to use MATLAB/Simulink/HDLConverter flow, which allows
 users to describe their designs in Simulink or MATLAB and use HDL convertible blocks provided by MATLAB or FPGA tool
 vendor :cite:`borph`.
@@ -51,14 +52,17 @@ hardware implementation of an ADS-B (automatic dependent surveillance – broadc
 in the MATLAB environment, the working model was then translated to C for real-time testing and fixed-point modeling.
 Lastly, the C model was manually converted to VHDL.
 
+.. todo:: siia paneks lause miks C ei sobi ja MyHDL jama
+
 Given the limitations and drawbacks of existing solutions,
 this thesis proposes Pyha, a new Python based hardware description language aimed at simplifying DSP hardware
 development in an open-source manner.
-Pyha raises the RTL design abstraction level by enabling sequential and object-oriented style, one of the contributions
-of this thesis is extension of this style to VHDL language, making the conversion process of Pyha unique.
+Pyha raises the RTL design abstraction level by enabling sequential and object-oriented style.
 DSP systems can be built by using the fixed-point type and semi-automatic conversion from floating point.
 In addition, this work makes an effort to simplify the testing process of hardware systems by
 providing better simulation interface for unit-testing.
+
+.. todo:: improve contributions
 
 The basis of Pyha is Python, a general purpose programming language that is especially well suited for
 rapid prototyping and modeling. Python has also found its place in scientific projects and academia by offering

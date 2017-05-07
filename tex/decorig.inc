@@ -5,5 +5,5 @@
 I hereby certify that I am the sole author of this thesis. All the used materials, references to the literature and the work of others have been referred to. This thesis has not been presented for examination anywhere else.
 
 Author: {Gaspar Karm}\\
-{[pp.kk.aaaa]}
+{08.05.2017}
 \pagebreak

@@ -4,24 +4,15 @@ Case studies
 ============
 
 This chapter demonstrates that Pyha is already usable for real designs.
-First designs an moving average filter and later reuses this for linear-phase DC removal filter.
-Last chapter also compares the developed tool to other available toolsets.
-
-.. todo:: fix
-
-Pyha is based on the object-oriented design practices, this greatly simplifies the design reuse as the classes
-can be used to initiate objects.
-Another benefit is that classes can abstract away the implementation details, in that sense Pyha can become a
-high-level synthesis (HLS) language.
-
-Lastly we showed that Pyha is already usable to convert some mdeium complexity designs, like
-    FSK demodulator, that was used on Phantom 2 stuff..
+First, an moving average filter is designed, that is later reused for the linear-phase DC removal filter.
+Pyha has also been used in bigger designs such as frequency-shift keying demodulator, this work is not included in this thesis due due to the time constrains.
+Last section of this chapter provides an comparison of Pyha to other related tools.
 
 Moving average filter
 ---------------------
 
 The moving average (MA) is the easiest digital filter to understand and use.
-It is optimal filter for for reducing random noise while retaining a sharp step response :cite:`dspbook`. In
+It is optimal filter for reducing random noise while retaining a sharp step response :cite:`dspbook`. In
 communication systems, MA is widely used as an matched filter for rectangular pulses.
 :numref:`moving_average_noise` shows an example of applying MA filter to reduce noise on harmonic signal.
 Higher window length (averaged over more elements) reduces more noise but also increases the complexity and delay of
@@ -44,12 +35,12 @@ window length.
     :align: center
     :figclass: align-center
 
-    Frequency response of the moving average filter, illustrated in :numref:`moving_average_noise` and coded in :numref:`mavg-pyha`
+    Frequency response of the moving average filter, coded in :numref:`mavg-pyha`
 
-MA filter is implemented by sliding sum, that is divided by the sliding window length. The division can be
+The MA filter is implemented by sliding sum, that is divided by the sliding window length. The division can be
 carried out by a shift operation if divisor is a power of two.
-In addition, division can be performed on each sample instead of on the sum, that is ``(a + b) / c = a/c + b/c``. This
-guarantees that the ``sum`` is always in the [-1;1] range and no saturation logic is needed.
+In addition, division can be performed on each sample instead of on the sum, that is ``(a + b) / c = a/c + b/c``.
+This guarantees that the ``sum`` is always in the [-1;1] range and no saturation logic is needed.
 
 :numref:`mavg-pyha` shows the MA filter implementation in Pyha. It is based on the sliding sum, that was implemented
 in :numref:`ch_fp_sliding_adder`. Minor modifications are commented in the code.
@@ -134,7 +125,7 @@ DC component. :numref:`dc_removal` shows the Pyha implementation.
 
 
 .. code-block:: python
-    :caption: DC-Removal implementation in Pyha
+    :caption: Linear-phase DC removal filter, implemented in Pyha
     :name: dc_removal
 
     class DCRemoval(HW):
@@ -154,15 +145,14 @@ DC component. :numref:`dc_removal` shows the Pyha implementation.
             # dc-free signal
             self.next.y = x - dc
             return self.y
-        ...
 
 
 This implementation is not exactly following that of :cite:`dcremoval_lyons`. They suggest to delay-match the
-step 1 and 2 of the algorithm, but since the DC component is more more or less stable, this can be
+step 1 and 2 of the algorithm, but since the DC component is more or less stable, this can be
 omitted.
 
 :numref:`dc_rtl_annotated` shows that the synthesis generated 4 MA filters that are connected in series,
-output of this is subtracted from the input.
+output of the chain is subtracted from the input.
 
 .. _dc_rtl_annotated:
 .. figure:: ../examples/dc_removal/img/dc_rtl_annotated.png
@@ -181,7 +171,7 @@ FIR filter with the same performance would require hundreds of taps :cite:`dcrem
     :align: center
     :figclass: align-center
 
-    Comparison of frequency response
+    Comparison of frequency response, it depends on ``window_len`` parameter
 
 
 This implementation is also very light on the FPGA resource usage (:numref:`resource_usage`).
@@ -203,25 +193,22 @@ the output of the filter starts countering the DC component until it is removed.
     :align: center
     :figclass: align-center
 
-    Simulation of DC-removal filter in the time domain
+    Simulation of DC-removal filter in the time domain, all the simulations are considered equal
 
+.. _4_comparison:
 
 Comparison to similar tools
 ---------------------------
 
-.. warning:: this section very very in progress
-
-At this point all the major features of Pyha has been introduced and it can be compared to similar tools.
-
 Traditional HDL languages like VHDL and SV work on large number of concurrent statements and processes that are
-connected trough signals. This is also known as event-based system, when some signal changes it may trigger the
-execution of processes. The reasoning behind this model is that it models how hardware works. However,
+connected with signals. This is known as event-based style, when some signal changes it may trigger the
+execution of processes. The reasoning behind this model is that it models exactly how the hardware works. However,
 the major downside is implementation and readability complexity.
 The sequentially executed programming style, proposed in this thesis, is much more familiar for software programmers and, as shown in this thesis, results in the same hardware outcome. This work also raises the abstraction level by opening up the Python ecosystem for hardware developers. In addition, the simulations functions provided by Pyha greatly increase the testing productivity and enable test-driven development.
 
 MyHDL is a hardware description language that is also based on Python, but works in the same event-driven way as
 VHDL/SV. The convertible subset of MyHDL is limited to function based designs, this work proposes object-oriented design method, that is much easier to understand for software developers and eases the design reuse.
-In general the synthesizable subset of MyHDL is limited and
+In general the synthesizable subset of MyHDL is limited,
 it has been found that the tool is more useful for high-level modeling purposes :cite:`jan_sim`. MyHDL also does not
 implement fixed-point type support, thus it is not oriented on DSP designs.
 
@@ -229,19 +216,16 @@ implement fixed-point type support, thus it is not oriented on DSP designs.
     combinatorial and synchronous statements :cite:`migenweb`. Migen can be considered as meta-programming in Python so
     it is a bit complicated to use in practice by non-specialists.
 
-The MATLAB based DSP to HDL tools work on similar abstraction levels as Pyha i.e.  code execution is sequential, but user input is required on the placement of registers. Pyha support object-oriented designs while MATLAB is function based like MyHDL. In general working with registers and reusing the design is much simplified in Pyha.
-The SIMULINK flow is based mostly on connecting together already existing blocks.
-As shown in this chapter, Pyha blocks can be connected easy and in purely Pythonic way.
-MATLAB also offers an floating-point to fixed point conversion tool (for additional 10000$ :cite:`matlab_price`).
+The MATLAB based DSP to HDL tools work on similar abstraction levels as Pyha i.e.  code execution is sequential, but user input is required on the placement of registers. Pyha support object-oriented designs while MATLAB is function based like MyHDL. Working with registers and reusing the design is simpler in Pyha.
+The Simulink flow is based mostly on connecting together already existing blocks.
+As shown in this chapter, Pyha blocks can be connected easily and in purely Pythonic way.
+MATLAB also offers an floating-point to fixed-point conversion tool (for additional 10000$ :cite:`matlab_price`).
 Pyha matches this with semi-automatic conversion by supporting lazy vector bounds, the
 conversion process is suitable for future implementation of fully automatic conversion.
 
 The C based high level synthesis tools try to turn the behaviour model directly to the RTL level i.e. they automatically infer the register placements and concurrency.
-However, there have been many studies that suggest the productivity gain of these tools is just equivalent to
-the HDL languages like MyHDL or Chisel :cite:`emp_hls` :cite:`felton_no_hls`. This is because more often the C
-algorithm must be fitted to suite the hardware approach :cite:`2015arXiv150900036Q` :cite:`vivado_hls_case_study`.
-The main reason why these tools are gaining popularity is that they software developers to enter the
-hardware world more easily. This is also the case for Pyha, as it uses pure Python classes and functions. In general the Python based flow provides much higher abstraction than 'C', also Python is suitable for modeling purposes of DSP systems.
+However, there are studies that suggest that the productivity gain of these tools is equivalent to
+the advanced HDL languages like MyHDL or Chisel :cite:`emp_hls` :cite:`felton_no_hls`. This is because more often the C algorithm must be modified (and annotated) to suite the hardware :cite:`2015arXiv150900036Q` :cite:`vivado_hls_case_study`. However, these tools ara gaining popularity, mainly because they appeal to designers coming from software development. This is also the case for Pyha, as it uses pure Python classes and functions. In general the Python based flow provides much higher abstraction than 'C', also Python is better suited for modeling purposes.
 
 
 .. bibliography:: bibliography.bib

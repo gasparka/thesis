@@ -18,7 +18,7 @@
    			{Gaspar Karm, IVEM153410}\\[2,3 cm]
    			\begin{huge}
    				
-   				\textsc{\textbf{Pyha\\[2,3 cm]}}
+   				\textsc{\textbf{Pyha -  \\ Pythonil põninev Objektorienteeritud Riistvarakirjelduskeel \\[2,3 cm]}}
    			\end{huge}
    			{Magistritöö}\\[1,5 cm]
    		\end{center}
@@ -34,11 +34,7 @@
    		\blank{11.3 cm}{PhD}\\[0cm]
    		%\end{flushright}
    		
-   		
-   		\blank{7.3 cm}{}\\[0cm]
-   		\blank{7.3 cm}{}\\[0cm]
-   		\blank{7.3 cm}{}\\[0cm]
-   		\blank{7.3 cm}{}\\[0cm]
+
    		\blank{7.3 cm}{}\\[0cm]
    		\blank{7.3 cm}{}\\[0cm]
    		\blank{7.3 cm}{}\\[0cm]

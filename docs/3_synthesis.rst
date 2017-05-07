@@ -8,16 +8,16 @@ Synthesis
     resulting in complex conversion process and typically unreadable VHDL output.
 
 The majority of the hardware related tools end up converting to either VHDL or SystemVerilog, because these are supported
-by the synthesis tools. Most often the higher level language is converted to very low level
-VHDL/ :abbr:`SystemVerilog (SV)` code, resulting
-in a confusing conversion process and unreadable code for a human.
+by the synthesis tools. Generally the higher level language is converted to very low level
+VHDL/ :abbr:`SV (SystemVerilog)` code, resulting
+in a complex conversion process and unreadable code for a human.
 
-This thesis tests an alternative path by contributing the sequential synthesizable object-oriented (OOP) programming model for VHDL.
+This thesis tests an alternative path by contributing the sequential object-oriented (OOP) programming model for VHDL.
 The main motivation is to use it as a conversion target for higher level languages. Major advantages are
 that the conversion process is simple and the output VHDL is readable and structured.
 
-VHDL has been chosen over :abbr:`SystemVerilog (SV)` because it is a strict language and forbids many mistakes during compile time.
-:abbr:`SystemVerilog (SV)` on the other hand is much more permissive, for example allowing out-of-bounds array indexing
+VHDL has been chosen over :abbr:`SV (SystemVerilog)` because it is a strict language and forbids many mistakes during compile time.
+:abbr:`SV (SystemVerilog)` on the other hand is much more permissive, for example allowing out-of-bounds array indexing
 :cite:`sysverilog_gotcha`.
 In the future both could be supported.
 
@@ -39,7 +39,7 @@ Structured, Object-oriented style for VHDL
 .. This chapter develops sequential synthesizable object-oriented (OOP) programming model for VHDL.
     The main motivation is to use it as an intermediate language for High-Level synthesis of hardware.
 
-.. todo:: Give links to examples, top levels etc, redo images (in0, out0), why int types?
+..  Give links to examples, top levels etc, redo images (in0, out0), why int types?
 
 Structured programming in VHDL has been studied by Jiri Gaisler in :cite:`structvhdl_gaisler`. He showed that
 combinatory logic is easily described by functions with sequential statements
@@ -92,17 +92,17 @@ critical path.
 Defining registers with variables
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The previous section made a mistake of expecting the registers to work in the same way
-as 'class variables' in traditional programming languages. Actually registers are delayed elements, so to say
-they take the next value.
+The previous section made a mistake of expecting the registers to work exactly in the same way
+as 'class variables' in traditional programming languages. In reality the difference is that registers
+have delayed assignment i.e. they take value on next clock edge (or in this case, function call).
 VHDL defines a special 'signal assignment' operator for this kind of delayed assignment, that can be used on
-VHDL signal objects like like :code:`a <= b`. These objects are hard to map to higher level languages and have
+VHDL signal objects like :code:`a <= b`. These objects are hard to map to higher level languages and have
 limited usage in VHDL structured code constructs.
 
 Conveniently, the signal assignment can be mimicked with two variables,
 to represent the **next** and **current** values.
 The signal assignment operator sets the value of **next** variable. On the next simulation delta, all the
-signals are updated i.e. **next** written to **current**. This way of writing sequential logic has been
+signals are updated i.e. **next** written to **current**. This way of writing sequential logic has been previously
 suggested by Pong P. Chu in his VHDL book :cite:`chu_vhdl` and is also used in MyHDL signal objects
 :cite:`jan_myhdl_signals`.
 
@@ -134,9 +134,9 @@ Adapting this style for the MAC example is shown in :numref:`mac_next`; the data
         ret_0 := self.acc;
     end procedure;
 
-VHDL signal assignment automatically updates the signal values, now with the variables method, this has to be
-done manually. :numref:`mac-next-update` defines the new function
-'update_registers', taking care of this task.
+VHDL signal assignment automatically updates the signal values, this has to be
+done manually when using the two variable method. :numref:`mac-next-update` defines the new function
+``update_registers``, taking care of this task.
 
 .. code-block:: vhdl
     :caption: Function to update registers, in OOP-style VHDL
@@ -151,7 +151,7 @@ done manually. :numref:`mac-next-update` defines the new function
 
 .. note:: Function 'update_registers' is called on clock raising edge, while the 'main' is called as a combinatory function.
 
-Synthesising the revised code shows that the pipelined MAC has been implemented (:numref:`mac_rtl_end`)..
+Synthesising the revised code shows that the pipelined MAC has been implemented (:numref:`mac_rtl_end`). The ``coef`` variable is not synthesised to register as it is determined to be constant.
 
 .. _mac_rtl_end:
 .. figure:: img/mac_rtl.png
@@ -233,7 +233,7 @@ Then each new package could define a new reset value for it (:numref:`vhdl-packa
 Use cases
 ~~~~~~~~~
 
-This section demonstrates how instances of  VHDL 'classes' can be used for design reused.
+This section demonstrates how instances of  VHDL 'classes' can be applied for design reused.
 Consider an example that consists of two MAC instances and aims to connect them in series (:numref:`mac_series`).
 In ``main``,
 
@@ -251,8 +251,8 @@ In ``main``,
     procedure main(self:inout self_t; a: integer; ret_0:out integer) is
         variable out_tmp: integer;
     begin
-        MAC_0.main(self.mac0, a, ret_0=>out_tmp); -- connect MAC_0 output to MAC_1 input
-        MAC_1.main(self.mac1, out_tmp, ret_0=>ret_0); -- connect MAC_1 to output
+        MAC_0.main(self.mac0, a, ret_0=>out_tmp);       -- MAC_0 -> MAC_1
+        MAC_1.main(self.mac1, out_tmp, ret_0=>ret_0);   -- MAC_1 -> output
     end procedure;
 
 
@@ -263,7 +263,7 @@ The synthesis result shows that two MACs are connected in series, see :numref:`m
     :align: center
     :figclass: align-center
 
-    Synthesis result of the new class (Intel Quartus RTL viewer)
+    Synthesis result of :numref:`mac_series` (Intel Quartus RTL viewer)
 
 Connecting two MACs instead in parallel can be done with a simple modification to ``main`` function
 to return both outputs (:numref:`mac-parallel`).
@@ -315,7 +315,7 @@ registers are clocked by different clocks. The reset signal is common for the wh
     :align: center
     :figclass: align-center
 
-    Synthesis result with modified top-level process (Intel Quartus RTL viewer)
+    Synthesis result with modified top-level process, MACs work in different clock domains (Intel Quartus RTL viewer)
 
 
 .. _ch_pyvhdl:
@@ -323,9 +323,9 @@ registers are clocked by different clocks. The reset signal is common for the wh
 Converting Python to VHDL
 -------------------------
 
-The conversion process requires no major transformations or 'understanding' of the source code; this is made possible
-by the OOP VHDL model that allows easy mapping of Python constructs to VHDL. Even so, the conversion process poses
-some challenges like type inference and syntax conversion.
+Tools like MATLAB feature an complex conversion process that requires 'understanding' of the source code. Tools must perform major transformations to turn source code into VHDL.
+This thesis proposes to use simple conversion from Python to VHDL, that requires no majord transformations;
+this is made possible by the OOP VHDL model that allows easy mapping of Python constructs to VHDL. Even so, the conversion process poses some challenges like type inference and syntax conversion, that are investigated in this chapter.
 
 .. _pyvhdl_types:
 
@@ -353,7 +353,7 @@ no types can be inferred from this code.
 
 An alternative is to follow the definition of dynamic typing and execute the code, after what the value can be inspected
 and type inferred. :numref:`class-vars` shows this method applied on the class variable,
-the Python function``type()`` can be used to query the variable type.
+the Python function ``type()`` can be used to query the variable type.
 
 .. code-block:: python
     :caption: Solving the problem for class variables
@@ -365,8 +365,7 @@ the Python function``type()`` can be used to query the variable type.
     >>> type(dut.coef)
     <class 'int'>
 
-This solves the problem for class values. The same method cannot be applied for the local variables of functions,
-because these only exist in the stack.
+This solves the problem for class values. Unfortunately, this method is not applicable for the local variables of functions, because these only exist in the stack.
 This problem has been encountered before in :cite:`py_locals_decorator`, which proposes to modify the Python
 profiling interface in order to keep track of function local variables. It has been decided to apply this method in
 Pyha; an example is shown in :numref:`class-locals`.
@@ -385,7 +384,7 @@ Pyha; an example is shown in :numref:`class-locals`.
 
 In sum, this method requires the execution of the Python code before types can be inferred. The main advantage of this
 is very low complexity. In addition, this allows the usage of 'lazy' fixed point types as shown in :numref:`ch_fixed`.
-This method can also be used to keep track of all the values a variable takes, this can enable automatic conversion
+This method can also be used to keep track of all the values a variable takes, which enables automatic conversion
 from floating-point to fixed-point.
 The code execution needed for conversion is automated in the ``simulate`` functions by running the Python domain
 simulation.

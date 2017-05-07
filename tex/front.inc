@@ -18,7 +18,7 @@
     {Gaspar Karm, IVEM153410}\\[2,3 cm]
     \begin{huge}
 
-    \textsc{\textbf{Pyha - \\ Sequential and Object-Oriented Hardware Description Language based on Python\\[2,3 cm]}}
+    \textsc{\textbf{Pyha - \\ Object-Oriented Hardware Description Language based on Python\\[2,3 cm]}}
     \end{huge}
     {Master's Thesis}\\[1,5 cm]
     \end{center}

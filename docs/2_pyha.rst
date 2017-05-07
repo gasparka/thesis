@@ -6,10 +6,11 @@ Hardware design with Pyha
 This chapter introduces the main contribution of this thesis, Pyha - a tool to design digital hardware in Python.
 The fist half of the chapter demonstrates how basic hardware constructs can be defined, using Pyha. Follows the
 introduction to fixed-point type.
-All the examples presented in this chapter can be found online HERE, including all the Python sources, unit-tests,
-VHDL conversion files and Quartus project for synthesis.
 
-.. todo:: organise examples to web and put link, INT usage!
+.. note:: The examples in the first half of this chapter are based on ``integer`` types in order to reduce complexity.
+
+.. All the examples presented in this chapter can be found online HERE, including all the Python sources, unit-tests,
+    VHDL conversion files and Quartus project for synthesis.
 
 Introduction
 ------------
@@ -22,7 +23,6 @@ in this thesis. Object-oriented design helps to better abstract the RTL details 
 For illustration purposes, :numref:`pyha_basic` shows an example Pyha design. The ``main`` function has been
 chosen as a top level entry point, other functions can be used as pleased.
 
-.. note:: The first few examples of this chapter use ``integer`` types in order to reduce complexity.
 
 .. code-block:: python
     :caption: Simple combinatory design, implemented in Pyha
@@ -95,7 +95,7 @@ simulations without any boilerplate code:
 
     - Model: this can be any Python code that fits as an high level model;
     - Pyha: like :numref:`pyha_basic`, Python domain simulation;
-    - RTL: converts the Pyha model to VHDL and uses the combinition of GHDL and Cocotb for simulation;
+    - RTL: simulation in VHDL domain, Pyha model is converted to VHDL;
     - GATE: synthesises the VHDL code, using Intel Quartus, and simulates the resulting gate-level netlist.
 
 
@@ -152,12 +152,10 @@ For example
 assignments to class variables are used for register initial/reset values.
 
 Note the ``self.next.acc = ...``, simulates the hardware behaviour of registers, that is delayed assignment.
-In general, this is equivalent to the VHDL ``<=`` operator. Values are transferred from **next** to **current** just
-before the ``main`` call. Pyha abstracts the clock signal away by denoting that each call to ``main`` is
-a clock edge. Think that the ``main`` function is started with the **current** register values known and the objective of
-the ``main`` function is to find the **next** values for the registers.
+In general, this is equivalent to the VHDL ``<=`` operator. Values are transferred from **next** to **current**
+before the ``main`` call. In Pyha each call to the ``main`` function can be considered as an clock edge.
 
-The synthesis results displayed in the :numref:`acc_rtl` shows the adder and register.
+The synthesis results displayed in the :numref:`acc_rtl` shows the adder and register, that is the expected result for accumulator.
 
 .. _acc_rtl:
 .. figure:: ../examples/accumulator/img/acc_rtl.png
@@ -168,8 +166,7 @@ The synthesis results displayed in the :numref:`acc_rtl` shows the adder and reg
 
 
 One inconvenience is that every register on the signal path delays the output signal by 1 sample, this is also called
-pipeline delay or latency. This situation is shown in :numref:`acc_sim_delay` for the simulation results of the
-``Acc`` module. Note that the model is implemented without register semantics, thus has no pipeline delays. This can
+pipeline delay or latency. The delay can
 be seen from :numref:`acc_sim_delay`, where hardware related simulations are delayed by 1 sample as
 compared to the software model.
 
@@ -178,13 +175,13 @@ compared to the software model.
     :align: center
     :figclass: align-center
 
-    Simulation of the ``Acc`` module, input is a random integer [-5;5]
+    Simulation of the ``Acc`` module, input is a random integer [-5;5]. Hardware simulations are delayed by 1, caused by the register
 
 
 Pyha reserves a :code:`self._delay` variable, that hardware classes can use to specify their delay.
 Simulation functions read this variable to compensate the simulation outputs.
-Setting the ``self._delay = 1` in the ``__init__`` function
-would shift the hardware simulations left by 1 sample, so that all the simulation would be exactly equal.
+Setting the ``self._delay = 1`` in the ``__init__`` function
+would shift the hardware simulations left by 1 sample, so that all the simulation would be exactly equal. This functionality is useful for documenting the delay of modules and simplifies the use of unit-tests.
 
 .. _ch_sliding_adder:
 
@@ -255,7 +252,7 @@ this also forms a long critical path which in turn decreases the maximum clock r
     :align: center
     :figclass: align-center
 
-    Synthesis result of ````SlidingAdder(window_len=6)````, the red line shows the critical path (Intel Quartus RTL viewer)
+    Synthesis result of ``SlidingAdder(window_len=6)``, the red line shows the critical path (Intel Quartus RTL viewer)
 
 Conveniently, the algorithm can be optimized to use only 2 adders, no matter the window length.
 :numref:`slider_optim` shows that instead of summing all the elements, the overlapping part of
@@ -274,7 +271,7 @@ the previous calculation can be used to significantly optimize the algorithm.
     y[6] = y[5] + x[11] - x[5]
 
 :numref:`optimal_adder` gives the implementation of the optimal sliding adder; it features a new register ``sum``,
-that keeps track of the previous output. The ``shr`` now serves the purpose of delay-chain.
+that keeps track of the previous output.
 
 .. code-block:: python
     :caption: Optimal sliding adder, implemented in Pyha
@@ -293,7 +290,6 @@ that keeps track of the previous output. The ``shr`` now serves the purpose of d
             # add new 'x' to sample and subtract the delayed 'x'
             self.next.sum = self.sum + x - self.shr[-1]
             return self.sum
-        ...
 
 
 :numref:`rtl_optimal_int_critical` shows the synthesis result. Now the critical path is 2 adders, no matter
@@ -318,8 +314,7 @@ The alternative is to use fixed-point numbers, that work with integer arithmetic
 is that they can map to FPGA DSP blocks, thus providing higher clocks speed and reduced resource use [#floatdsp]_.
 
 The common workflow is to experiment and write model using the floating-point arithmetic, then convert to fixed-point
-for hardware implementation. In this work Pyha has been designed to simplify the conversion and equivalence testing
-operations.
+for hardware implementation. One contribution of this thesis is the implementation of fixed-point class for the Python domain.
 
 .. [#floatdsp] Some high-end FPGAs also include floating-point DSP blocks :cite:`arria_dsp`
 
@@ -332,7 +327,7 @@ that is already known in the VHDL community and proven to be well synthesizable.
 
 ``Sfix`` class works by allocating bits to the ``left`` and ``right`` side of the decimal point. Bits to the
 ``left`` determine the integer bounds (sign bit is implicit), while the ``right`` bits determine the minimum resolution of the number.
-For example, ``Sfix(left=0, right=-17)`` represents a number between [-1;1] with resolution of 0.000007629 (``2**-17``).
+For example, ``Sfix(left=0, right=-17)`` represents a number between [-1;1] with resolution of 0.000007629 (``2^-17``).
 :numref:`fp_basics` shows a few examples on how reducing the ``right`` reduces the number precision.
 
 .. code-block:: python
@@ -373,7 +368,7 @@ The first line sets ``self.shr`` to store ``Sfix()`` elements, this is a lazy st
 fixed-point bounds i.e. it will take bounds from the first assignment to the ``self.shr`` variable.
 The ``Sfix(left=0)`` forces ``left`` to 0 bits, while the fractional part is determined by the first assign.
 One problem with the VHDL fixed-point library is that the designer is constantly forced to resize the value to
-desired format, in this work Pyha has been designed to automate this step i.e. every assign to fixed-point variable
+desired format, this thesis has automated this step i.e. every assign to fixed-point variable
 is resized to the initial format, the bounds may be taken from the assigned value if initial value is lazy.
 
 Synthesis results in :numref:`rtl_sfix_saturate` show that inputs and outputs are now 18-bits wide,
@@ -410,21 +405,21 @@ model. This is because the model is implemented in floating-point arithmetic whi
     :align: center
     :figclass: align-center
 
-    Simulation results of FP sliding sum, input is random signal in [-0.5; 0.5] range
+    Simulation results of fixed-point sliding sum, input is random signal in [-0.5; 0.5] range
 
 .. write about semi and automatic fix conversion?
 
 Summary
 -------
 
-This chapter has demonstrated the major features of the proposed Pyha language and the motivation behind them. It was shown that Pyha
+This chapter has demonstrated the major features of the proposed tool and the motivation behind them. It was shown that Pyha
 is an sequential object-oriented programming language based on Python. It falls in the category of behavioral languages,
 meaning that the output of Python program is equivalent to the output of the generated hardware. Pyha provides ``simulate``
 functions to automatically and without any boilerplate code run model and hardware related simulations, this helps the
 design of unit-tests. In addition, Pyha designs are fully debuggable in Python ecosystem.
 Class variables are used to define registers, this has been inspired by traditional programming languages.
-DSP systems can be implemented by using the fixed-point type. Pyha has ‘semi-automatic conversion’ from
-floating point to fixed point numbers. Verifying against floating point model helps the design process.
+DSP systems can be implemented by using the fixed-point type. Pyha has 'semi-automatic' conversion from
+floating point to fixed point numbers. Verifying against floating point model accelerates the design process.
 
 
 
