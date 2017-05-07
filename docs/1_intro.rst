@@ -51,11 +51,13 @@ Lastly, the C model was manually converted to VHDL.
 
 Given the limitations and drawbacks of existing solutions,
 this thesis proposes Pyha, a new Python based hardware description language aimed at simplifying DSP hardware
-development in an open-source manner.
+development in an open-source [#pyharepo]_ manner.
 Pyha raises the RTL design abstraction level by enabling sequential and object-oriented style.
 DSP systems can be built by using the fixed-point type and semi-automatic conversion from floating point.
 In addition, this work makes an effort to simplify the testing process of hardware systems by
 providing better simulation interface for unit-testing.
+
+.. [#pyharepo] Repository: https://github.com/gasparka/pyha
 
 The basis of Pyha is Python, a general purpose programming language that is especially well suited for
 rapid prototyping and modeling. Python has also found its place in scientific projects and academia by offering
