@@ -3,9 +3,7 @@
 Conclusion
 ==========
 
-The task of implementing digital signal processing (DSP) on hardware is often carried out by using high level tools
-such as MATLAB. The problem is that such tools can be costly, thus not available
-for everyone and unsuitable for open-source designs. Other high-level C based tools may not be suitable for modeling.
+The task of implementing DSP systems on hardware is often carried out by using high level tools, such as MATLAB. The problem with this approach is the the costly, thus not available for everyone and unsuitable for open-source designs. Other high-level tools are mostly based on C, that is not optimal for modeling purposes.
 Given the limitations and drawbacks of existing solutions,
 this thesis proposes Pyha, a new Python based hardware description language aimed at simplifying DSP hardware
 development in an open-source manner.
@@ -32,33 +30,20 @@ high-level synthesis tools.
 Contributions
 ~~~~~~~~~~~~~
 
-.. this section is inspired by thesis_C_Baaij.pdf
-
-This work contributes the object-oriented VHDL design way that allows defining registers in sequential code.
-
 The contributions of this thesis are:
 
     * Hardware simulation and debugging in Python - major contribution, allows simulating and debugging hardware designs in Python domain;
-    * Sequential object-oriented VHDL model -
-    * Simple method, converting Python to X -
-    * Fixed-point arithmetic library for Python - fixed-point library was developed to support cycle-accurate simulation with the converted VHDL code, however this library can be used for other purposes as well
-    * Simplified simulation functions - this work provide functions that can execute multiple layers of simulations (Python, RTL, GATE) without any boilerplat code, this contribution significantly improves the unit-testing.
+    * Sequential object-oriented VHDL model - this work contributes the object-oriented VHDL design way that allows defining registers in sequential code;
+    * Method for converting Python to X - the synhesisability has been gained by converting Python into VHDL, however the method could be used to convert into other languages aswell;
+    * Fixed-point arithmetic library for Python - fixed-point library was developed to support cycle-accurate simulation with the converted VHDL code, however this library can be used for other purposes as well;
+    * Simplified simulation functions - this work develops simulation functions that can execute multiple layers of simulations (Python, RTL, GATE) without any boilerplate code, this contribution significantly improves the unit-testing.
 
 Future work
 ~~~~~~~~~~~
 
-The technical part of Pyha has been developed by one person during the last year, thus not everything
-has been fully finished. For example, the automatic conversion from floating-point to fixed-point, while the
-conversion process is designed to allow for this. In addition currently the scope of Python modules are on
-single clock systems, which is not a huge constraint on DSP systems.
+The technical part of Pyha has been developed by one person during the period of one year and while the work is already usable, it could see many enchantments. For example, the implementation of automatic conversion from floating-point to fixed-point, which is already supported by the simulation code. The current scope of the Python simulator has been limited to single clock domain, which is suitable for most DSP systems, lifting this limitation could make Pyha acceptable for wider community.
+One of the most interesting enchantments would be the extension of the conversion process to support some HLS backend (such as VivadoHLS). This coud allow the designer an choice between describing the RTL with VHDL backend or higher-level abstarctions with HLS backend.
 
-One of the most interesting enchantments would be to extend the conversion process to convert the Python code
-into a HLS language instead (such as VivadoHLS). then the designer could choose to to either design for RTL or HLS.
-
-Long term work is to implement more DSP blocks, so that in the future there
-could be possible GUI based connect stuff program.
-
-Integration to bus structures is another item in the wish-list. Streaming blocks already exist in very basic form.
-Ideally AvalonMM like buses should be supported, with automatic HAL generation, that would allow design of reconfigurable FIR filters for example.
+Long term work is to implement more DSP blocks in Pyha, so that complex systems could be built faster. In addtion the installation system should be improved to make Pyha easier to test for people that may be interested.
 
 
