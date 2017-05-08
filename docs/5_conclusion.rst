@@ -35,7 +35,7 @@ The contributions of this thesis are:
 Future work
 ~~~~~~~~~~~
 
-The technical part of Pyha has been developed by one person during the period of one year and while the work is already usable, it could be defiantly improved. For example, finishing the support of automatic conversion from floating-point to fixed-point. The current scope of the Python simulator has been limited to single clock domain, which is suitable for most DSP systems; lifting this limitation could make Pyha acceptable for wider community.
+The technical part of Pyha has been developed by the author of this thesis during the period of one year; while the work is already usable, it could be definitely improved. For example, finishing the support of automatic conversion from floating-point to fixed-point. The current scope of the Python simulator has been limited to single clock domain, which is suitable for most DSP systems; lifting this limitation could make Pyha acceptable for wider community.
 
 One of the most interesting enchantment would be the extension to the conversion process, to support some HLS backend (such as VivadoHLS). This would present the designer an choice between describing the RTL with VHDL backend or higher-level abstractions with HLS backend.
 
