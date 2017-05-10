@@ -15,6 +15,8 @@ introduction to fixed-point type.
 Introduction
 ------------
 
+.. confusing on segane..
+
 Conventional HDL languages promote concurrent and entity oriented models which can be confusing.
 In this thesis, Pyha has been designed as a sequential object-oriented language, that works directly on
 Python code. Using a sequential design flow is much easier to understand and is equally well synthesizable as shown
@@ -23,6 +25,7 @@ in this thesis. Object-oriented design helps to better abstract the RTL details 
 For illustration purposes, :numref:`pyha_basic` shows an example Pyha design. The ``main`` function has been
 chosen as a top level entry point, other functions can be used as pleased.
 
+.. kuidagi järsku tuleb see
 
 .. code-block:: python
     :caption: Simple combinatory design, implemented in Pyha
@@ -41,6 +44,8 @@ chosen as a top level entry point, other functions can be used as pleased.
 One of the contributions of this thesis is sequential OOP VHDL model which is used to simplify conversion from Pyha to VHDL.
 The example of the VHDL conversion is shown in :numref:`pyha_basic_vhdl`, more details are given in
 :numref:`3_synthesis`.
+
+.. siin võiks olla väike tests VHDL kohta, et ta on sarnane vms
 
 .. code-block:: vhdl
     :caption: :numref:`pyha_basic` converted to VHDL, by Pyha conversion routines
@@ -62,8 +67,7 @@ The example of the VHDL conversion is shown in :numref:`pyha_basic_vhdl`, more d
     end procedure;
 
 :numref:`basic_rtl` shows the synthesis result. The ``a`` output is formed by adding '1' and '3' to the ``x`` input. Next
-the ``a`` signal is compared to ``9``; if equal, ``b`` is outputted as 0, otherwise ``b = a * 314``. That
-exactly complies with the Python and VHDL descriptions.
+the ``a`` signal is compared to ``9``; if equal, ``b`` is outputted as 0, otherwise ``b = a * 314``. This complies exactly with the Python and VHDL descriptions.
 
 .. _basic_rtl:
 .. figure:: ../examples/basic/img/basic_rtl.png
@@ -72,8 +76,10 @@ exactly complies with the Python and VHDL descriptions.
 
     Synthesised RTL of :numref:`pyha_basic_vhdl` (Intel Quartus RTL viewer)
 
-One aspect of hardware design that Pyha aims to improve is testing. Conventional testing flow require the
-construction of special testbenches that can be executed using simulators.
+One aspect of hardware design that Pyha aims to improve is testing. Conventional testing flow requires the
+construction of testbenches that can be executed using simulators.
+
+.. mis probleem on nendega?
 
 .. Even the higher level tools dont simplify this step, for example the C based tools HLS tools want testbench in C language, which is not an
     improvement from VHDL or Verilog.
@@ -82,6 +88,8 @@ Pyha has been designed so that the synthesis output is behaviourally equivalent 
 output, this means that Pyha designs can use all the Python debugging tools.
 :numref:`py_debug` shows a debugging session on the :numref:`pyha_basic` code, this can drastically help
 the development process.
+
+.. see pilt valge taustaga teha?
 
 .. _py_debug:
 .. figure:: ../examples/basic/img/debug.png
