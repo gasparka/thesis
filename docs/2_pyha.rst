@@ -41,7 +41,7 @@ chosen as a top level entry point, other functions can be used as pleased.
 
             return a, b
 
-One of the contributions of this thesis is sequential OOP VHDL model which is used to simplify conversion from Pyha to VHDL.
+One of the contributions of this thesis is a sequential OOP VHDL model which is used to simplify conversion from Pyha to VHDL.
 The example of the VHDL conversion is shown in :numref:`pyha_basic_vhdl`, more details are given in
 :numref:`3_synthesis`.
 

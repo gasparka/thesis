@@ -79,6 +79,6 @@ Structure of the thesis
 After gaining the context and problem statement in the current chapter, :numref:`2_pyha` presents the proposed hardware
 description language Pyha. Next, :numref:`3_synthesis` develops the object-oriented VHDL model and deals with the
 problem of converting Python to VHDL. :numref:`4_examples` shows how Pyha can be used to implement medium complexity
-DSP systems and gives an comparison to existing tools. :numref:`5_conclusion` concludes this thesis and suggest ideas
+DSP systems and gives a comparison to existing tools. :numref:`5_conclusion` concludes this thesis and suggest ideas
 for future work. The related work is introduced and discussed throughout this thesis,
 thus no specific literature review chapter has been included.
