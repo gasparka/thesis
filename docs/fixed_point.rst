@@ -1,7 +1,7 @@
 .. _ch_app_fixed:
 
-Fixed-point type implementation details
----------------------------------------
+Fixed-point type details
+------------------------
 
 This appendix provides more information about the fixed-point and complex fixed-point types. Basics have been covered in :numref:`ch_fixed`. The ``Sfix`` type was built in such a way that all the functions map to the VHDL library :cite:`vhdlfixed`, so that the conversion process is simple. This has also allowed to verify the implementation against a known working solution.
 

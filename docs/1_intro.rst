@@ -64,14 +64,19 @@ rapid prototyping and modeling. Python has also found its place in scientific pr
 most of what is familiar from MATLAB, free of charge. Scientists are already shifting from MATLAB to Python in order
 to conduct research that is reproducible and accessible by everyone :cite:`matlab_to_python`.
 :numref:`pypl_py_vs_mat` shows the popularity comparison (based on Google searches) of Python, MATLAB and C.
-The positive trend of Python should soon push it past Java to the most popular programming language.
+
 
 .. _pypl_py_vs_mat:
 .. figure:: /img/pypl_py_vs_mat.png
     :align: center
     :figclass: align-center
 
-    PYPL(PopularitY of Programming Language) :cite:`pypl`. Python 15.1%, C 6.9%, MATLAB 2.7%
+    Programming language popularity :cite:`pypl`. Python 15.1%, C 6.9%, MATLAB 2.7%
+
+|
+|
+|
+
 
 Structure of the thesis
 -----------------------

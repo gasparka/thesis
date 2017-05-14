@@ -176,6 +176,9 @@ VHDL supports 'packages', that can be used to group all these elements into comm
 :numref:`package-mac` shows the template package for VHDL 'class'.
 All the class functionality is now in common namespace.
 
+
+|
+
 .. code-block:: vhdl
    :caption: Class template for OOP style VHDL
    :name: package-mac
@@ -244,7 +247,6 @@ In ``main``,
     type self_t is record
         mac0: MAC_0.self_t; -- define 2 MACs as part of data model
         mac1: MAC_1.self_t;
-
         nexts: next_t;
     end record;
 
@@ -449,4 +451,4 @@ Pyha provides ``simulate`` functions that automate the simulation and conversion
 
 The conversion process is one of the advantages of Pyha, compared to other similar tools. The process has low
 complexity and produces well formatted and readable VHDL. In addition, syntax conversion could be easily extended to
-support other conversion targets like SytemVerilog or C.
+support other conversion targets like SystemVerilog or C.

@@ -17,7 +17,7 @@ Introduction
 
 .. confusing on segane..
 
-Conventional HDL languages promote concurrent and entity oriented models which can be confusing.
+Conventional HDL languages promote concurrent and entity oriented models which can be confusing for software developers.
 In this thesis, Pyha has been designed as a sequential object-oriented language, that works directly on
 Python code. Using a sequential design flow is much easier to understand and is equally well synthesizable as shown
 in this thesis. Object-oriented design helps to better abstract the RTL details and ease design reuse.
@@ -38,17 +38,15 @@ chosen as a top level entry point, other functions can be used as pleased.
 
             if a == 9:
                 b = 0
-
             return a, b
 
 One of the contributions of this thesis is a sequential OOP VHDL model which is used to simplify conversion from Pyha to VHDL.
-The example of the VHDL conversion is shown in :numref:`pyha_basic_vhdl`, more details are given in
-:numref:`3_synthesis`.
+The example of the VHDL conversion is shown in :numref:`pyha_basic_vhdl`. The OOP VHDL model is developed and examined in :numref:`3_synthesis`.
 
 .. siin võiks olla väike tests VHDL kohta, et ta on sarnane vms
 
 .. code-block:: vhdl
-    :caption: :numref:`pyha_basic` converted to VHDL, by Pyha conversion routines
+    :caption: The ``main`` funciton of :numref:`pyha_basic` converted to OOP VHDL
     :name: pyha_basic_vhdl
 
     procedure main(self:inout self_t; x: integer; ret_0:out integer; ret_1:out integer) is
@@ -158,7 +156,7 @@ For example
 ``__init__`` function could be used to call ``scipy.signal.firwin()`` to design FIR filter coefficients, initial
 assignments to class variables are used for register initial/reset values.
 
-Note the ``self.next.acc = ...``, simulates the hardware behaviour of registers, that is delayed assignment.
+The ``self.next.acc = ...``, simulates the hardware behaviour of registers i.e. the delayed assignment.
 In general, this is equivalent to the VHDL ``<=`` operator. Values are transferred from **next** to **current**
 before the ``main`` call. In Pyha each call to the ``main`` function can be considered as an clock edge.
 
@@ -188,7 +186,7 @@ compared to the software model.
 Pyha reserves a :code:`self._delay` variable, that hardware classes can use to specify their delay.
 Simulation functions read this variable to compensate the simulation outputs.
 Setting the ``self._delay = 1`` in the ``__init__`` function
-would shift the hardware simulations left by 1 sample, so that all the simulation would be exactly equal. This functionality is useful for documenting the delay of modules and simplifies the use of unit-tests.
+would shift the hardware simulations left by 1 sample, so that all the simulation would be exactly equal. This functionality is useful for documenting the delay of modules and simplifies the development of unit-tests.
 
 .. _ch_sliding_adder:
 
