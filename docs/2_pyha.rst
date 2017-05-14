@@ -350,7 +350,7 @@ For example, ``Sfix(left=0, right=-17)`` represents a number between [-1;1] with
 
 The default and recommended fixed-point type in Pyha has been chosen to be ``Sfix(left=0, right=-17)``, because it
 can represent normalized numbers and fits into FPGA DSP blocks :cite:`cycloneiv` :cite:`fixvsfp`. Keeping block inputs
-and outputs in the normalized range can simplify the overall design process.
+and outputs in the normalized range can simplify the overall design process. More details about the fixed-point implementation can be found in :numref:`ch_app_fixed`.
 
 .. [#fixvhdl] https://github.com/FPHDL/fphdl.
 
@@ -403,11 +403,11 @@ fixed-point, the same goes for outputs. This way the unit-test can be kept simpl
     y = simulate(dut, x)                 # all outputs are floats
     # assert or plot results
 
-The simulation results shown in :numref:`fix_sat_wrap`, show that the hardware related simulations differ from the
+The simulation results shown in :numref:`sim_fix_adder`, show that the hardware related simulations differ from the
 model. This is because the model is implemented in floating-point arithmetic while hardware typing is limited to
 [-1;1] range. Notice that the mismatch starts when the value rises over ``1.0``.
 
-.. _fix_sat_wrap:
+.. _sim_fix_adder:
 .. figure:: ../examples/block_adder/img/sim_fix.png
     :align: center
     :figclass: align-center

@@ -12,5 +12,12 @@ Thesis!
     5_conclusion
 
 
+.. only:: html
+
+   .. toctree::
+
+      fixed_point
+
+
 
 

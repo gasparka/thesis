@@ -181,6 +181,8 @@ latex_elements = {
     'figure_align': 'H',
 }
 
+latex_appendices = ['fixed_point']
+
 
 latex_additional_files = [
     '/home/gaspar/git/thesis/tex/sphinx.sty',
