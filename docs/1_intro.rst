@@ -63,7 +63,7 @@ The basis of Pyha is Python, a general purpose programming language that is espe
 rapid prototyping and modeling. Python has also found its place in scientific projects and academia by offering
 most of what is familiar from MATLAB, free of charge. Scientists are already shifting from MATLAB to Python in order
 to conduct research that is reproducible and accessible by everyone :cite:`matlab_to_python`.
-:numref:`pypl_py_vs_mat` shows the popularity comparison (based on Google searches) of Python, MATLAB and C.
+:numref:`pypl_py_vs_mat` shows the popularity comparison (based on Google searches) of Python, MATLAB and C. As can be seen, Python is the only language with positive slope, soon Python will be the most popular programming language in the world (currently Java).
 
 
 .. _pypl_py_vs_mat:
@@ -73,7 +73,6 @@ to conduct research that is reproducible and accessible by everyone :cite:`matla
 
     Programming language popularity :cite:`pypl`. Python 15.1%, C 6.9%, MATLAB 2.7%
 
-|
 |
 |
 
