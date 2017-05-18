@@ -27,7 +27,7 @@ Contributions
 The contributions of this thesis are:
 
     * Hardware description, simulation and debugging in Python - this is the main contribution of this thesis;
-    * Sequential object-oriented VHDL model - the object-oriented VHDL model was developed to allow simple conversion from Python to VHDL;
+    * Sequential object-oriented VHDL model - the object-oriented VHDL model was developed to allow simple conversion from Python to VHDL, it may be useful knowledge to VHDL programmers that such kind of style is fully synthesizable;
     * Method for converting Python to X - this thesis developed an simple way to convert Python syntax to VHDL, this method could be used for other purposes as well;
     * Fixed-point arithmetic library for Python - fixed-point library was developed to support cycle-accurate simulation with the converted VHDL code, this library can be used to model fixed-point systems in Python domain;
     * Simplified simulation functions -  functions that can execute multiple layers of simulations (Python, RTL, GATE) without any boilerplate code, this contribution significantly improves the testability of hardware designs.
