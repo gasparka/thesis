@@ -179,6 +179,7 @@ latex_elements = {
 
     # 'figure_align': '!htbp',
     'figure_align': 'H',
+    'sphinxsetup': 'TitleColor={rgb}{0,0,0}',
 }
 
 latex_appendices = ['fixed_point']
