@@ -41,7 +41,6 @@ The MA filter is implemented by sliding sum, that is divided by the sliding wind
 carried out by a shift operation if divisor is a power of two.
 In addition, division can be performed on each sample instead of on the sum, that is ``(a + b) / c = a/c + b/c``.
 This guarantees that the ``sum`` is always in the [-1;1] range and no saturation logic is needed.
-
 :numref:`mavg-pyha` shows the MA filter implementation in Pyha. It is based on the sliding sum, that was implemented
 in :numref:`ch_fp_sliding_adder`. Minor modifications are commented in the code.
 
@@ -53,7 +52,6 @@ in :numref:`ch_fp_sliding_adder`. Minor modifications are commented in the code.
         def __init__(self, window_len):
             # calculate power of 2 value of 'window_len', used for division
             self.window_pow = Const(int(np.log2(window_len)))
-
             # 'overflow_style' turns the saturation off
             self.sum = Sfix(0, 0, -17, overflow_style=fixed_wrap)
             self.shr = [Sfix()] * window_len
@@ -62,7 +60,6 @@ in :numref:`ch_fp_sliding_adder`. Minor modifications are commented in the code.
         def main(self, x):
             # divide by shifting
             div = x >> self.window_pow
-
             self.next.shr = [div] + self.shr[:-1]
             self.next.sum = self.sum + div - self.shr[-1]
             return self.sum
@@ -129,10 +126,10 @@ DC component. :numref:`dc_removal` shows the Pyha implementation.
 
     class DCRemoval(HW):
         def __init__(self, window_len):
-            self.mavg = [MovingAverage(window_len), MovingAverage(window_len),
-                         MovingAverage(window_len), MovingAverage(window_len)]
+            self.mavg =
+                [MovingAverage(window_len), MovingAverage(window_len),
+                MovingAverage(window_len), MovingAverage(window_len)]
             self.y = Sfix(0, 0, -17)
-
             self._delay = 1
 
         def main(self, x):

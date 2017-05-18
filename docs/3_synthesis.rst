@@ -129,8 +129,8 @@ Adapting this style for the MAC example is shown in :numref:`mac_next`; the data
 
     procedure main(self: inout self_t; a: integer; ret_0: out integer) is
     begin
-        self.nexts.mul := a * self.coef;        -- now assigns to self.nexts
-        self.nexts.acc := self.acc + self.mul;  -- now assigns to self.nexts
+        self.nexts.mul := a * self.coef;        -- assigns to self.nexts
+        self.nexts.acc := self.acc + self.mul;  -- assigns to self.nexts
         ret_0 := self.acc;
     end procedure;
 
@@ -300,11 +300,11 @@ For this, only the top level process must be modified (:numref:`mac-parallel-clo
         ReuseParallel_0.reset(self); -- reset everything
     else
         if rising_edge(clk0) then
-            MAC_0.update_registers(self.mac0); -- update 'mac0' on 'clk0' rising edge
+            MAC_0.update_registers(self.mac0); -- update on 'clk0' edge
         end if;
 
         if rising_edge(clk1) then
-            MAC_1.update_registers(self.mac1); -- update 'mac1' on 'clk1' rising edge
+            MAC_1.update_registers(self.mac1); -- update on 'clk1' edge
         end if;
     end if;
 

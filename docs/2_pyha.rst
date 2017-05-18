@@ -25,6 +25,8 @@ in this thesis. Object-oriented design helps to better abstract the RTL details 
 For illustration purposes, :numref:`pyha_basic` shows an example Pyha design. The ``main`` function has been
 chosen as a top level entry point, other functions can be used as pleased.
 
+|
+|
 .. kuidagi järsku tuleb see
 
 .. code-block:: python
