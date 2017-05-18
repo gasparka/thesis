@@ -177,7 +177,6 @@ VHDL supports 'packages', that can be used to group all these elements into comm
 All the class functionality is now in common namespace.
 
 
-|
 
 .. code-block:: vhdl
    :caption: Class template for OOP style VHDL

@@ -73,9 +73,6 @@ to conduct research that is reproducible and accessible by everyone :cite:`matla
 
     Programming language popularity :cite:`pypl`. Python 15.1%, C 6.9%, MATLAB 2.7%
 
-|
-|
-
 
 Structure of the thesis
 -----------------------
