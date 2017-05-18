@@ -61,8 +61,11 @@
   \pagenumbering{roman}%
   \pagestyle{plain}%
   \begingroup
-    \parskip \z@skip
+    %\parskip \z@skip
+    \renewcommand{\contentsname}{Contents}
+    \singlespacing
     \tableofcontents
+    \onehalfspacing
   \endgroup
   % before resetting page counter, let's do the right thing.
   \if@openright\cleardoublepage\else\clearpage\fi

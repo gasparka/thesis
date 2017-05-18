@@ -140,7 +140,7 @@ htmlhelp_basename = 'Pyhadoc'
 
 
 latex_elements = {
-    'preamble': '\setcounter{tocdepth}{2}',
+    'preamble': '\setcounter{tocdepth}{2} \RequirePackage{setspace} \onehalfspacing ',
     # The paper size ('letterpaper' or 'a4paper').
     'papersize': 'letterpaper',
 
@@ -163,8 +163,8 @@ latex_elements = {
     # 'footer': ADDITIONAL_FOOTER,
 
     # disable font inclusion
-    'fontpkg': '',
-    'fontenc': '',
+    # 'fontpkg': '',
+    # 'fontenc': '',
 
     # disable fancychp
     'fncychap': '',
