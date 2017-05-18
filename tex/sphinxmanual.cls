@@ -61,7 +61,8 @@
   \pagenumbering{roman}%
   \pagestyle{plain}%
   \begingroup
-    %\parskip \z@skip
+    \addtocontents{toc}{\protect\setstretch{0.95}}
+    \parskip \z@skip
     \renewcommand{\contentsname}{Contents}
     \singlespacing
     \tableofcontents
