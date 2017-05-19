@@ -59,7 +59,7 @@ author = 'Gaspar Karm'
 # built documents.
 #
 # The short X.Y version.
-version = '1.0.0'
+version = '1.2.0'
 # The full version, including alpha/beta/rc tags.
 release = version
 
@@ -140,7 +140,7 @@ htmlhelp_basename = 'Pyhadoc'
 
 
 latex_elements = {
-    'preamble': '\setcounter{tocdepth}{2}',
+    'preamble': '\setcounter{tocdepth}{2} \RequirePackage{setspace} \onehalfspacing ',
     # The paper size ('letterpaper' or 'a4paper').
     'papersize': 'letterpaper',
 
@@ -163,8 +163,8 @@ latex_elements = {
     # 'footer': ADDITIONAL_FOOTER,
 
     # disable font inclusion
-    'fontpkg': '',
-    'fontenc': '',
+    # 'fontpkg': '',
+    # 'fontenc': '',
 
     # disable fancychp
     'fncychap': '',
@@ -179,7 +179,10 @@ latex_elements = {
 
     # 'figure_align': '!htbp',
     'figure_align': 'H',
+    'sphinxsetup': 'TitleColor={rgb}{0,0,0}',
 }
+
+latex_appendices = ['fixed_point']
 
 
 latex_additional_files = [

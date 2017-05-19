@@ -61,14 +61,18 @@
   \pagenumbering{roman}%
   \pagestyle{plain}%
   \begingroup
+    \addtocontents{toc}{\protect\setstretch{0.95}}
     \parskip \z@skip
+    \renewcommand{\contentsname}{Contents}
+    \singlespacing
     \tableofcontents
+    \onehalfspacing
   \endgroup
   % before resetting page counter, let's do the right thing.
-  \if@openright\cleardoublepage\else\clearpage\fi
+   \listoffigures
+     \if@openright\cleardoublepage\else\clearpage\fi
   \pagenumbering{arabic}%
   \ifdefined\fancyhf\pagestyle{normal}\fi
-       \listoffigures
 }
 
 % This is needed to get the width of the section # area wide enough in the

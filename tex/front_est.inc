@@ -11,7 +11,7 @@
    				Tallinna Tehnikaülikool\\
    			\end{large} }
 		 Infotehnoloogia teaduskond\\
-		 {Thomas Johann Seebecki elektroonikainstituut} \\[4,7 cm]
+		 {Thomas Johann Seebecki elektroonikainstituut} \\[3.25 cm]
    		\end{center}
    		
    		\begin{center} %Tekst keskele
@@ -35,10 +35,6 @@
    		%\end{flushright}
    		
 
-   		\blank{7.3 cm}{}\\[0cm]
-   		\blank{7.3 cm}{}\\[0cm]
-   		\blank{7.3 cm}{}\\[0cm]
-   		\blank{7.3 cm}{}\\[0cm]
    		\blank{7.3 cm}{Tallinn 2017}\\[0cm]
    		
    	\end{titlepage}%

@@ -129,8 +129,8 @@ Adapting this style for the MAC example is shown in :numref:`mac_next`; the data
 
     procedure main(self: inout self_t; a: integer; ret_0: out integer) is
     begin
-        self.nexts.mul := a * self.coef;        -- now assigns to self.nexts
-        self.nexts.acc := self.acc + self.mul;  -- now assigns to self.nexts
+        self.nexts.mul := a * self.coef;        -- assigns to self.nexts
+        self.nexts.acc := self.acc + self.mul;  -- assigns to self.nexts
         ret_0 := self.acc;
     end procedure;
 
@@ -175,6 +175,8 @@ The OOP model, developed in this thesis, consists of the following elements:
 VHDL supports 'packages', that can be used to group all these elements into common namespace.
 :numref:`package-mac` shows the template package for VHDL 'class'.
 All the class functionality is now in common namespace.
+
+
 
 .. code-block:: vhdl
    :caption: Class template for OOP style VHDL
@@ -244,7 +246,6 @@ In ``main``,
     type self_t is record
         mac0: MAC_0.self_t; -- define 2 MACs as part of data model
         mac1: MAC_1.self_t;
-
         nexts: next_t;
     end record;
 
@@ -299,11 +300,11 @@ For this, only the top level process must be modified (:numref:`mac-parallel-clo
         ReuseParallel_0.reset(self); -- reset everything
     else
         if rising_edge(clk0) then
-            MAC_0.update_registers(self.mac0); -- update 'mac0' on 'clk0' rising edge
+            MAC_0.update_registers(self.mac0); -- update on 'clk0' edge
         end if;
 
         if rising_edge(clk1) then
-            MAC_1.update_registers(self.mac1); -- update 'mac1' on 'clk1' rising edge
+            MAC_1.update_registers(self.mac1); -- update on 'clk1' edge
         end if;
     end if;
 
@@ -449,4 +450,4 @@ Pyha provides ``simulate`` functions that automate the simulation and conversion
 
 The conversion process is one of the advantages of Pyha, compared to other similar tools. The process has low
 complexity and produces well formatted and readable VHDL. In addition, syntax conversion could be easily extended to
-support other conversion targets like SytemVerilog or C.
+support other conversion targets like SystemVerilog or C.
