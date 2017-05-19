@@ -18,7 +18,7 @@
    			{Gaspar Karm, IVEM153410}\\[2,3 cm]
    			\begin{huge}
    				
-   				\textsc{\textbf{Pyha -  \\ Pythonil põninev objektorienteeritud riistvarakirjelduskeel \\[2,3 cm]}}
+   				\textsc{\textbf{Pyha -  \\ Pythonil põhinev objektorienteeritud riistvarakirjelduskeel \\[2,3 cm]}}
    			\end{huge}
    			{Magistritöö}\\[1,5 cm]
    		\end{center}
