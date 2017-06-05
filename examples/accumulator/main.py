@@ -7,16 +7,97 @@ from pyha.simulation.simulation_interface import debug_assert_sim_match, SIM_GAT
 import matplotlib.pyplot as plt
 
 
+class Counter(HW):
+    def __init__(self):
+        self.acc = 0
+
+    def main(self, x):
+        self.acc = self.acc + 1
+        return self.acc
+
+
+class TwoCounters(HW):
+    def __init__(self):
+        self.counters = [Counter(), Counter()]
+
+    def main(self, x):
+        first = self.counters[0].main(x)
+        second = self.counters[1].main(x)
+        return first, second
+
+
+def test_two_counters():
+    dut = TwoCounters()
+    x = [int(x) for x in np.random.uniform(-5, 5, 64)]
+
+    r = debug_assert_sim_match(dut, None, x,
+                               simulations=[SIM_HW_MODEL, SIM_RTL, SIM_GATE],
+                               dir_path='/home/gaspar/git/thesis/playground')
+
+
+def test_counter():
+    dut = Counter()
+    x = [int(x) for x in np.random.uniform(-5, 5, 64)]
+
+    r = debug_assert_sim_match(dut, None, x,
+                               simulations=[SIM_HW_MODEL, SIM_RTL, SIM_GATE],
+                               dir_path='/home/gaspar/git/thesis/playground')
+
+    print(r)
+
+
+class Accumulator(HW):
+    def __init__(self):
+        self.acc = 0
+
+    def main(self, x):
+        self.acc = self.acc + x
+        return self.acc
+
+
+def test_accum():
+    dut = Accumulator()
+    x = [int(x) for x in np.random.uniform(-5, 5, 64)]
+
+    r = debug_assert_sim_match(dut, None, x,
+                               simulations=[SIM_HW_MODEL, SIM_RTL, SIM_GATE],
+                               dir_path='/home/gaspar/git/thesis/playground')
+
+    print(r)
+
+
+class TwoAccumulators(HW):
+    def __init__(self):
+        self.accs = [Accumulator(), Accumulator()]
+
+    def main(self, x):
+        y0 = self.accs[0].main(x)
+        y1 = self.accs[1].main(x)
+        return y0, y1
+
+
+def test_two_acc():
+    dut = TwoAccumulators()
+    x = [int(x) for x in np.random.uniform(-5, 5, 64)]
+
+    r = debug_assert_sim_match(dut, None, x,
+                               simulations=[SIM_HW_MODEL, SIM_RTL, SIM_GATE],
+                               dir_path='/home/gaspar/git/thesis/playground')
+
+    print(r)
+
+
 class Acc(HW):
     def __init__(self):
         self.acc = 0
 
     def main(self, x):
-        self.next.acc = self.acc + x
+        self.acc = self.acc + x
         return self.acc
 
     def model_main(self, xl):
         return np.cumsum(xl)
+
 
 def test_acc():
     dut = Acc()
@@ -39,7 +120,6 @@ def test_acc():
     plt.ylabel("Value")
     plt.savefig('img/acc_sim_delay_tmp.png', bbox_inches='tight')
     plt.show()
-
 
     dut._delay = 1
     r = debug_assert_sim_match(dut, None, x,
@@ -65,7 +145,6 @@ def test_acc():
 
 class LastAcc(HW):
     def __init__(self):
-
         # registers
         self.shr = [0, 0, 0, 0]
         self.sum = 0
@@ -84,6 +163,7 @@ class LastAcc(HW):
 
     def model_main(self, xl):
         return np.cumsum(xl)
+
 
 def test_lastacc():
     dut = LastAcc()
