@@ -48,7 +48,7 @@ def test_counter():
 
 class Accumulator(HW):
     def __init__(self):
-        self.acc = 0
+        self.acc = Sfix(0.0, left=0)
 
     def main(self, x):
         self.acc = self.acc + x
@@ -57,7 +57,7 @@ class Accumulator(HW):
 
 def test_accum():
     dut = Accumulator()
-    x = [int(x) for x in np.random.uniform(-5, 5, 64)]
+    x = [x for x in np.random.uniform(-5, 5, 64)]
 
     r = debug_assert_sim_match(dut, None, x,
                                simulations=[SIM_HW_MODEL, SIM_RTL, SIM_GATE],
