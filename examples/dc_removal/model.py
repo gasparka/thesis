@@ -7,6 +7,7 @@ from examples.moving_average.model import MovingAverage
 import numpy as np
 import matplotlib.pyplot as plt
 
+
 class DCRemoval(HW):
     def __init__(self, window_len):
         self.mavg = [MovingAverage(window_len), MovingAverage(window_len),
@@ -42,9 +43,8 @@ def test_quad4_len32():
 
     dut = DCRemoval(64)
     plot_assert_sim_match(dut, None, x,
-                    simulations=[SIM_MODEL, SIM_HW_MODEL],
-                     dir_path='/home/gaspar/git/thesis/playground')
-
+                          simulations=[SIM_MODEL, SIM_HW_MODEL],
+                          dir_path='/home/gaspar/git/thesis/playground')
 
 
 def test_plot():
@@ -55,8 +55,6 @@ def test_plot():
     r = debug_assert_sim_match(dut, None, x,
                                simulations=[SIM_MODEL, SIM_HW_MODEL, SIM_RTL],
                                dir_path='/home/gaspar/git/thesis/playground')
-
-
 
     plt.figure(figsize=(8, 1.5))
     # plt.plot(x, label='x')
