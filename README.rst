@@ -13,9 +13,9 @@ I picked this topic to get 'free documentation' for the ``Pyha`` project. That a
 Writing was hard. I used the 'do simpler things first' approach, known from software programming.
 But since i did not have a clear goal, this technique turned into 'do random things and hope the best'. I should have written the introduction and problem statement first and set a clear structure for the work before writing other stuff.
 
-Procrastination was a problem as always. I finished important parts of the thesis actually week before the final deadline (which is decent i guess) ..but the presentation i finished 3 hours before the event ... that is **retarded**.
+Procrastination was a problem as always. I finished important parts of the thesis week before the final deadline, no time was left for major overhauls.
 
-Failed to learn from my bachelor thesis, that had basically all the same mistakes. This is why i am writing this.
+Failed to learn from my bachelor thesis, that had basically all the same mistakes.
 
 
 
